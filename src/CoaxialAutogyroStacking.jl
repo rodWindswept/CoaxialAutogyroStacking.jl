@@ -5,8 +5,8 @@ module CoaxialAutogyroStacking
 #
 # Phase 1: PCA-2 empirical data + project skeleton
 
-export
-
 include("pca2_data.jl")
+
+export pca2_interp
 
 end # module CoaxialAutogyroStacking
