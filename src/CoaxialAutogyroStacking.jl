@@ -8,9 +8,11 @@ module CoaxialAutogyroStacking
 include("pca2_data.jl")
 include("rotor.jl")
 include("line_section.jl")
+include("stack.jl")
 
 export pca2_interp
 export AutogyroRotor, rotor_disk_area, effective_alpha, rotor_force_along_line
 export bare_line_drag
+export AutogyroStack, stack_tension_profile
 
 end # module CoaxialAutogyroStacking
