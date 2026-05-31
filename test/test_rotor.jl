@@ -53,4 +53,61 @@
         r4 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, -40.0, 5.0)
         @test CoaxialAutogyroStacking.effective_alpha(r4, 50.0) ≈ 0.0
     end
+
+    @testset "rotor_force_along_line" begin
+        rho = 1.225     # air density kg/m³
+        v_wind = 8.0    # m/s
+
+        @testset "Known point: radius=1.5, pitch=10°, elev=50°, v=8 m/s" begin
+            # α_eff = 90° - 50° + 10° = 50°
+            # PCA-2: CL≈0.82, CD≈0.86
+            # q = 0.5 * 1.225 * 64 = 39.2
+            # A = π * 2.25 = 7.0686
+            # F_lift = 39.2 * 7.0686 * 0.82 ≈ 227.1
+            # F_drag = 39.2 * 7.0686 * 0.86 ≈ 238.1
+            # F_line = 227.1*sind(50) + 238.1*cosd(50) ≈ 327.0
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+            F_line, F_lift, F_drag, cl, cd = CoaxialAutogyroStacking.rotor_force_along_line(
+                rotor, rho, v_wind, 50.0)
+            @test F_line ≈ 327.0 atol=1.0
+            @test F_lift ≈ 227.1 atol=1.0
+            @test F_drag ≈ 238.1 atol=1.0
+            @test cl ≈ 0.82 atol=0.01
+            @test cd ≈ 0.86 atol=0.01
+        end
+
+        @testset "Zero pitch (pure autogyro) at 50° elevation" begin
+            # α_eff = 90° - 50° + 0° = 40°
+            # PCA-2: CL=0.95, CD=0.62
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 5.0)
+            F_line, F_lift, F_drag, cl, cd = CoaxialAutogyroStacking.rotor_force_along_line(
+                rotor, rho, v_wind, 50.0)
+            @test cl ≈ 0.95 atol=0.01
+            @test cd ≈ 0.62 atol=0.01
+            @test F_line > F_drag  # rotor L/D should give meaningful line pull
+        end
+
+        @testset "Near-vertical line (85° elevation, zero pitch)" begin
+            # α_eff = 90° - 85° + 0° = 5°
+            # PCA-2: CL=0.15, CD=0.03
+            # F_lift = 39.2 * 7.0686 * 0.15 ≈ 41.5
+            # F_drag = 39.2 * 7.0686 * 0.03 ≈ 8.3
+            # F_line ≈ 41.5*sind(85) + 8.3*cosd(85) ≈ 42.0
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 5.0)
+            F_line, F_lift, F_drag, cl, cd = CoaxialAutogyroStacking.rotor_force_along_line(
+                rotor, rho, v_wind, 85.0)
+            @test F_line ≈ 42.0 atol=1.0
+            @test F_lift ≈ 41.5 atol=1.0
+            @test F_drag ≈ 8.3 atol=0.5
+        end
+
+        @testset "Zero wind: forces should be zero" begin
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+            F_line, F_lift, F_drag, cl, cd = CoaxialAutogyroStacking.rotor_force_along_line(
+                rotor, rho, 0.0, 50.0)
+            @test F_line == 0.0
+            @test F_lift == 0.0
+            @test F_drag == 0.0
+        end
+    end
 end
