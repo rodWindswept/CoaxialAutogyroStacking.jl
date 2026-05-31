@@ -6,4 +6,5 @@ using CoaxialAutogyroStacking
     include("test_rotor.jl")
     include("test_line_section.jl")
     include("test_stack.jl")
+    include("test_optimisation.jl")
 end
