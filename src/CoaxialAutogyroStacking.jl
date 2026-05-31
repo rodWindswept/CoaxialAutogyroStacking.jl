@@ -9,6 +9,6 @@ include("pca2_data.jl")
 include("rotor.jl")
 
 export pca2_interp
-export AutogyroRotor, rotor_disk_area
+export AutogyroRotor, rotor_disk_area, effective_alpha
 
 end # module CoaxialAutogyroStacking

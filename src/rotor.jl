@@ -30,3 +30,17 @@ Returns the swept disk area (π·R²) in m².
 function rotor_disk_area(rotor::AutogyroRotor)
     return π * rotor.radius^2
 end
+
+"""
+    effective_alpha(rotor::AutogyroRotor, line_elevation_deg)
+
+Effective disk angle of attack relative to the wind.
+
+α_eff = 90° − line_elevation_deg + pitch_deg
+
+The rotor disk is coaxial with the line. Pitching the blades independently
+shifts the effective AoA along the PCA-2 CL/CD curve.
+"""
+function effective_alpha(rotor::AutogyroRotor, line_elevation_deg)
+    return 90.0 - line_elevation_deg + rotor.pitch_deg
+end
