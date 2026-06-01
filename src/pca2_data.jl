@@ -10,12 +10,33 @@ const PCA2_CD    = [0.01, 0.03, 0.06, 0.10, 0.16, 0.24, 0.35, 0.48, 0.62,
                     0.75, 0.86, 0.96, 1.05, 1.15, 1.25]
 
 """
-    pca2_interp(alpha_deg)
+    pca2_interp(alpha_deg) -> (cl, cd)
 
-Linearly interpolates the PCA-2 empirical CL and CD values for a given
-disk angle of attack α in degrees.  Input is clamped to [0°, 90°].
+Linearly interpolate the PCA-2 empirical lift and drag coefficients for a rotor
+disk at angle of attack `alpha_deg`.
 
-Returns `(cl, cd)`.
+The PCA-2 table (NASA TM 20080022367) is defined on α ∈ [0°, 90°]; inputs
+outside that range are clamped to the nearest endpoint (so the function never
+extrapolates).
+
+# Arguments
+- `alpha_deg`: disk angle of attack in degrees.
+
+# Returns
+- `(cl, cd)::Tuple{Float64,Float64}`: interpolated lift and drag coefficients,
+  normalised to disk area and freestream dynamic pressure.
+
+# Examples
+```julia
+julia> pca2_interp(40.0)      # exact table point
+(0.95, 0.62)
+
+julia> pca2_interp(12.5)      # midpoint between the 10° and 15° rows
+(0.375, 0.08)
+
+julia> pca2_interp(-10.0)     # clamped to 0°
+(0.0, 0.01)
+```
 """
 function pca2_interp(alpha_deg)
     a = clamp(alpha_deg, 0.0, 90.0)

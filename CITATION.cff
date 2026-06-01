@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "CoaxialAutogyroStacking.jl"
+abstract: >-
+  A Julia package modelling multiple independently-pitched autogyro rotors
+  stacked inline on a kite line, computing per-rotor forces and line tension
+  profiles using PCA-2 empirical rotor-disk data.
+type: software
+authors:
+  - given-names: Rod
+    family-names: Read
+    email: rod@windswept.energy
+    affiliation: Windswept Energy
+version: 0.1.0
+date-released: 2026-06-01
+license: MIT
+keywords:
+  - airborne-wind-energy
+  - autogyro
+  - kite
+  - julia
+references:
+  - type: report
+    title: "PCA-2 rotor disk aerodynamic data"
+    institution:
+      name: NASA
+    number: "TM 20080022367"
+    authors:
+      - name: "NASA"

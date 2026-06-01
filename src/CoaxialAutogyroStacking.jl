@@ -15,6 +15,6 @@ export pca2_interp
 export AutogyroRotor, rotor_disk_area, effective_alpha, rotor_force_along_line
 export bare_line_drag
 export AutogyroStack, stack_tension_profile
-export optimal_pitch, optimal_pitches
+export optimal_pitch, optimal_pitches, lift_force_steady
 
 end # module CoaxialAutogyroStacking

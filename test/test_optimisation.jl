@@ -54,4 +54,71 @@
         # Each pitch should be in reasonable range
         @test all(-20.0 .<= pitches .<= 30.0)
     end
+
+    @testset "lift_force_steady — integration API" begin
+        # Mirror the KiteTurbineDynamics.jl dispatch pattern:
+        # (F_hub, T_anchor, elevation) = lift_force_steady(stack, rho, v_wind)
+        r1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        r2 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        stack = CoaxialAutogyroStacking.AutogyroStack(
+            [r1, r2],
+            [2.0, 3.0, 9.0],
+            0.004,
+            50.0,
+        )
+        rho = 1.225
+        v_wind = 8.0
+
+        F_hub, T_anchor, elev = CoaxialAutogyroStacking.lift_force_steady(stack, rho, v_wind)
+
+        # Elevation should match the stack's line angle
+        @test elev == 50.0
+
+        # T_anchor should match the last entry of stack_tension_profile
+        profile = CoaxialAutogyroStacking.stack_tension_profile(stack, rho, v_wind)
+        @test T_anchor ≈ profile[end] atol=1.0
+
+        # F_hub should be the total line force contributed by all rotors
+        # (sum of F_line for each rotor, without subtracting weight — the hub feels
+        # the total lift force along the line)
+        total_F_line = 0.0
+        for rotor in stack.rotors
+            fl, _, _, _, _ = CoaxialAutogyroStacking.rotor_force_along_line(rotor, rho, v_wind, 50.0)
+            total_F_line += fl
+        end
+        @test F_hub ≈ total_F_line atol=1.0
+    end
+
+    @testset "lift_force_steady — single rotor" begin
+        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        stack = CoaxialAutogyroStacking.AutogyroStack(
+            [rotor],
+            [1.0, 10.0],
+            0.004,
+            50.0,
+        )
+        F_hub, T_anchor, elev = CoaxialAutogyroStacking.lift_force_steady(stack, 1.225, 8.0)
+
+        # Single rotor: F_hub = F_line of the rotor
+        F_line, _, _, _, _ = CoaxialAutogyroStacking.rotor_force_along_line(rotor, 1.225, 8.0, 50.0)
+        @test F_hub ≈ F_line atol=1.0
+        @test elev == 50.0
+    end
+
+    @testset "lift_force_steady — zero wind" begin
+        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        stack = CoaxialAutogyroStacking.AutogyroStack(
+            [rotor],
+            [1.0, 10.0],
+            0.004,
+            50.0,
+        )
+        F_hub, T_anchor, elev = CoaxialAutogyroStacking.lift_force_steady(stack, 1.225, 0.0)
+
+        @test elev == 50.0
+        # At zero wind, no aerodynamic forces
+        @test F_hub == 0.0
+        # T_anchor reflects negative weight (rotor pulls down, line would be slack)
+        @test T_anchor < 0.0
+    end
 end

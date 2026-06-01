@@ -1,0 +1,26 @@
+# Julia
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+.julia/
+deps/deps.jl
+deps/build.log
+docs/build/
+docs/site/
+
+# Editors / OS
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Pluto notebook autosaves
+*.pluto.jl.backup
+
+# NOTE: Manifest.toml is intentionally NOT ignored.
+# This is research/application code where exact dependency
+# reproducibility matters more than registry-style flexibility.
+# If this package is ever published to the Julia General registry,
+# uncomment the line below and stop tracking it:
+# Manifest.toml

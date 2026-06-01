@@ -1,0 +1,6 @@
+[deps]
+CoaxialAutogyroStacking = "cb2a5e45-b910-4a0e-9959-8ee2b2784885"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "1"
