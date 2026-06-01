@@ -27,7 +27,7 @@ extrapolates).
   normalised to disk area and freestream dynamic pressure.
 
 # Examples
-```julia
+```jldoctest
 julia> pca2_interp(40.0)      # exact table point
 (0.95, 0.62)
 

@@ -18,7 +18,7 @@ drag but no lift, so its L/D ≈ 0 — the contrast that motivates the rotors.
 - `length`: section length (m).
 
 # Examples
-```julia
+```jldoctest
 julia> round(bare_line_drag(1.225, 8.0, 0.004, 10.0), digits=2)
 1.88
 ```

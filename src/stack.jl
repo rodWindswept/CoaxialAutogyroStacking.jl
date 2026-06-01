@@ -18,7 +18,7 @@ The constructor asserts `length(section_lengths) == length(rotors) + 1`.
 - `line_angle_deg::Float64`: base line elevation angle (degrees).
 
 # Examples
-```julia
+```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0);
 
 julia> stack = AutogyroStack([r, r, r], fill(10.0, 4), 0.004, 50.0);
@@ -62,7 +62,7 @@ rotor pulls the line taut, adding tension below it); bare-line section drag adds
 further tension.
 
 # Examples
-```julia
+```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0);
 
 julia> stack = AutogyroStack([r, r, r], fill(10.0, 4), 0.004, 50.0);

@@ -17,7 +17,7 @@ maximises the along-line force component at a fixed line elevation.
 - `(pitch_opt_deg, F_line_max_N)::Tuple{Float64,Float64}`.
 
 # Examples
-```julia
+```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 5.0);
 
 julia> pitch, F = optimal_pitch(r, 1.225, 8.0, 50.0);
@@ -58,7 +58,7 @@ and is optimised in isolation via [`optimal_pitch`](@ref).
 - `Vector{Float64}`: optimal pitch (degrees), one per rotor, top → bottom.
 
 # Examples
-```julia
+```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 5.0);
 
 julia> stack = AutogyroStack([r, r, r], fill(10.0, 4), 0.004, 50.0);
@@ -93,7 +93,7 @@ elevation for a steady-state stack configuration.
   - `elevation`: line elevation angle (degrees), from `stack.line_angle_deg`.
 
 # Examples
-```julia
+```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0);
 
 julia> stack = AutogyroStack([r, r], fill(10.0, 3), 0.004, 50.0);

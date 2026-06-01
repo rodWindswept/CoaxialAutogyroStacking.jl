@@ -15,7 +15,7 @@ A single autogyro rotor disk mounted coaxially on a kite line. Immutable.
 - `mass::Float64`: rotor mass (kg).
 
 # Examples
-```julia
+```jldoctest
 julia> rotor = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0);
 
 julia> rotor.pitch_deg
@@ -37,7 +37,7 @@ end
 Swept disk area, π·R², in m².
 
 # Examples
-```julia
+```jldoctest
 julia> rotor_disk_area(AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0))
 7.0685834705770345
 ```
@@ -63,7 +63,7 @@ shifts the effective AoA along the PCA-2 CL/CD curve. The returned value is
 - `line_elevation_deg`: line elevation above horizontal, in degrees.
 
 # Examples
-```julia
+```jldoctest
 julia> effective_alpha(AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0), 50.0)
 50.0
 ```
@@ -101,7 +101,7 @@ A 5-tuple `(F_line, F_lift, F_drag, cl_used, cd_used)`:
     F_line = F_lift·sind(elev) + F_drag·cosd(elev)
 
 # Examples
-```julia
+```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0);
 
 julia> F_line, F_lift, F_drag, cl, cd = rotor_force_along_line(r, 1.225, 8.0, 50.0);
