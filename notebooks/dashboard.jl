@@ -16,6 +16,20 @@ macro bind(def, element)
     #! format: on
 end
 
+# ╔═╡ bbbbbbbb-0000-0000-0000-000000000001
+begin
+	import Pkg
+	Pkg.activate(raw"/home/rod/Documents/GitHub/CoaxialAutogyroStacking.jl")
+	
+	using CoaxialAutogyroStacking
+	using WGLMakie
+	using PlutoUI
+	using Printf
+	WGLMakie.activate!()
+	
+	TableOfContents(title="📋 Sections")
+end
+
 # ╔═╡ 00000000-0000-0000-0000-000000000003
 md"## 🎬 Scenario Preset"
 
@@ -130,7 +144,7 @@ let
 	
 	fig_side = Figure(size=(700, 550))
 	ax = Axis(fig_side[1, 1],
-		title="Kite Line Side View — $(_v_wind > 10 ? "💨" : "🍃") $(round(_v_wind,digits=1)) m/s",
+		title="Kite Line Side View — $(round(_v_wind,digits=1)) m/s$( _v_wind > 10 ? " (high wind)" : "")",
 		xlabel="Horizontal (m)", ylabel="Height (m)",
 		aspect=DataAspect(),
 		limits=(-5, total_len + 12, -3, total_len*sind(_elev) + 12))
@@ -182,7 +196,7 @@ let
 	
 	# Turbulence indicator
 	if _turb
-		text!(ax, "🌊 TURBULENT", position=Point2f(total_len*cos(er)-8, total_len*sind(_elev)+8),
+		text!(ax, "TURBULENT", position=Point2f(total_len*cos(er)-6, total_len*sind(_elev)+8),
 			fontsize=11, color=:orange, font=:bold)
 	end
 	
@@ -267,29 +281,14 @@ md"""
 | CL, CD | PCA-2 empirical rotor disk coefficients (linear interp, 0–90°) |
 | F_line | F_lift·sin(elev) + F_drag·cos(elev) — force along kite line axis |
 | Tension | Accumulates from free end downward: each rotor adds F_line − W_rotor·cos(elev) |
-| ⚠ Compression | Negative tension = rotor can't support its weight at current wind/elev/pitch |
+| Compression | Negative tension = rotor can't support its weight at current wind/elev/pitch |
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000061
 md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAutogyroStacking.jl) — 75 tests, strict TDD, PCA-2 empirical data*
 
-# ╔═╡ 00000000-0000-0000-0000-000000000001
-PLUTO_PROJECT_TOML_CONTENTS = """
-[deps]
-"""
-
-# ╔═╡ 00000000-0000-0000-0000-000000000002
-PLUTO_MANIFEST_TOML_CONTENTS = """
-# This file is machine-generated - editing it directly is not advised
-
-julia_version = "1.12.5"
-manifest_format = "2.0"
-project_hash = "71853c6197a6a7f222db0f1978c7cb232b87c5ee"
-
-[deps]
-"""
-
 # ╔═╡ Cell order:
+# ╠═bbbbbbbb-0000-0000-0000-000000000001
 # ╠═00000000-0000-0000-0000-000000000003
 # ╠═00000000-0000-0000-0000-000000000004
 # ╠═00000000-0000-0000-0000-000000000005
@@ -317,5 +316,3 @@ project_hash = "71853c6197a6a7f222db0f1978c7cb232b87c5ee"
 # ╠═00000000-0000-0000-0000-000000000051
 # ╠═00000000-0000-0000-0000-000000000060
 # ╠═00000000-0000-0000-0000-000000000061
-# ╟─00000000-0000-0000-0000-000000000001
-# ╟─00000000-0000-0000-0000-000000000002
