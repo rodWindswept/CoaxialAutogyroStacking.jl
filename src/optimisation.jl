@@ -18,7 +18,7 @@ maximises the along-line force component at a fixed line elevation.
 
 # Examples
 ```jldoctest
-julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 5.0);
+julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 0.0, 5.0);
 
 julia> pitch, F = optimal_pitch(r, 1.225, 8.0, 50.0);
 
@@ -32,7 +32,7 @@ function optimal_pitch(rotor::AutogyroRotor, rho, v_wind, elev_deg)
     for pitch in -30.0:0.5:30.0
         test_rotor = AutogyroRotor(
             rotor.radius, rotor.hub_radius, rotor.n_blades,
-            rotor.blade_chord, pitch, rotor.mass)
+            rotor.blade_chord, pitch, rotor.blade_pitch_deg, rotor.mass)
         F_line, _, _, _, _ = rotor_force_along_line(test_rotor, rho, v_wind, elev_deg)
         if F_line > best_F
             best_F = F_line
@@ -59,7 +59,7 @@ and is optimised in isolation via [`optimal_pitch`](@ref).
 
 # Examples
 ```jldoctest
-julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 5.0);
+julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 0.0, 5.0);
 
 julia> stack = AutogyroStack([r, r, r], fill(10.0, 4), 0.004, 50.0);
 
@@ -94,7 +94,7 @@ elevation for a steady-state stack configuration.
 
 # Examples
 ```jldoctest
-julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0);
+julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0);
 
 julia> stack = AutogyroStack([r, r], fill(10.0, 3), 0.004, 50.0);
 

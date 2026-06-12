@@ -112,7 +112,7 @@ begin
 	_rotors = AutogyroRotor[]
 	for i in 1:_n
 		poff = i <= length(_offsets) ? _offsets[i] : 0.0
-		push!(_rotors, AutogyroRotor(_rotor_radius, 0.05, 4, 0.15, _pitch + poff, 5.0))
+		push!(_rotors, AutogyroRotor(_rotor_radius, 0.05, 4, 0.15, _pitch + poff, 0.0, 5.0))
 	end
 	
 	_diam_m = _line_diam_mm / 1000.0
@@ -264,7 +264,7 @@ let
 	push!(lines, "| # | Pitch | α_eff | CL | CD | F_line |")
 	push!(lines, "|:--|:-----:|:-----:|:---:|:---:|:------:|")
 	for (i, f) in enumerate(_rotor_forces)
-		push!(lines, "| R$i | $(round(_stack.rotors[i].pitch_deg,digits=1))° | $(round(f[6],digits=1))° | $(round(f[4],digits=3)) | $(round(f[5],digits=3)) | $(round(f[1],digits=0)) N |")
+		push!(lines, "| R$i | $(round(_stack.rotors[i].tilt_deg,digits=1))° | $(round(f[6],digits=1))° | $(round(f[4],digits=3)) | $(round(f[5],digits=3)) | $(round(f[1],digits=0)) N |")
 	end
 	
 	Markdown.parse(join(lines, "\n"))

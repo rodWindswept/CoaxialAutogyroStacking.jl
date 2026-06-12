@@ -3,8 +3,8 @@
 @testset "AutogyroStack" begin
 
     @testset "AutogyroStack construction" begin
-        r1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
-        r2 = CoaxialAutogyroStacking.AutogyroRotor(1.2, 0.05, 3, 0.12, 5.0, 3.0)
+        r1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
+        r2 = CoaxialAutogyroStacking.AutogyroRotor(1.2, 0.05, 3, 0.12, 5.0, 0.0, 3.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [r1, r2],           # rotors top→bottom
             [2.0, 3.0, 9.0],    # section lengths (n+1 entries)
@@ -20,7 +20,7 @@
     end
 
     @testset "stack_tension_profile — single rotor" begin
-        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [rotor],
             [0.1, 10.0],   # short free end, 10m to anchor
@@ -46,9 +46,9 @@
     end
 
     @testset "stack_tension_profile — monotonic downward increase" begin
-        r1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
-        r2 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
-        r3 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        r1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
+        r2 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
+        r3 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [r1, r2, r3],
             [2.0, 3.0, 3.0, 9.0],
@@ -70,12 +70,12 @@
         @test profile[end] > profile[1] * 10  # anchor >> free end
     end
 
-    @testset "stack_tension_profile — different pitches give different contributions" begin
-        # Two rotors: one with high pitch, one with low pitch
-        r_high = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)  # high lift
-        r_low  = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, -20.0, 5.0) # near-flat
+    @testset "stack_tension_profile — different tilts give different contributions" begin
+        # Two rotors: one with high tilt, one with low tilt
+        r_high = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)  # high lift
+        r_low  = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, -20.0, 0.0, 5.0) # near-flat
 
-        # Stack: low pitch on top, high pitch below
+        # Stack: low tilt on top, high tilt below
         stack_1 = CoaxialAutogyroStacking.AutogyroStack(
             [r_low, r_high],
             [2.0, 3.0, 9.0],
@@ -84,7 +84,7 @@
         )
         profile_1 = CoaxialAutogyroStacking.stack_tension_profile(stack_1, 1.225, 8.0)
 
-        # Stack: high pitch on top, low pitch below
+        # Stack: high tilt on top, low tilt below
         stack_2 = CoaxialAutogyroStacking.AutogyroStack(
             [r_high, r_low],
             [2.0, 3.0, 9.0],
@@ -103,7 +103,7 @@
     end
 
     @testset "stack_tension_profile — zero wind, tension from weight only" begin
-        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 5.0)
+        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [rotor],
             [0.1, 10.0],

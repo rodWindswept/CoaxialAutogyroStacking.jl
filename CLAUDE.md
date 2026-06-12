@@ -11,3 +11,17 @@ Quick reminders:
 - Mirror `KiteTurbineDynamics.jl` conventions; SI units; angles in degrees at
   the API boundary; rotors ordered top → bottom.
 - v1 scope: no wake interaction.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked on GitHub. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Standard triage labels are used. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This repository uses a single-context layout. See `docs/agents/domain.md`.

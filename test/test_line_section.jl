@@ -41,7 +41,7 @@
     @testset "Rotor L/D >> bare line L/D" begin
         # Bare line has zero lift → L/D ≈ 0
         # Rotor at optimal pitch should have L/D > 1
-        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 5.0)
+        rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 0.0, 5.0)
         rho = 1.225
         v_wind = 8.0
         _, F_lift, F_drag, _, _ = CoaxialAutogyroStacking.rotor_force_along_line(
