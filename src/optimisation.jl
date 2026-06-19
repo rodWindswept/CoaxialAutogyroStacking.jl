@@ -61,7 +61,7 @@ and is optimised in isolation via [`optimal_pitch`](@ref).
 ```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 0.0, 5.0);
 
-julia> stack = AutogyroStack([r, r, r], fill(10.0, 4), 0.004, 50.0);
+julia> stack = AutogyroStack([r, r, r], fill(10.0, 3), 0.004, 50.0);
 
 julia> optimal_pitches(stack, 1.225, 8.0)
 3-element Vector{Float64}:
@@ -96,7 +96,7 @@ elevation for a steady-state stack configuration.
 ```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0);
 
-julia> stack = AutogyroStack([r, r], fill(10.0, 3), 0.004, 50.0);
+julia> stack = AutogyroStack([r, r], fill(10.0, 2), 0.004, 50.0);
 
 julia> F_hub, T_anchor, elev = lift_force_steady(stack, 1.225, 8.0);
 

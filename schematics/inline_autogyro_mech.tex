@@ -1,0 +1,324 @@
+% Inline Autogyro Mechanical Assembly — Cross-Section Comparison
+% Compile: pdflatex inline_autogyro_mech.tex
+\documentclass[tikz,border=14pt]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,patterns,decorations.pathreplacing,positioning,shapes.geometric}
+
+\begin{document}
+\begin{tikzpicture}[
+    scale=1.0,
+    % Line styles
+    dyneema/.style={draw=blue!50!black, line width=2.0pt},
+    tube/.style={draw=gray!60, fill=gray!15, line width=1.5pt},
+    metal/.style={draw=gray!40, fill=gray!25, line width=1.0pt},
+    bearing/.style={draw=gray!50, fill=gray!20, line width=1.0pt},
+    rotor/.style={draw=red!60!black, fill=red!8, line width=1.5pt},
+    blade/.style={draw=red!50!black, fill=red!5, line width=1.2pt},
+    force/.style={-{Stealth[scale=1.8]}, line width=2.0pt},
+    annot/.style={font=\footnotesize\sffamily, fill=white, fill opacity=0.9,
+                  text opacity=1, inner sep=1.5pt, rounded corners=1pt},
+    dimension/.style={latex-latex, thin, draw=gray!60},
+    label/.style={font=\small\sffamily\bfseries},
+]
+
+% =============================================================
+% APPROACH A: ANGLED BEARING SEAT (left)
+% =============================================================
+
+\def\tilt{12}    % disk tilt angle (degrees)
+\def\lineangle{55} % line elevation from horizontal
+
+\begin{scope}[local bounding box=approachA, shift={(0,0)}]
+
+% Draw line direction
+\coordinate (Ltop) at (0, 7.5);
+\coordinate (Lbot) at (0, 0);
+\coordinate (Ldir) at (0, 1);
+
+% === Dyneema line ===
+\draw[dyneema] (Lbot) -- (Ltop);
+\node[annot] at (-0.4, 6.8) {$T_\text{above}$};
+\node[annot] at (-0.4, 0.5) {$T_\text{below}$};
+
+% === Compression tube ===
+% Tube extends from below the bearing down to the empennage attachment
+\fill[tube] (-0.25, 1.5) rectangle (0.25, 5.0);
+\draw[tube] (-0.25, 1.5) -- (-0.25, 5.0) -- (0.25, 5.0) -- (0.25, 1.5);
+% Inner hole for line
+\fill[white] (-0.1, 1.5) rectangle (0.1, 5.0);
+\draw[thin] (-0.1, 1.5) -- (-0.1, 5.0);
+\draw[thin] (0.1, 1.5) -- (0.1, 5.0);
+
+\node[annot, right=0.3cm] at (0.25, 3.2) {Tube\\(compression)};
+
+% === Angled bearing seat at tube top ===
+% Tube top is cut at tilt angle
+\begin{scope}
+    \clip (-1.5, 4.5) rectangle (1.5, 5.5);
+    \fill[tube, rotate around={\tilt:(0,5.0)}] (-0.35, 4.95) rectangle (0.35, 5.15);
+\end{scope}
+
+% Bearing housing
+\fill[bearing, rotate around={\tilt:(0,5.0)}]
+    (-0.4, 5.0) rectangle (0.4, 5.3);
+\draw[bearing, rotate around={\tilt:(0,5.0)}]
+    (-0.4, 5.0) -- (-0.4, 5.3) -- (0.4, 5.3) -- (0.4, 5.0);
+
+% Bearing race markers (balls)
+\foreach \x in {-0.3, -0.15, 0, 0.15, 0.3} {
+    \fill[gray!60, rotate around={\tilt:(0,5.0)}]
+        (\x, 5.15) circle (0.04);
+}
+
+% Bearing seat angle annotation
+\draw[dimension] (0.6, 5.0) -- ++({0.6*sin(\tilt)}, {-0.6*cos(\tilt)});
+\node[annot, right=0.1cm] at (0.9, 4.7) {$\delta$};
+
+\node[annot] at (-1.3, 5.3) {Thrust\\bearing};
+
+% === Rotor hub (hollow, around line) ===
+% The hub sits on the thrust bearing and autorotates
+\fill[metal, rotate around={\tilt:(0,5.0)}]
+    (-0.35, 5.3) rectangle (0.35, 5.8);
+\fill[white, rotate around={\tilt:(0,5.0)}]
+    (-0.08, 5.25) rectangle (0.08, 5.85);
+
+\node[annot, right=0.3cm] at (0.6, 6.0) {Hollow\\hub};
+
+% === Rotor disk (annulus around hub) ===
+\fill[rotor, rotate around={\tilt:(0,5.0)}]
+    (-1.5, 5.4) rectangle (1.5, 5.6);
+\fill[white, rotate around={\tilt:(0,5.0)}]
+    (-0.35, 5.35) rectangle (0.35, 5.65);
+
+\node[label] at (-2.0, 5.8) {Rotor disk};
+
+% === Blades (shown in cross-section) ===
+\fill[blade, rotate around={\tilt:(0,5.5)}]
+    (-2.3, 5.45) rectangle (-1.5, 5.55);
+\fill[blade, rotate around={\tilt:(0,5.5)}]
+    (1.5, 5.45) rectangle (2.3, 5.55);
+
+\node[annot] at (-3.2, 5.8) {Blade};
+
+% === Swashplate (below rotor, around tube) ===
+% Stationary (non-rotating) ring attached to tube
+\fill[metal] (-0.45, 4.2) rectangle (0.45, 4.5);
+% Rotating ring attached to rotor hub
+\fill[bearing] (-0.4, 4.5) rectangle (0.4, 4.7);
+% Links connecting to tube
+\draw[force, gray] (-0.35, 4.35) -- (-0.35, 3.8);
+\draw[force, gray] (0.35, 4.35) -- (0.35, 3.8);
+
+\node[annot, right=0.4cm] at (0.6, 4.3) {Swashplate\\(non-rotating)};
+
+% === Actuators (servos, mounted on tube) ===
+\fill[metal] (-0.2, 3.3) rectangle (0.1, 3.8);
+\fill[metal] (0.1, 3.3) rectangle (0.4, 3.8);
+\node[annot, right=0.3cm] at (0.5, 3.5) {Actuators};
+
+% === Empennage (tail boom + stabilizer) ===
+% Mounted on bottom of tube, extends downwind
+\fill[metal] (0.25, 1.8) rectangle (2.2, 2.2);
+\node[annot] at (1.8, 2.5) {Tail boom};
+
+% Horizontal stabilizer
+\fill[metal] (1.5, 2.0) rectangle (2.2, 3.0);
+\node[annot] at (2.8, 2.5) {H-stab};
+
+% Vertical fin
+\fill[metal] (1.5, 2.5) rectangle (2.0, 3.5);
+\node[annot] at (2.8, 3.0) {V-fin};
+
+% === Forces ===
+% Lift force vector from rotor
+\draw[force, green!50!black, very thick]
+    (0, 5.5) -- ++({1.2*sin(\tilt)}, {1.2*cos(\tilt)})
+    node[right, annotplain, green!50!black] {$F_\text{lift}$};
+
+% Line tension above (downward through bearing)
+\draw[force, purple!50!black, very thick]
+    (0, 5.8) -- (0, 5.0)
+    node[left, annotplain, purple!50!black] {$T_\text{above}$};
+
+% Compression in tube
+\draw[force, purple!50!black, line width=3pt]
+    (0, 5.0) -- (0, 1.5);
+
+% === Title ===
+\node[label, font=\large] at (0, -1.0) {\textbf{Approach A: Angled bearing seat}};
+
+% Features box
+\node[draw=black!30, fill=white, rounded corners=3pt, inner sep=6pt,
+      anchor=north west, font=\scriptsize\sffamily, align=left]
+    at (-2.5, 7.8) {
+    \textbf{Key features:}\\
+    $\bullet$ Tube top cut at tilt angle\\
+    $\bullet$ Thrust bearing on angled face\\
+    $\bullet$ Pure thrust on bearing\\
+    $\bullet$ Hub autorotates around line\\
+    $\bullet$ Swashplate below rotor\\
+    $\bullet$ Empennage trims tilt
+};
+
+\end{scope}
+
+% =============================================================
+% APPROACH B: FLAT BEARING + TILTED HUB (middle)
+% =============================================================
+
+\begin{scope}[local bounding box=approachB, shift={(7,0)}]
+
+\coordinate (Ltop) at (0, 7.5);
+\coordinate (Lbot) at (0, 0);
+
+% Dyneema line
+\draw[dyneema] (Lbot) -- (Ltop);
+
+% Tube (shorter, flat top)
+\fill[tube] (-0.25, 1.5) rectangle (0.25, 5.0);
+\fill[white] (-0.1, 1.5) rectangle (0.1, 5.0);
+\draw[tube] (-0.25, 1.5) -- (-0.25, 5.0) -- (0.25, 5.0) -- (0.25, 1.5);
+
+\node[annot, right=0.3cm] at (0.25, 3.2) {Tube\\(compression)};
+
+% Flat thrust bearing
+\fill[bearing] (-0.45, 5.0) rectangle (0.45, 5.25);
+\foreach \x in {-0.3, -0.15, 0, 0.15, 0.3} {
+    \fill[gray!60] (\x, 5.12) circle (0.04);
+}
+
+% Tilted hub — wedge on bottom
+\fill[metal] (-0.35, 5.25) -- (0.35, 5.25) -- (0.35, 5.6) -- (-0.35, 5.35) -- cycle;
+% Hub body above
+\fill[metal] (-0.35, 5.35) rectangle (0.35, 5.85);
+\fill[white] (-0.08, 5.2) rectangle (0.08, 5.9);
+
+% Rotor disk (tilted)
+\fill[rotor, rotate around={\tilt:(0,5.5)}]
+    (-1.5, 5.4) rectangle (1.5, 5.6);
+
+% Blades
+\fill[blade, rotate around={\tilt:(0,5.5)}]
+    (-2.3, 5.45) rectangle (-1.5, 5.55);
+\fill[blade, rotate around={\tilt:(0,5.5)}]
+    (1.5, 5.45) rectangle (2.3, 5.55);
+
+% Off-axis moment annotation
+\draw[force, red!60!black, very thick, ->]
+    (0.6, 5.25) arc[start angle=0, end angle=30, radius=0.6cm];
+\node[annot, red!60!black] at (1.4, 5.5) {Moment\\load};
+
+% Empennage
+\fill[metal] (0.25, 1.8) rectangle (2.2, 2.2);
+\fill[metal] (1.5, 2.0) rectangle (2.2, 3.0);
+\fill[metal] (1.5, 2.5) rectangle (2.0, 3.5);
+
+% Title
+\node[label, font=\large] at (0, -1.0) {\textbf{Approach B: Flat bearing + tilted hub}};
+
+% Issues box
+\node[draw=red!40, fill=red!5, rounded corners=3pt, inner sep=6pt,
+      anchor=north west, font=\scriptsize\sffamily, align=left]
+    at (-2.5, 7.8) {
+    \textbf{Issues:}\\
+    $\bullet$ Bearing sees off-axis moment\\
+    $\bullet$ Uneven wear on bearing\\
+    $\bullet$ Tilted hub wedge is a\\\quad stress concentrator\\
+    $\bullet$ Simpler to machine though
+};
+
+\end{scope}
+
+% =============================================================
+% APPROACH C: U-JOINT + FLOATING TILT (right)
+% =============================================================
+
+\begin{scope}[local bounding box=approachC, shift={(14,0)}]
+
+\coordinate (Ltop) at (0, 7.5);
+\coordinate (Lbot) at (0, 0);
+
+% Dyneema line
+\draw[dyneema] (Lbot) -- (Ltop);
+
+% Tube
+\fill[tube] (-0.25, 1.5) rectangle (0.25, 4.5);
+\fill[white] (-0.1, 1.5) rectangle (0.1, 4.5);
+\draw[tube] (-0.25, 1.5) -- (-0.25, 4.5) -- (0.25, 4.5) -- (0.25, 1.5);
+
+% U-joint yoke (lower, on tube)
+\fill[metal] (-0.4, 4.5) rectangle (-0.2, 4.9);
+\fill[metal] (0.2, 4.5) rectangle (0.4, 4.9);
+\draw[metal] (-0.4, 4.7) -- (-0.2, 4.7);
+\draw[metal] (0.2, 4.7) -- (0.4, 4.7);
+
+% U-joint cross pin
+\fill[metal] (-0.35, 4.7) circle (0.06);
+
+% U-joint yoke (upper, on bearing housing)
+\fill[metal, rotate around={\tilt:(0,4.9)}]
+    (-0.4, 4.8) rectangle (-0.2, 5.2);
+\fill[metal, rotate around={\tilt:(0,4.9)}]
+    (0.2, 4.8) rectangle (0.4, 5.2);
+
+% Thrust bearing on top of U-joint
+\fill[bearing, rotate around={\tilt:(0,5.0)}]
+    (-0.4, 5.0) rectangle (0.4, 5.25);
+\foreach \x in {-0.3, -0.15, 0, 0.15, 0.3} {
+    \fill[gray!60, rotate around={\tilt:(0,5.0)}]
+        (\x, 5.12) circle (0.04);
+}
+
+% Hub
+\fill[metal, rotate around={\tilt:(0,5.0)}]
+    (-0.35, 5.25) rectangle (0.35, 5.8);
+\fill[white, rotate around={\tilt:(0,5.0)}]
+    (-0.08, 5.2) rectangle (0.08, 5.85);
+
+% Rotor disk
+\fill[rotor, rotate around={\tilt:(0,5.5)}]
+    (-1.5, 5.4) rectangle (1.5, 5.6);
+
+% Blades
+\fill[blade, rotate around={\tilt:(0,5.5)}]
+    (-2.3, 5.45) rectangle (-1.5, 5.55);
+\fill[blade, rotate around={\tilt:(0,5.5)}]
+    (1.5, 5.45) rectangle (2.3, 5.55);
+
+% Empennage
+\fill[metal] (0.25, 1.8) rectangle (2.2, 2.2);
+\fill[metal] (1.5, 2.0) rectangle (2.2, 3.0);
+\fill[metal] (1.5, 2.5) rectangle (2.0, 3.5);
+
+% U-joint annotation
+\node[annot] at (-1.2, 4.7) {U-joint};
+
+% Title
+\node[label, font=\large] at (0, -1.0) {\textbf{Approach C: U-joint + floating tilt}};
+
+% Issues box
+\node[draw=orange!60, fill=orange!5, rounded corners=3pt, inner sep=6pt,
+      anchor=north west, font=\scriptsize\sffamily, align=left]
+    at (-2.5, 7.8) {
+    \textbf{Issues:}\\
+    $\bullet$ 2 rotational DOF — pitch + roll\\
+    $\bullet$ Empennage must stabilize both\\
+    $\bullet$ Bearing sees pure thrust (good)\\
+    $\bullet$ U-joint adds weight + complexity\\
+    $\bullet$ Wind gusts could excite oscillation
+};
+
+\end{scope}
+
+% =============================================================
+% TITLE
+% =============================================================
+
+\node[label, font=\Large] at (7, 8.5)
+    {Inline Autogyro Kite — Mechanical Assembly Approaches};
+
+\end{tikzpicture}
+\end{document}

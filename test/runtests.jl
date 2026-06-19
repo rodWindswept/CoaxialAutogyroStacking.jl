@@ -7,4 +7,5 @@ using CoaxialAutogyroStacking
     include("test_line_section.jl")
     include("test_stack.jl")
     include("test_optimisation.jl")
+    include("test_sweep.jl")
 end

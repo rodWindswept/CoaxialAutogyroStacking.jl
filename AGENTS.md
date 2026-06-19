@@ -6,8 +6,8 @@ short and current; if a convention here drifts from reality, fix the doc.
 ## What this package is
 
 Multiple independently-pitched autogyro rotors stacked on one kite line. Forces
-resolve along the line axis; tension accumulates from the free end (top) to the
-anchor (bottom). Empirical PCA-2 rotor-disk data drives lift/drag. Designed to
+resolve along the line axis; tension accumulates from the topmost rotor (which
+terminates the line) down to the anchor (bottom). Empirical PCA-2 rotor-disk data drives lift/drag. Designed to
 fold into `KiteTurbineDynamics.jl`.
 
 Read [`PLAN.md`](PLAN.md) first — it is the source of truth for scope, task
@@ -47,8 +47,9 @@ scripts/    runnable entrypoints
   code is meant to drop into it.
 - SI units throughout. Angles in **degrees** at the API boundary (functions take
   `_deg` args; use `sind`/`cosd`).
-- Rotors in a stack are ordered **top → bottom** (index 1 = topmost / free end).
-- Tension profiles have `n_rotors + 1` entries; `profile[1]` ≈ free end,
+- Rotors in a stack are ordered **top → bottom** (index 1 = topmost, terminates the line).
+- `section_lengths` has `n_rotors` entries: between each rotor pair and below bottom rotor to anchor.
+- Tension profiles have `n_rotors + 1` entries; `profile[1]` = 0 at topmost rotor,
   `profile[end]` = anchor (max).
 - Pure functions where possible; structs are immutable.
 

@@ -41,7 +41,7 @@
         r2 = CoaxialAutogyroStacking.AutogyroRotor(1.2, 0.05, 3, 0.12, 0.0, 0.0, 3.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [r1, r2],
-            [2.0, 3.0, 9.0],
+            [3.0, 9.0],          # R1→R2, R2→anchor (n entries)
             0.004,
             50.0,
         )
@@ -62,7 +62,7 @@
         r2 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [r1, r2],
-            [2.0, 3.0, 9.0],
+            [3.0, 9.0],          # R1→R2, R2→anchor (n entries)
             0.004,
             50.0,
         )
@@ -91,7 +91,7 @@
         rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [rotor],
-            [1.0, 10.0],
+            [10.0],              # rotor → anchor (n entries)
             0.004,
             50.0,
         )
@@ -107,7 +107,7 @@
         rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [rotor],
-            [1.0, 10.0],
+            [10.0],              # rotor → anchor (n entries)
             0.004,
             50.0,
         )
@@ -116,7 +116,7 @@
         @test elev == 50.0
         # At zero wind, no aerodynamic forces
         @test F_hub == 0.0
-        # T_anchor reflects negative weight (rotor pulls down, line would be slack)
-        @test T_anchor < 0.0
+        # Rope cannot push — anchor tension is zero, not negative
+        @test T_anchor == 0.0
     end
 end

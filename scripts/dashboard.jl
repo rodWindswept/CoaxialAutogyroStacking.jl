@@ -47,9 +47,8 @@ function build_stack(n, r, diam, slen, elev, pg, offs)
         push!(rotors, AutogyroRotor(r, 0.05, 4, 0.15, pg + po, 0.0, 5.0))
     end
     # Rotors terminate the line at the top — no free-end section.
-    # First section (~0 length) at line termination, then inter-rotor + anchor.
-    section_lens = fill(slen, n + 1)
-    section_lens[1] = 0.1  # negligible — termination hardware
+    # Sections: between each rotor pair, then bottom rotor → anchor.
+    section_lens = fill(slen, n)
     AutogyroStack(rotors, section_lens, diam, elev)
 end
 
@@ -176,25 +175,24 @@ function draw_side_view!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
     stk = build_stack(n, rad, diam, slen, elev, pg, offs)
     profile = stack_tension_profile(stk, rho, v_wind)
     max_t = max(maximum(abs, profile), 1.0)
-    total_len = sum(sec_lens) - sec_lens[1]  # skip above-top section (not drawn)
+    total_len = sum(sec_lens)  # line terminates at top rotor — no free-end section
     er = deg2rad(elev)
 
     lines!(ax, [Point2f(-3, 0), Point2f(total_len*cos(er)+3, 0)],
            color=:gray80, linewidth=1, linestyle=:dash)
-    # Tension-colored line segments — draw anchor→free end
-    # Skip section_lens[1] (above top rotor) — line terminates at topmost rotor
+    # Tension-colored line segments — draw anchor up to top rotor
+    # No free-end section: line terminates at topmost rotor
     cum = 0.0
-    for k in (n+1):-1:2
+    for k in n:-1:1
         seg_start = Point2f(cum * cos(er), cum * sin(er))
         seg_end   = Point2f((cum + sec_lens[k]) * cos(er), (cum + sec_lens[k]) * sin(er))
-        t_norm = clamp(abs(profile[k]) / max_t, 0, 1)
+        t_norm = clamp(abs(profile[k+1]) / max_t, 0, 1)
         col = RGBf(t_norm, 0.15, 1 - t_norm)
         lines!(ax, [seg_start, seg_end], color=col, linewidth=2.5 + 2 * t_norm)
         cum += sec_lens[k]
     end
-    # Rotor disks — R1 at top (free end), Rn nearest anchor
-    # Rotors at positions: R1 at sec_lens[1] from free end, then spacing downward
-    cum = sec_lens[1]  # start at first rotor position (topmost)
+    # Rotor disks — R1 at top (terminates the line), Rn nearest anchor
+    cum = 0.0  # start at top rotor position
     for i in 1:n
         cx, cy = cum*cos(er), cum*sin(er)
         rx, ry = rad, max(rad*sind(elev), 0.08)

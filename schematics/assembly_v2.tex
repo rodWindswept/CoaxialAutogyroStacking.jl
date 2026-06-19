@@ -1,0 +1,240 @@
+% Inline Autogyro — Full Assembly Cross-Section v2
+% Dual-molding sandwich bearing + swashplate + empennage
+% Compile: pdflatex assembly_v2.tex
+\documentclass[tikz,border=16pt]{standalone}
+\usepackage{amsmath,amssymb,tikz}
+\usetikzlibrary{arrows.meta,calc,patterns,decorations.pathreplacing,positioning,shapes.geometric}
+
+\begin{document}
+\begin{tikzpicture}[
+    scale=1.0,
+    dyneema/.style={draw=blue!50!black, line width=2.5pt},
+    tube/.style={draw=gray!45, fill=gray!10, line width=1.8pt},
+    molding/.style={draw=brown!70!black, fill=brown!15, line width=1.5pt},
+    bearing/.style={draw=gray!50, fill=gray!18, line width=1.2pt},
+    hub/.style={draw=gray!35, fill=gray!20, line width=1.3pt},
+    rotor/.style={draw=red!60!black, fill=red!8, line width=1.6pt},
+    blade/.style={draw=red!45!black, fill=red!5, line width=1.4pt},
+    actuator/.style={draw=gray!50, fill=gray!25, line width=1.2pt},
+    swash/.style={draw=teal!60!black, fill=teal!8, line width=1.3pt},
+    empennage/.style={draw=gray!40, fill=gray!18, line width=1.2pt},
+    force/.style={-{Stealth[scale=2.0]}, line width=2.2pt},
+    forcecomp/.style={-{Stealth[scale=1.5]}, line width=1.6pt, densely dashed},
+    annot/.style={font=\footnotesize\sffamily, fill=white, fill opacity=0.90,
+                  text opacity=1, inner sep=2pt, rounded corners=1.5pt},
+    label/.style={font=\normalsize\sffamily\bfseries},
+]
+
+\def\tilt{12}
+\def\hubtop{8.8}
+\def\hubmid{7.8}
+\def\rotory{8.1}
+\def\swashy{5.5}
+\def\acty{4.2}
+\def\empy{2.5}
+\def\tubebot{1.5}
+\def\splicey{1.5}
+
+% =============================================================
+% DYNEEMA LINE
+% =============================================================
+\draw[dyneema] (0, -0.3) -- (0, 10.3);
+
+% =============================================================
+% TUBE (full height, Dyneema through center bore)
+% =============================================================
+\fill[tube] (-0.35, \tubebot) rectangle (0.35, \hubtop);
+\fill[white] (-0.1, \tubebot) rectangle (0.1, \hubtop);
+\draw[thin] (-0.35, \tubebot) -- (-0.35, \hubtop);
+\draw[thin] (0.35, \tubebot) -- (0.35, \hubtop);
+
+\node[annot] at (0.7, 5.5) {Tube\\\scriptsize(compression\\\scriptsize column)};
+
+% =============================================================
+% TOP MOLDING (angled underside, clamped to tube)
+% =============================================================
+\fill[molding] (-0.5, \hubtop-0.1) rectangle (0.5, \hubtop+0.6);
+% Angled cut on underside at tilt
+\fill[white, rotate around={-\tilt:(0,\hubtop)}] (-0.6, \hubtop-0.05) rectangle (0.6, \hubtop+0.1);
+\fill[molding, rotate around={-\tilt:(0,\hubtop)}] (-0.45, \hubtop-0.05) rectangle (0.45, \hubtop+0.05);
+% Clamp bolts
+\fill[gray!40] (0.4, \hubtop+0.1) rectangle (0.7, \hubtop+0.35);
+\fill[gray!40] (-0.4, \hubtop+0.1) rectangle (-0.7, \hubtop+0.35);
+
+\node[annot] at (1.3, \hubtop+0.3) {Top molding\\(fixed to tube)};
+
+% =============================================================
+% TOP THRUST BEARING (under top molding, angled)
+% =============================================================
+\fill[bearing, rotate around={-\tilt:(0,\hubtop-0.1)}]
+    (-0.5, \hubtop-0.35) rectangle (0.5, \hubtop-0.1);
+\foreach \x in {-0.35,-0.15,0,0.15,0.35} {
+    \fill[gray!55, rotate around={-\tilt:(0,\hubtop-0.22)}]
+        (\x, \hubtop-0.25) circle (0.045);
+}
+
+\node[annot, right=0.1cm] at (0.8, \hubtop-0.4) {Top thrust\\bearing};
+
+% =============================================================
+% ROTOR HUB (hollow, between two bearings, autorotates)
+% =============================================================
+\fill[hub] (-0.45, \hubmid) rectangle (0.45, \hubtop-0.35);
+\fill[white] (-0.12, \hubmid) rectangle (0.12, \hubtop-0.3);
+% Angled top face (mates with top bearing)
+\fill[hub, rotate around={-\tilt:(0,\hubtop-0.35)}]
+    (-0.48, \hubtop-0.35) rectangle (0.48, \hubtop-0.3);
+% Angled bottom face
+\fill[hub, rotate around={-\tilt:(0,\hubmid)}]
+    (-0.48, \hubmid-0.05) rectangle (0.48, \hubmid+0.05);
+
+\node[annot, right=0.2cm] at (0.7, \rotory) {Hollow hub\\(autorotates)};
+
+% =============================================================
+% ROTOR DISK + BLADES
+% =============================================================
+\fill[rotor, rotate around={-\tilt:(0,\rotory)}]
+    (-2.5, \rotory-0.12) rectangle (2.5, \rotory+0.12);
+\fill[white, rotate around={-\tilt:(0,\rotory)}]
+    (-0.5, \rotory-0.15) rectangle (0.5, \rotory+0.15);
+
+% Blades
+\fill[blade, rotate around={-\tilt:(0,\rotory)}]
+    (-3.5, \rotory-0.12) rectangle (-2.5, \rotory+0.12);
+\fill[blade, rotate around={-\tilt:(0,\rotory)}]
+    (2.5, \rotory-0.12) rectangle (3.5, \rotory+0.12);
+
+\node[annot] at (-4.2, \rotory) {Blade};
+
+% =============================================================
+% BOTTOM THRUST BEARING (under rotor hub)
+% =============================================================
+\fill[bearing, rotate around={-\tilt:(0,\hubmid)}]
+    (-0.5, \hubmid-0.25) rectangle (0.5, \hubmid);
+\foreach \x in {-0.35,-0.15,0,0.15,0.35} {
+    \fill[gray!55, rotate around={-\tilt:(0,\hubmid-0.12)}]
+        (\x, \hubmid-0.15) circle (0.045);
+}
+
+% =============================================================
+% BOTTOM MOLDING (angled topside, clamped to tube)
+% =============================================================
+\fill[molding] (-0.5, \hubmid-0.55) rectangle (0.5, \hubmid-0.25);
+\fill[white, rotate around={-\tilt:(0,\hubmid)}] (-0.6, \hubmid-0.35) rectangle (0.6, \hubmid);
+\fill[molding, rotate around={-\tilt:(0,\hubmid-0.25)}]
+    (-0.48, \hubmid-0.3) rectangle (0.48, \hubmid-0.2);
+
+\node[annot, right=0.1cm] at (0.8, \hubmid-0.7) {Bottom molding\\(clamped to tube)};
+
+% =============================================================
+% SANDWICH CLAMP ANNOTATION
+% =============================================================
+\draw[forcecomp, brown!60!black] (0, \hubtop+0.5) -- (0, \hubtop);
+\draw[forcecomp, brown!60!black] (0, \hubmid-0.6) -- (0, \hubmid);
+\node[annot, brown!60!black] at (-1.4, \rotory)
+    {Moldings clamp\\rotor hub via\\bearings above\\and below};
+
+% =============================================================
+% SWASHPLATE (below rotor, around tube)
+% =============================================================
+% Rotating ring (upper)
+\fill[swash] (-0.5, \swashy+0.3) rectangle (0.5, \swashy+0.55);
+% Stationary ring (lower)
+\fill[swash!70!gray] (-0.55, \swashy) rectangle (0.55, \swashy+0.25);
+
+\node[annot, right=0.2cm] at (0.8, \swashy+0.4) {Swashplate\\(rotating ring)};
+\node[annot, right=0.2cm] at (0.8, \swashy+0.1) {Stationary ring};
+
+% Scissor link (hub to rotating ring)
+\draw[forcecomp, gray] (0.45, \hubmid) -- (0.5, \swashy+0.55);
+\draw[forcecomp, gray] (-0.45, \hubmid) -- (-0.5, \swashy+0.55);
+
+% =============================================================
+% ACTUATORS (3× around tube, pushrods to stationary ring)
+% =============================================================
+\fill[actuator] (-0.25, \acty) rectangle (0.05, \acty+1.0);
+\fill[actuator] (0.2, \acty) rectangle (0.5, \acty+1.0);
+\draw[forcecomp, gray] (0.35, \acty+1.0) -- (0.45, \swashy);
+\draw[forcecomp, gray] (-0.1, \acty+1.0) -- (-0.35, \swashy);
+
+\node[annot, right=0.2cm] at (0.7, \acty+0.6) {3× actuators\\(linear servos)};
+
+% =============================================================
+% EMPENNAGE (bottom of tube, extends downwind)
+% =============================================================
+% Tail boom bracket
+\fill[empennage] (0.3, \empy-0.15) rectangle (0.5, \empy+0.15);
+% Tail boom
+\fill[empennage] (0.4, \empy-0.1) rectangle (2.5, \empy+0.1);
+% H-stab
+\fill[empennage] (2.0, \empy-0.1) rectangle (2.5, 3.6);
+% V-fin (hangs below boom, downwind side)
+\fill[empennage] (2.0, 2.5) rectangle (2.3, 1.5);
+\node[annot] at (2.8, 2.0) {V-fin};
+\node[annot] at (3.3, \empy) {H-stab};
+\node[annot] at (1.8, \empy+0.9) {Tail boom};
+
+% =============================================================
+% WEBBING CAPTURE (bottom of tube → spliced eye)
+% =============================================================
+% Splice in Dyneema
+\fill[brown!30] (-0.15, \tubebot-0.5) rectangle (0.15, \tubebot+0.2);
+% Webbing loops
+\draw[orange!70!black, line width=2.0pt]
+    (0, \tubebot) -- (1.5, \tubebot) -- (1.5, \tubebot-0.8) -- (0.35, \tubebot-0.8);
+\draw[orange!70!black, line width=2.0pt]
+    (0, \tubebot) -- (-1.5, \tubebot) -- (-1.5, \tubebot-0.8) -- (-0.35, \tubebot-0.8);
+
+\node[annot, orange!70!black] at (2.5, \tubebot-0.3) {Spectra webbing\\(tube capture)};
+\node[annot, brown!70] at (-1.6, \tubebot-0.2) {Spliced eye\\(in Dyneema)};
+
+% =============================================================
+% FORCE PATHS
+% =============================================================
+% Lift from rotor
+\draw[force, green!50!black, very thick]
+    (0, \rotory+0.5) -- ++({1.8*sin(\tilt)}, {1.8*cos(\tilt)})
+    node[right, font=\footnotesize, green!50!black] {$F_\text{lift}$};
+
+% Compression through tube
+\draw[force, purple!50!black, line width=3.5pt]
+    (0, \hubtop-0.3) -- (0, \tubebot);
+\draw[force, purple!50!black, line width=3.5pt]
+    (0, \hubmid-0.5) -- (0, \tubebot);
+
+% Tension above/below
+\node[annot, purple!50!black, left=0.1cm] at (-0.5, 9.8) {$T_\text{above}$};
+\node[annot, purple!50!black, left=0.1cm] at (-0.5, 0.2) {$T_\text{below}$};
+\draw[force, purple!50!black] (-0.4, 9.5) -- (-0.4, \hubtop+0.5);
+\draw[force, purple!50!black] (0.4, \tubebot-0.8) -- (0.4, 0.3);
+
+% =============================================================
+% LABELS & NOTES
+% =============================================================
+\node[draw=black!25, fill=white, rounded corners=3pt, inner sep=7pt,
+      anchor=north west, font=\scriptsize\sffamily, align=left, text width=5cm]
+    at (5.0, 9.8) {
+    \textbf{Assembly order (top → bottom)}\\[3pt]
+    1. Top molding (angled underside)\\
+    2. Top thrust bearing\\
+    3. Rotor hub + disk + blades\\
+    \quad (autorotates between bearings)\\
+    4. Bottom thrust bearing\\
+    5. Bottom molding\\
+    6. Swashplate (below rotor)\\
+    7. 3× linear actuators\\
+    8. Empennage boom + H-stab + V-fin\\
+    9. Webbing capture → spliced eye\\[4pt]
+    \textbf{Load path:}\\
+    $F_\text{lift}$ → hub → top bearing →\\
+    top molding → tube compression →\\
+    bottom molding → webbing → Dyneema\\
+    \smallskip
+    $T_\text{below} = T_\text{above} + F_\text{lift} - W$
+};
+
+% Title
+\node[label, font=\Large] at (5.5, 10.8)
+    {Inline Autogyro Rotor Assembly — Full Cross-Section};
+
+\end{tikzpicture}
+\end{document}

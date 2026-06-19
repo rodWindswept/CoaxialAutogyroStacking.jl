@@ -7,12 +7,12 @@
         r2 = CoaxialAutogyroStacking.AutogyroRotor(1.2, 0.05, 3, 0.12, 5.0, 0.0, 3.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [r1, r2],           # rotors top→bottom
-            [2.0, 3.0, 9.0],    # section lengths (n+1 entries)
+            [3.0, 9.0],         # section lengths: R1→R2, R2→anchor (n entries)
             0.004,              # line diameter (m)
             50.0,               # base line elevation (deg)
         )
         @test length(stack.rotors) == 2
-        @test length(stack.section_lengths) == 3
+        @test length(stack.section_lengths) == 2   # n rotors → n sections
         @test stack.rotors[1].radius == 1.5
         @test stack.rotors[2].radius == 1.2
         @test stack.line_diameter == 0.004
@@ -23,7 +23,7 @@
         rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [rotor],
-            [0.1, 10.0],   # short free end, 10m to anchor
+            [10.0],             # single section: rotor → anchor (n entries)
             0.004,
             50.0,
         )
@@ -34,8 +34,8 @@
         # Should have n_rotors + 1 = 2 entries
         @test length(profile) == 2
 
-        # profile[1] = free end ≈ 0 (only tiny section above contributes basically nothing)
-        @test profile[1] ≈ 0.0 atol=0.2
+        # profile[1] = at topmost rotor = 0 (nothing pulls from above)
+        @test profile[1] ≈ 0.0 atol=0.01
 
         # profile[2] = anchor: F_line − W·cosθ + line_drag below
         # F_line ≈ 327 N, W = 5*9.81=49.05, cosd(50)≈0.6428, W·cosθ≈31.5
@@ -51,7 +51,7 @@
         r3 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [r1, r2, r3],
-            [2.0, 3.0, 3.0, 9.0],
+            [3.0, 3.0, 9.0],    # R1→R2, R2→R3, R3→anchor (n entries)
             0.004,
             50.0,
         )
@@ -63,11 +63,11 @@
             @test profile[i+1] > profile[i]
         end
 
-        # First entry (free end) should be very small
-        @test profile[1] < 50.0
+        # First entry (at topmost rotor) should be zero
+        @test profile[1] ≈ 0.0 atol=0.01
 
         # Last entry (anchor) should be largest
-        @test profile[end] > profile[1] * 10  # anchor >> free end
+        @test profile[end] > profile[2] * 2  # anchor >> first rotor's contribution
     end
 
     @testset "stack_tension_profile — different tilts give different contributions" begin
@@ -78,7 +78,7 @@
         # Stack: low tilt on top, high tilt below
         stack_1 = CoaxialAutogyroStacking.AutogyroStack(
             [r_low, r_high],
-            [2.0, 3.0, 9.0],
+            [3.0, 9.0],          # R1→R2, R2→anchor (n entries)
             0.004,
             50.0,
         )
@@ -87,7 +87,7 @@
         # Stack: high tilt on top, low tilt below
         stack_2 = CoaxialAutogyroStacking.AutogyroStack(
             [r_high, r_low],
-            [2.0, 3.0, 9.0],
+            [3.0, 9.0],          # R1→R2, R2→anchor (n entries)
             0.004,
             50.0,
         )
@@ -106,19 +106,16 @@
         rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
             [rotor],
-            [0.1, 10.0],
+            [10.0],              # single section: rotor → anchor (n entries)
             0.004,
             50.0,
         )
 
-        # At zero wind, F_line = 0, so the line tension below the rotor is
-        # −W·cosθ (negative = rotor pulls line downward, line would be slack).
-        # The magnitude equals the rotor's weight component along the line.
+        # At zero wind, F_line = 0, so the line goes slack below the rotor.
+        # Rope cannot push — tension clamps to zero.
         profile = CoaxialAutogyroStacking.stack_tension_profile(stack, 1.225, 0.0)
 
-        @test profile[1] ≈ 0.0 atol=0.2     # free end
-        # Weight component: 5 kg × 9.81 × cosd(50°) ≈ 31.5 N, negative (pull-down)
-        @test abs(profile[2]) ≈ 31.5 atol=3.0
-        @test profile[2] < 0.0              # verified: pulls downward at zero wind
+        @test profile[1] ≈ 0.0 atol=0.01     # at topmost rotor
+        @test profile[2] == 0.0               # slack below hanging rotor, not negative
     end
 end

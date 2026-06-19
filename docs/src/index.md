@@ -6,7 +6,7 @@ CurrentModule = CoaxialAutogyroStacking
 
 Modelling of multiple independently-pitched autogyro rotors stacked inline on a
 single kite line — computing per-rotor forces and the line tension profile from
-the free end (top) down to the anchor (bottom).
+the topmost rotor (which terminates the line) down to the anchor (bottom).
 
 Built test-first for eventual integration into `KiteTurbineDynamics.jl`. Each
 rotor carries its own collective pitch, decoupled from line elevation; forces
@@ -28,15 +28,15 @@ using CoaxialAutogyroStacking
 rotor = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 5.0)  # radius, hub, blades, chord, pitch°, mass
 F_line, F_lift, F_drag, cl, cd = rotor_force_along_line(rotor, 1.225, 8.0, 50.0)
 
-stack = AutogyroStack([rotor, rotor, rotor], fill(10.0, 4), 0.004, 50.0)
-profile = stack_tension_profile(stack, 1.225, 8.0)   # tension free-end → anchor
+stack = AutogyroStack([rotor, rotor, rotor], fill(10.0, 3), 0.004, 50.0)
+profile = stack_tension_profile(stack, 1.225, 8.0)   # tension top-rotor → anchor
 pitches = optimal_pitches(stack, 1.225, 8.0)
 ```
 
 ## Conventions
 
 - SI units throughout; angles in **degrees** at the API boundary.
-- Rotors in a stack are ordered **top → bottom** (index 1 = topmost / free end).
+- Rotors in a stack are ordered **top → bottom** (index 1 = topmost, terminates the line).
 - Tension profiles have `n_rotors + 1` entries; `profile[end]` is the anchor (max).
 
 ## Scope (v1)

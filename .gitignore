@@ -24,3 +24,4 @@ docs/site/
 # If this package is ever published to the Julia General registry,
 # uncomment the line below and stop tracking it:
 # Manifest.toml
+schematics/*.aux\nschematics/*.log
