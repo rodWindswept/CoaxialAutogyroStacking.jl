@@ -14,6 +14,14 @@ Quick reminders:
 
 ## Agent skills
 
+### Domain docs
+
+Start here: `docs/agents/domain.md` — quick start, repo map, physics TL;DR, current state.
+
+### Source inventory
+
+`SOURCE_INVENTORY.md` — every file in the repo with a one-line purpose.
+
 ### Issue tracker
 
 Issues are tracked on GitHub. See `docs/agents/issue-tracker.md`.
@@ -21,7 +29,3 @@ Issues are tracked on GitHub. See `docs/agents/issue-tracker.md`.
 ### Triage labels
 
 Standard triage labels are used. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-This repository uses a single-context layout. See `docs/agents/domain.md`.
