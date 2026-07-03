@@ -104,26 +104,31 @@ CENTRIFUGAL_FORCE = $(round(F_cf, digits=0));    // N per blade (estimated)
 // --- Line ---
 LINE_DIAMETER     = $(line_d * 1000);    // mm — Dyneema SK99
 
-// --- Tube (tension tie-rod) ---
-TUBE_OD           = 30.0;   // mm
-TUBE_ID           = 16.0;   // mm
+// --- Tube (tension tie-rod, carbon fibre) ---
+// 25×15mm, 5mm wall — SF=146× in tension at 1,294 N
+TUBE_OD           = 25.0;   // mm
+TUBE_ID           = 15.0;   // mm
 TUBE_LENGTH       = 800.0;  // mm
-TUBE_WALL         = 7.0;    // mm
-TIE_HOLE_DIA      = 5.0;    // mm
+TUBE_WALL         = 5.0;    // mm
+TIE_HOLE_DIA      = 5.0;    // mm — Dyneema stitching cord (3mm)
 TIE_ROPE_DIA      = 3.0;    // mm
 
-// --- Hub ---
-HUB_OD            = 100.0;  // mm
-HUB_ID            = 32.0;   // mm
-HUB_HEIGHT        = 70.0;   // mm — between bearing faces
+// --- Hub (aluminium) ---
+HUB_OD            = 80.0;   // mm
+HUB_ID            = 27.0;   // mm — clears 25mm tube
+HUB_HEIGHT        = 60.0;   // mm — between bearing faces
 
-// --- Bearings ---
-MOLDING_OD        = 80.0;   // mm
-MOLDING_ID        = 30.5;   // mm
-MOLDING_HEIGHT    = 25.0;   // mm
-BEARING_OD        = 70.0;   // mm
-BEARING_ID        = 32.0;   // mm
-BEARING_HEIGHT    = 8.0;    // mm
+// --- Bearings (SKF 51105 thrust ball) ---
+// ID=25mm, OD=42mm, H=11mm, C_dyn=15.9kN, limiting=6,300rpm
+// Load: 997N → 16× capacity margin, 45rpm → 140× speed margin
+BEARING_OD        = 42.0;   // mm — SKF 51105
+BEARING_ID        = 25.0;   // mm — slip fit over tube
+BEARING_HEIGHT    = 11.0;   // mm
+
+// --- Moldings (aluminium 6061-T6) ---
+MOLDING_OD        = 70.0;   // mm
+MOLDING_ID        = 25.5;   // mm — slip fit over tube
+MOLDING_HEIGHT    = 20.0;   // mm
 
 // --- Generator ---
 GEN_RADIUS        = 45.0;   // mm

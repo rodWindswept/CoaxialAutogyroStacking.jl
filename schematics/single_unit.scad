@@ -22,20 +22,20 @@ $vpd = s(6000);
 
 // ============================================================
 // AXIAL POSITIONS (tube-local Z, from tube bottom = 0)
-// Contact chain verified: molding → bearing → hub → bearing → molding
-// Top molding underside = 720, bearing height = 8, hub height = 70
+// Contact chain: molding → bearing → hub → bearing → molding
+// Bearing: SKF 51105 (H=11mm), Molding: Al 6061 (H=20mm), Hub (H=60mm)
 // ============================================================
 ZT_TOP_TIE       = 780;   // top rope tie — above everything
-ZT_TOP_MOLDING   = 720;   // bottom of top molding (25mm tall, extends to 745)
-ZT_TOP_BEARING   = 720;   // top face of top bearing (8mm thick, extends to 712)
-ZT_HUB_TOP       = 712;   // hub top face (contacts top bearing)
-ZT_HUB_BOTTOM    = 642;   // hub bottom (70mm tall)
-ZT_ROTOR_DISK    = 677;   // disk center = hub midpoint
-ZT_BOTTOM_BEARING= 642;   // top face of bottom bearing (extends to 634)
-ZT_BOTTOM_MOLDING= 634;   // top of bottom molding (25mm tall, extends to 659)
-ZT_GENERATOR     = 638;   // generator at bearing level, on tube
-ZT_SWASHPLATE    = 610;   // right under bottom molding — tight actuation
-ZT_ACTUATORS     = 550;   // actuators below swashplate
+ZT_TOP_MOLDING   = 720;   // bottom of top molding (20mm tall, to 740)
+ZT_TOP_BEARING   = 720;   // top face of top bearing (11mm thick, to 709)
+ZT_HUB_TOP       = 709;   // hub top face (contacts top bearing)
+ZT_HUB_BOTTOM    = 649;   // hub bottom (60mm tall)
+ZT_ROTOR_DISK    = 679;   // disk center = hub midpoint
+ZT_BOTTOM_BEARING= 649;   // top face of bottom bearing (extends to 638)
+ZT_BOTTOM_MOLDING= 638;   // top of bottom molding (20mm tall, to 658)
+ZT_GENERATOR     = 643;   // generator at bearing level, on tube
+ZT_SWASHPLATE    = 620;   // right under bottom molding
+ZT_ACTUATORS     = 560;   // actuators below swashplate
 ZT_EMPENNAGE     = 120;   // tail boom mount
 ZT_BOTTOM_TIE    = 20;    // bottom rope tie — primary load path
 

@@ -16,7 +16,7 @@ kite is simple but has limitations:
 - **Scale:** large kites are hard to launch, land, and handle
 - **Reliability:** a single kite failure means total lift loss
 - **Gust response:** a single kite's tension varies strongly with wind speed
-- **Transport:** a 10 m² kite doesn't pack small
+- **Transport:** a 100 m² kite is hard to handle across the wind range and in rigid wings will be much larger and heavier than 10 x 10 stacked kites
 
 ### 1.2 Solution
 

@@ -231,7 +231,67 @@ Each force arrow must be clearly identifiable by color and direction:
 | **F_centrifugal** | Red | Radially outward from hub | Blade root at hub OD |
 | **M_gyro** | Orange (curved arrow) | Circumferential around Y axis | Hub/bearing interface |
 
-## 4. Annotation Requirements
+## 4. Operating Point & Dimensioned Specifications
+
+> All values from live Julia model at best sweep configuration:
+> R=3.0m, σ=0.0318, δ=10°, φ=55°, v=8 m/s. Regenerate with `julia --project=. schematics/generate_params.jl`.
+
+### 4.1 Aerodynamic Operating Point
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| F_lift (⊥ wind) | 997 N | `rotor_force_along_line()` |
+| F_drag (∥ wind) | 831 N | `rotor_force_along_line()` |
+| F_line (along Dyneema) | 1,294 N | `rotor_force_along_line()` |
+| Autorotation RPM | 45 | `estimated_autorotation_rpm(λ=2.5)` |
+| Tip speed | 14.1 m/s | Ω × R |
+| Gyro moment | 10.6 N·m | I·Ω·ω_prec (ω_prec=0.1 rad/s) |
+| Centrifugal force/blade | 70 N | m_blade·Ω²·R_cg |
+| Anchor tension (4-stack) | 5,065 N | `stack_tension_profile()` |
+
+### 4.2 Dimensioned Components
+
+| Component | Material | Key Dimensions | Margin / Rationale |
+|-----------|----------|----------------|---------------------|
+| **Tube** | Carbon fibre | 25×15mm, 5mm wall, 800mm long | SF=146× in tension (600 MPa UTS) |
+| **Top/Bottom ties** | 3mm Dyneema cord | Ø5mm holes through tube wall | 647 N/tie, cord breaks at ~8,000 N |
+| **Bearings** | SKF 51105 thrust ball | 25×42×11mm, C_dyn=15.9kN | 16× load margin, 140× speed margin |
+| **Moldings** | Al 6061-T6 | 70mm OD, 25.5mm ID, 20mm tall | 10° angled bearing face |
+| **Hub** | Al 6061-T6 | 80mm OD, 27mm ID, 60mm tall | 10° top/bottom faces |
+| **Generator** | Brushless outrunner | 3 units at 120°, 45mm radius | 5W at 45 RPM, τ=1.06 N·m |
+| **Swashplate** | Al/brass | 80mm OD, 27mm ID, 15mm total | Rotating + stationary rings |
+| **Actuators** | Micro servo (3×) | 10mm stroke, ~20N force | ~5W total, powered by generator |
+| **Empennage boom** | Carbon tube | 16mm OD, 1,800mm length | Torque reaction arm |
+| **H-stab** | Ply/balsa | 600mm span × 150mm chord | Weathervane + pitch trim |
+| **V-fin** | Ply/balsa | 400mm height × 150mm chord | Yaw stability, hangs below boom |
+
+### 4.3 Per-Unit Mass Budget
+
+| Component | Mass (kg) |
+|-----------|-----------|
+| Carbon tube | 0.25 |
+| Moldings (2×) | 0.30 |
+| Bearings (2× SKF 51105) | 0.12 |
+| Rotor hub | 0.60 |
+| Blades (2×, estimated) | 2.00 |
+| Generator (3 units) | 0.15 |
+| Swashplate + actuators | 0.20 |
+| Empennage | 0.45 |
+| Ties + fasteners | 0.10 |
+| **Total** | **~4.2 kg** |
+
+Sweep assumed 5.0 kg/rotor — dimensioned estimate is 4.2 kg (0.8 kg margin).
+
+### 4.4 Key Engineering Checks
+
+- **Tube tension:** 1,294 N on 314 mm² carbon → 4.1 MPa (0.7% of UTS) ✓
+- **Bearing thrust:** 997 N vs 15,900 N rating → 6.3% utilization ✓
+- **Bearing speed:** 45 RPM vs 6,300 RPM limit → 0.7% utilization ✓
+- **Generator torque reaction:** 1.06 N·m at 1.8m boom → 0.59 N tail force needed. V-fin produces ~0.4 N at CL=0.1, 10 m/s — adequate ✓
+- **Tie hole bearing:** 647 N on 3mm Dyneema through 5mm carbon hole — non-critical ✓
+- **Tip speed noise:** 14.1 m/s vs 120 m/s limit — inaudible ✓
+
+## 5. Annotation Requirements
 
 Every element needs a label. Labels must be:
 - Oriented to be readable in the default isometric view
@@ -260,7 +320,7 @@ Required labels:
 19. "F_lift = X N" — at lift arrow
 20. Force summary box: T_below = T_above + F_line − W·cos φ + line_drag
 
-## 5. Required Views
+## 6. Required Views
 
 The schematic must be exportable in these views:
 
@@ -269,7 +329,7 @@ The schematic must be exportable in these views:
 3. **Side (−X view)** — looking into wind. Shows disk as edge, empennage profile.
 4. **Section A-A** — cut through YZ plane (through Dyneema centerline). Shows tube, bearings, hub in cross-section with internal details.
 
-## 6. Tilt Angle Specification (CRITICAL)
+## 7. Tilt Angle Specification (CRITICAL)
 
 This is the relationship that must be visually correct:
 
@@ -288,9 +348,9 @@ Wind direction: horizontal, from +X toward −X
     - Cross-line: v·sin(φ) perpendicular to line
 ```
 
-**Visual check:** In the front view (+Y), the rotor disk should appear as an ellipse tilted forward by δ relative to the perpendicular of the tube. The leading edge (+X) should be clearly forward of the trailing edge (−X).
+**Visual check:** In the front view (+Y), the rotor disk should appear as an ellipse with the leading edge (−X, windward) tilted UP and the trailing edge (+X, downwind) tilted DOWN — like a kite presenting its underside to the wind.
 
-## 7. Assembly Order (top → bottom)
+## 8. Assembly Order (top → bottom)
 
 ```
 1. Dyneema line (passes through everything)
@@ -309,7 +369,7 @@ Wind direction: horizontal, from +X toward −X
 14. Bottom tie (rope through tube → Dyneema at Z≈20mm)
 ```
 
-## 8. Parameter Binding
+## 9. Parameter Binding
 
 All dimensions in the visual model come from `schematics/parameters.scad`, which is generated by `schematics/generate_params.jl` from the live Julia model. No hardcoded numbers in the visual model.
 
@@ -321,7 +381,7 @@ All dimensions in the visual model come from `schematics/parameters.scad`, which
 4. Verify: check tilt angle, forces, RPM against expected
 ```
 
-## 9. Acceptance Criteria
+## 10. Acceptance Criteria
 
 The visual schematic is correct when:
 

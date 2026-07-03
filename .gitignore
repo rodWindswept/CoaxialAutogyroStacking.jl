@@ -25,3 +25,9 @@ docs/site/
 # uncomment the line below and stop tracking it:
 # Manifest.toml
 schematics/*.aux\nschematics/*.log
+schematics/*.aux
+schematics/*.log
+schematics/*.pdf
+schematics/*.png
+schematics/*.bak
+!schematics/renders/*.png

@@ -46,13 +46,11 @@ function build_stack(n, r, diam, slen, elev, pg, offs)
         po = i <= length(offs) ? offs[i] : 0.0
         push!(rotors, AutogyroRotor(r, 0.05, 4, 0.15, pg + po, 0.0, 5.0))
     end
-    # Rotors terminate the line at the top — no free-end section.
-    # Sections: between each rotor pair, then bottom rotor → anchor.
     section_lens = fill(slen, n)
     AutogyroStack(rotors, section_lens, diam, elev)
 end
 
-turbulent_wind(v, t, on) = on ? v * (1.0 + 0.08*sin(2π*t/8.0) + 0.05*sin(2π*t/2.3) + 0.03*sin(2π*t/0.7)) : v
+turbulent_wind(v, t, on) = on ? v * (1.0 + 0.08*sin(2pi*t/8.0) + 0.05*sin(2pi*t/2.3) + 0.03*sin(2pi*t/0.7)) : v
 
 function power_report(f_anchor, v_wind, spec_idx)
     spec = KITE_SPECS[spec_idx]
@@ -75,15 +73,15 @@ ax_side = Axis(fig[1, 1],
 
 ax_tens = Axis(fig[1, 2],
     title="Tension Profile Along Line",
-    xlabel="Position (m)", ylabel="Tension (N)")
+    xlabel="Position from anchor (m)", ylabel="Tension (N)")
 
-# HUD — fixed-height to prevent overflow into controls
+# HUD
 hud = Label(fig[2, 1:2], "Loading...",
     fontsize=11, halign=:left, justification=:left,
     tellwidth=false, tellheight=true)
-rowsize!(fig.layout, 2, Auto(200))  # reserve ~200px for HUD
+rowsize!(fig.layout, 2, Auto(200))
 
-# Controls — compact
+# Controls
 ctls = fig[3, 1:2] = GridLayout()
 rowsize!(fig.layout, 3, Relative(0.20))
 
@@ -165,85 +163,130 @@ on(n_rotors) do n
 end
 
 # ═══════════════════════════════════════════════════════
-# Drawing
+# Drawing — Side View (FIXED: rotors shifted up, no extension past top)
 # ═══════════════════════════════════════════════════════
 
 function draw_side_view!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
     empty!(ax)
     n = max(1, n)
-    sec_lens = vcat(slen, fill(slen, n))
+    sec_lens = fill(slen, n)
     stk = build_stack(n, rad, diam, slen, elev, pg, offs)
     profile = stack_tension_profile(stk, rho, v_wind)
     max_t = max(maximum(abs, profile), 1.0)
-    total_len = sum(sec_lens)  # line terminates at top rotor — no free-end section
+    total_len = sum(sec_lens)
     er = deg2rad(elev)
 
+    # Ground
     lines!(ax, [Point2f(-3, 0), Point2f(total_len*cos(er)+3, 0)],
            color=:gray80, linewidth=1, linestyle=:dash)
-    # Tension-colored line segments — draw anchor up to top rotor
-    # No free-end section: line terminates at topmost rotor
+
+    # Rotor positions: rotor k is at distance cum from anchor, ABOVE its section
+    # R1=topmost (terminates line), Rn=bottom (nearest anchor)
     cum = 0.0
-    for k in n:-1:1
-        seg_start = Point2f(cum * cos(er), cum * sin(er))
-        seg_end   = Point2f((cum + sec_lens[k]) * cos(er), (cum + sec_lens[k]) * sin(er))
-        t_norm = clamp(abs(profile[k+1]) / max_t, 0, 1)
-        col = RGBf(t_norm, 0.15, 1 - t_norm)
-        lines!(ax, [seg_start, seg_end], color=col, linewidth=2.5 + 2 * t_norm)
+    for k in 1:n
         cum += sec_lens[k]
     end
-    # Rotor disks — R1 at top (terminates the line), Rn nearest anchor
-    cum = 0.0  # start at top rotor position
-    for i in 1:n
-        cx, cy = cum*cos(er), cum*sin(er)
+    # cum now = total_len. Top rotor is at total_len.
+    rotor_pos = [cum - (i-1)*slen for i in 1:n]  # top→bottom: total_len, total_len-slen, ...
+
+    # Draw line segments bottom-up, each from anchor/prev-rotor up to next rotor
+    prev = 0.0
+    for k in 1:n
+        rpos = rotor_pos[n-k+1]  # bottom rotor first (nearest anchor)
+        seg_start = Point2f(prev * cos(er), prev * sin(er))
+        seg_end   = Point2f(rpos * cos(er), rpos * sin(er))
+        # Tension at anchor side of rotor k (k from bottom=1): profile[n-k+2]
+        tn = clamp(abs(profile[n-k+2]) / max_t, 0, 1)
+        col = RGBf(tn, 0.15, 1 - tn)
+        lines!(ax, [seg_start, seg_end], color=col, linewidth=2.5 + 2*tn)
+        prev = rpos
+    end
+
+    # Draw rotors at their positions (top→bottom: R1..Rn)
+    for k in 1:n
+        rpos = rotor_pos[k]
+        cx, cy = rpos*cos(er), rpos*sin(er)
         rx, ry = rad, max(rad*sind(elev), 0.08)
-        θs = range(0, 2π, length=80)
-        ex, ey = cx .+ rx*cos.(θs), cy .+ ry*sin.(θs)
-        F_line, _, _, _, _ = rotor_force_along_line(stk.rotors[i], rho, v_wind, elev)
+        theta = range(0, 2pi, length=80)
+        ex, ey = cx .+ rx*cos.(theta), cy .+ ry*sin.(theta)
+        F_line, _, _, _, _ = rotor_force_along_line(stk.rotors[k], rho, v_wind, elev)
         tn = clamp(abs(F_line)/max_t, 0, 1)
         col = RGBf(tn, 0.2, 1-tn)
         poly!(ax, Point2f.(ex, ey), color=(col, 0.25), strokecolor=col, strokewidth=2.5)
         scatter!(ax, Point2f(cx, cy), color=col, markersize=10)
-        text!(ax, "R$i", position=Point2f(cx-1.5, cy+rad+1.0),
+        text!(ax, "R$(k)", position=Point2f(cx-1.5, cy+rad+1.0),
               fontsize=12, color=:black, align=(:center, :bottom))
-        if i < n
-            cum += sec_lens[i+1]  # section between R_i and R_{i+1}
-        end
     end
 
+    # Color legend (tension scale)
+    for i in 0:3
+        tn = i/3
+        col = RGBf(tn, 0.2, 1-tn)
+        poly!(ax, Point2f[(1, 58+i*2), (3, 58+i*2), (3, 60+i*2), (1, 60+i*2)],
+              color=col, strokewidth=0)
+    end
+    text!(ax, "0", position=Point2f(0.5, 58), fontsize=8, color=:gray50, align=(:right, :center))
+    text!(ax, "$(round(Int, max_t))", position=Point2f(0.5, 64), fontsize=8, color=:gray50, align=(:right, :center))
+    text!(ax, "Tension (N)", position=Point2f(0.5, 66), fontsize=9, color=:gray50, align=(:right, :center))
+
+    # Anchor
     scatter!(ax, Point2f(0, 0), color=:saddlebrown, markersize=15, marker=:rect)
     text!(ax, "[anchor]", position=Point2f(-4, -2), fontsize=11, color=:saddlebrown)
 
-    wxa, wya = total_len*cos(er)/2, total_len*sin(er)/2 + 5
-    arrows2d!(ax, [Point2f(wxa-6, wya)], [Vec2f(10, 0)],
+    # Wind arrow
+    mx, my = total_len*cos(er)/2, total_len*sin(er)/2 + 5
+    arrows2d!(ax, [Point2f(mx-6, my)], [Vec2f(10, 0)],
               color=:steelblue, shaftwidth=2.5, tipwidth=12, tiplength=12)
     text!(ax, "$(round(v_wind,digits=1)) m/s",
-          position=Point2f(wxa+5, wya-1.5), fontsize=11, color=:steelblue)
+          position=Point2f(mx+5, my-1.5), fontsize=11, color=:steelblue)
 end
+
+# ═══════════════════════════════════════════════════════
+# Drawing — Tension Profile (cumulative + per-rotor bars)
+# ═══════════════════════════════════════════════════════
 
 function draw_tension_profile!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
     empty!(ax)
     stk = build_stack(n, rad, diam, slen, elev, pg, offs)
     profile = stack_tension_profile(stk, rho, v_wind)
-    # profile[1]=free end (~0), profile[end]=anchor (max)
-    # Plot anchor at pos=0, free end at pos=n*slen
-    profile_rev = reverse(profile)
-    pos = Float64[]; cum = 0.0
-    for i in 1:length(profile_rev)
-        push!(pos, cum); if i <= n; cum += slen; end
-    end
-    colors = [p>=0 ? RGBf(0.2,0.7,0.3) : RGBf(0.9,0.2,0.2) for p in profile_rev]
-    barplot!(ax, pos, profile_rev, color=colors, width=slen*0.8, strokewidth=1, strokecolor=:gray50)
-    hlines!(ax, [0.0], color=:gray50, linestyle=:dash, linewidth=1)
-    # Rotor positions: anchor→free end, rotor i is at i*slen from anchor
-    cum_m = slen
+    # profile[1]=top (~0), profile[end]=anchor (max cumulative)
+    # Compute per-rotor contribution: delta between successive profile values
+    per_rotor = [profile[i+1] - profile[i] for i in 1:n]
+    cumulative = [profile[i+1] for i in 1:n]  # cumulative at each rotor position
+
+    # Positions from anchor: anchor=0, rotor n at slen, rotor n-1 at 2*slen, ..., rotor 1 at n*slen
+    pos_cum = [(n-i+1)*slen for i in 1:n]
+
+    # Cumulative tension (stepped line, purple)
+    # Proper step plot: horizontal then vertical drop at each rotor
+    cum_x = [0.0]; cum_y = [profile[end]]  # anchor
     for i in 1:n
-        vlines!(ax, [cum_m], color=:gray60, linestyle=:dot, linewidth=1)
-        # profile_rev[i+1] = tension at rotor i position (counting from anchor)
-        text!(ax, "R$i", position=Point2f(cum_m, profile_rev[i+1]),
-              fontsize=10, color=:black, align=(:center, :bottom), offset=(0,5))
-        cum_m += slen
+        rpos = pos_cum[n-i+1]              # position of rotor (bottom→top)
+        t_above = profile[n-i+1]            # tension above this rotor
+        push!(cum_x, rpos); push!(cum_y, cum_y[end])  # horizontal step to rotor
+        push!(cum_x, rpos); push!(cum_y, t_above)     # vertical drop to tension above
     end
+    lines!(ax, cum_x, cum_y, color=:purple, linewidth=3, label="Cumulative")
+    scatter!(ax, cum_x, cum_y, color=:purple, markersize=8)
+
+    # Per-rotor contribution (bars, blue)
+    barplot!(ax, pos_cum, per_rotor, color=:steelblue, width=slen*0.6,
+             strokewidth=1, strokecolor=:gray50, label="Per rotor")
+
+    # Rotor labels
+    for i in 1:n
+        text!(ax, "R$(i)", position=Point2f(pos_cum[i], cumulative[i]),
+              fontsize=10, color=:black, align=(:center, :bottom), offset=(0,5))
+    end
+
+    hlines!(ax, [0.0], color=:gray50, linestyle=:dash, linewidth=1)
+
+    axislegend(ax, position=:lt, fontsize=10)
 end
+
+# ═══════════════════════════════════════════════════════
+# HUD
+# ═══════════════════════════════════════════════════════
 
 function build_hud(n, rad, diam, slen, elev, v_wind, pg, offs, turbulence_on, spec_idx)
     stk = build_stack(n, rad, diam, slen, elev, pg, offs)
@@ -267,7 +310,7 @@ function build_hud(n, rad, diam, slen, elev, v_wind, pg, offs, turbulence_on, sp
     p_trpt, p_yp, p_yn, sn = power_report(fa, v_wind, spec_idx)
     push!(lines, @sprintf("TRPT: %.1f kW  |  Yo-yo peak: %.1f kW  |  Yo-yo net: %.1f kW (77%%)",
            p_trpt, p_yp, p_yn))
-    push!(lines, @sprintf("Tension: %.0f–%.0f N  |  Spec: %s",
+    push!(lines, @sprintf("Tension: %.0f-%.0f N  |  Spec: %s",
            minimum(profile), maximum(profile), sn))
     if count(<(0), profile) > 0
         push!(lines, "  !! segments in compression")
