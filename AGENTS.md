@@ -35,7 +35,7 @@ src/
   rotor.jl                     AutogyroRotor + single-rotor forces
   line_section.jl              bare_line_drag
   stack.jl                     AutogyroStack + stack_tension_profile
-  optimisation.jl              optimal_pitch / optimal_pitches
+  optimisation.jl              optimal_rotor_tilt / optimal_rotor_tilts / lift_force_steady
 test/   one test_<module>.jl per src module, all run by runtests.jl
 notebooks/  Pluto dashboards
 scripts/    runnable entrypoints

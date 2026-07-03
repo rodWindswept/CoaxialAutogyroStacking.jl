@@ -199,7 +199,7 @@ Group sweep results by configuration and compute:
 
 Returns a DataFrame with one row per unique configuration.
 """
-function compute_figures_of_merit(df::DataFrame)
+function compute_figures_of_merit(df::DataFrame; rotor_mass_per_unit=5.0)
     # Group by configuration (everything except wind_speed and tension cols)
     config_cols = [:radius, :n_rotors, :spacing, :profile, :elevation]
     gdf = groupby(df, config_cols)
@@ -209,7 +209,7 @@ function compute_figures_of_merit(df::DataFrame)
         tensions = g.anchor_tension
         mean_t = mean(tensions)
         cv_t = length(tensions) > 1 ? std(tensions) / abs(mean_t) : 0.0
-        mass_total = g.n_rotors[1] * 5.0  # rotor_mass = 5 kg (hardcoded for now)
+        mass_total = g.n_rotors[1] * rotor_mass_per_unit
         push!(result_rows, (
             radius          = g.radius[1],
             n_rotors        = g.n_rotors[1],

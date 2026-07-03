@@ -75,9 +75,9 @@ julia> stack = AutogyroStack([r, r, r], fill(10.0, 3), 0.004, 50.0);
 julia> round.(stack_tension_profile(stack, 1.225, 8.0), digits=1)
 4-element Vector{Float64}:
    0.0
- 297.6
- 595.2
- 892.7
+ 296.1
+ 592.2
+ 888.2
 ```
 """
 function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
@@ -89,7 +89,7 @@ function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
         # (for k=2 this is the section below the top rotor, toward rotor 2;
         #  for k=end this is the section below the bottom rotor, to the anchor)
         section_len = stack.section_lengths[k-1]
-        F_drag_section = bare_line_drag(rho, v_wind, stack.line_diameter, section_len)
+        F_drag_section = bare_line_drag(rho, v_wind, stack.line_diameter, section_len, stack.line_angle_deg)
 
         # Rotor at position k-1 contributes its net line force
         rotor = stack.rotors[k-1]

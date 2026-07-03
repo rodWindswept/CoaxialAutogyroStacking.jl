@@ -24,7 +24,7 @@
 | `src/rotor.jl` | `AutogyroRotor` struct + `rotor_disk_area()`, `effective_alpha()`, `rotor_force_along_line()` |
 | `src/line_section.jl` | `bare_line_drag()` — cylinder crossflow drag on Dyneema sections |
 | `src/stack.jl` | `AutogyroStack` struct + `stack_tension_profile()` — progressive tension accumulation |
-| `src/optimisation.jl` | `optimal_pitch()`, `optimal_pitches()`, `lift_force_steady()` — grid-search optimisation |
+| `src/optimisation.jl` | `optimal_rotor_tilt()`, `optimal_rotor_tilts()`, `lift_force_steady()` — grid-search optimisation |
 | `src/sweep.jl` | `parameter_sweep()`, `compute_figures_of_merit()`, `pareto_front()` — Phase 8 sweep |
 
 ## Tests (7 files, 143 tests)

@@ -46,7 +46,7 @@ F_line, F_lift, F_drag, cl, cd = rotor_force_along_line(rotor, 1.225, 8.0, 50.0)
 # Three-rotor stack
 stack = AutogyroStack([rotor, rotor, rotor], fill(10.0, 3), 0.004, 50.0)
 profile = stack_tension_profile(stack, 1.225, 8.0)   # anchor tension = profile[end]
-pitches = optimal_pitches(stack, 1.225, 8.0)
+pitches = optimal_rotor_tilts(stack, 1.225, 8.0)
 ```
 
 ## Repository map
@@ -69,7 +69,7 @@ CoaxialAutogyroStacking.jl/
 │   ├── rotor.jl                    ← AutogyroRotor struct + single-rotor forces
 │   ├── line_section.jl             ← bare line drag (cylinder crossflow)
 │   ├── stack.jl                    ← AutogyroStack struct + tension accumulation
-│   ├── optimisation.jl             ← optimal_pitch / optimal_pitches (grid search)
+│   ├── optimisation.jl             ← optimal_rotor_tilt / optimal_rotor_tilts (grid search)
 │   └── sweep.jl                    ← parameter_sweep + Pareto-front analysis (Phase 8)
 │
 ├── test/

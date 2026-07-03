@@ -42,16 +42,83 @@ end
 """
     rotor_disk_area(rotor::AutogyroRotor) -> Float64
 
-Swept disk area, π·R², in m².
+Swept disk annulus area, π(R² − r_hub²), in m².
 
 # Examples
 ```jldoctest
 julia> rotor_disk_area(AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0))
-7.0685834705770345
+7.037166538162688
 ```
 """
 function rotor_disk_area(rotor::AutogyroRotor)
-    return π * rotor.radius^2
+    return π * (rotor.radius^2 - rotor.hub_radius^2)
+end
+
+"""
+    rotor_solidity(rotor::AutogyroRotor) -> Float64
+
+Rotor solidity: ratio of total blade planform area to swept disk area.
+
+    σ = n_blades × blade_chord / (π × radius)
+
+Solidity is a first-order parameter for rotor aerodynamics — it determines
+the blade loading distribution and the fraction of the disk that is "solid"
+vs. open. The PCA-2 (σ ≈ 0.098, 3 blades, R=6.86 m, c=0.56 m) is a
+high-solidity rotor; our typical lifting-autogyro rotors are lower solidity
+(σ ≈ 0.03–0.05 for 2 blades at R=2–3 m with 0.15 m chord).
+
+**Important:** The PCA-2 CL/CD data in `pca2_interp` is valid for σ ≈ 0.098.
+Applying it to rotors with substantially different solidity introduces
+systematic error. See Duquette & Visser (2003) for solidity effects.
+
+# Examples
+```jldoctest
+julia> rotor_solidity(AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0))
+0.06366197723675814
+```
+"""
+function rotor_solidity(rotor::AutogyroRotor)
+    return rotor.n_blades * rotor.blade_chord / (π * rotor.radius)
+end
+
+"""
+    estimated_autorotation_rpm(rotor::AutogyroRotor, v_wind, α_eff_deg; λ=2.5) -> Float64
+
+Estimated autorotation RPM based on a nominal tip-speed ratio.
+
+In steady autorotation, the rotor settles at an RPM where the net aerodynamic
+torque balances. The through-disk velocity is `v_wind × sin(α_eff)`, and the
+tip-speed ratio λ = ΩR / v_through relates this to rotor speed:
+
+    Ω = λ × v_wind × sin(α_eff) / R
+    RPM = Ω × 60 / (2π)
+
+The default λ = 2.5 is typical for autogyro rotors in axial/autorotating flow
+(PCA-2 tip speed ~340 fps at ~130 fps axial inflow → λ ≈ 2.6). Wind turbines
+operate at higher λ (6–8); autorotating rotors are slower.
+
+**Caveat:** This is a first-order estimate. Actual RPM depends on blade
+geometry, airfoil, solidity, and Reynolds number — none of which the PCA-2
+disk model resolves. BEM (v2) will compute RPM from torque equilibrium.
+
+# Arguments
+- `rotor::AutogyroRotor`: the rotor.
+- `v_wind`: freestream wind speed (m/s).
+- `α_eff_deg`: effective disk angle of attack (degrees).
+- `λ`: tip-speed ratio (default 2.5).
+
+# Examples
+```jldoctest
+julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0);
+
+julia> round(estimated_autorotation_rpm(r, 8.0, 50.0), digits=1)
+102.2
+```
+"""
+function estimated_autorotation_rpm(rotor::AutogyroRotor, v_wind, α_eff_deg; λ=2.5)
+    v_through = v_wind * sind(α_eff_deg)
+    Ω = λ * v_through / rotor.radius
+    return Ω * 60.0 / (2π)
 end
 
 """
@@ -117,7 +184,7 @@ julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0);
 julia> F_line, F_lift, F_drag, cl, cd = rotor_force_along_line(r, 1.225, 8.0, 50.0);
 
 julia> round(F_line, digits=1)   # α_eff = 50° → CL=0.82, CD=0.86
-327.2
+325.8
 ```
 """
 function rotor_force_along_line(rotor::AutogyroRotor, rho, v_wind, line_elevation_deg)

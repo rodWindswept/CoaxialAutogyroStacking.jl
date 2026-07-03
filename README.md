@@ -19,7 +19,7 @@ Early development (v0.1.0). Phases 1–5 implemented and committed:
 | 2 | `AutogyroRotor`, disk area, `rotor_force_along_line` | done |
 | 3 | `bare_line_drag`, L/D comparison | done |
 | 4 | `AutogyroStack`, `stack_tension_profile` | done |
-| 5 | `optimal_pitch` / `optimal_pitches` | done |
+| 5 | `optimal_rotor_tilt` / `optimal_rotor_tilts` | done |
 | 5 (Task 11) | `lift_force_steady` integration API | **open** |
 | 6 | Quality gates (v² scaling, zero-wind, monotonicity) | **open** |
 
@@ -44,7 +44,7 @@ F_line, F_lift, F_drag, cl, cd = rotor_force_along_line(rotor, 1.225, 8.0, 50.0)
 
 stack = AutogyroStack([rotor, rotor, rotor], fill(10.0, 4), 0.004, 50.0)
 profile = stack_tension_profile(stack, 1.225, 8.0)   # tension free-end → anchor
-pitches = optimal_pitches(stack, 1.225, 8.0)
+pitches = optimal_rotor_tilts(stack, 1.225, 8.0)
 ```
 
 ## Tests

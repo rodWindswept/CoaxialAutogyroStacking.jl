@@ -154,7 +154,7 @@ on(btn_land.clicks)   do _; set_scenario(5.0, 75.0, 3, 1.5, -10.0, 4.0, 10.0, tr
 on(btn_opt.clicks) do _
     stk = build_stack(n_rotors[], rotor_radius[], line_diam[],
                       section_len[], elevation[], pitch_global[], pitch_offsets[])
-    opts = optimal_pitches(stk, rho, wind_speed[])
+    opts = optimal_rotor_tilts(stk, rho, wind_speed[])
     if length(opts) >= 1; sliders.sliders[5].value[] = opts[1]; end
     for s in roff_sliders; s.value[] = 0.0; end
 end

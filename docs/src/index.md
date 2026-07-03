@@ -30,7 +30,7 @@ F_line, F_lift, F_drag, cl, cd = rotor_force_along_line(rotor, 1.225, 8.0, 50.0)
 
 stack = AutogyroStack([rotor, rotor, rotor], fill(10.0, 3), 0.004, 50.0)
 profile = stack_tension_profile(stack, 1.225, 8.0)   # tension top-rotor → anchor
-pitches = optimal_pitches(stack, 1.225, 8.0)
+pitches = optimal_rotor_tilts(stack, 1.225, 8.0)
 ```
 
 ## Conventions

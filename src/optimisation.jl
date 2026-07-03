@@ -1,53 +1,73 @@
 # src/optimisation.jl — Optimal pitch search for rotors and stacks
 
 """
-    optimal_pitch(rotor::AutogyroRotor, rho, v_wind, elev_deg) -> (pitch_opt, F_max)
+    optimal_rotor_tilt(rotor::AutogyroRotor, rho, v_wind, elev_deg) -> (tilt_opt, F_max)
 
-Grid-search the blade pitch (−30° to 30° in 0.5° steps) for the pitch that
+Grid-search the disk tilt (−30° to 30° in 0.5° steps) for the tilt that
 maximises the along-line force component at a fixed line elevation.
+
+**Design-time, not control-time.** Disk tilt δ is the angle of the bearing
+face machined into the moldings — it is set at manufacture and fixed for the
+life of the rotor unit. This function answers the design question: "what
+bearing angle should I machine for this rotor, given the expected operating
+elevation and wind speed?" It is NOT a per-flight control parameter; that
+role belongs to blade pitch (`blade_pitch_deg`), which is adjustable via the
+swashplate but not yet modelled (the PCA-2 lookup is 1-D on AoA only).
+
+The caller should check whether the returned `F_max` exceeds `W·cos(elev)` —
+i.e. whether the rotor can overcome its own weight at this condition. If not,
+no tilt will make this rotor useful at this elevation.
+
+Note: this optimises `tilt_deg` (disk angle), NOT `blade_pitch_deg` (collective
+blade pitch). The two are distinct — disk tilt pivots the entire rotor plane;
+blade pitch changes individual blade incidence. Only disk tilt affects the
+current PCA-2 1-D lookup model.
 
 # Arguments
 - `rotor::AutogyroRotor`: template rotor; only its geometry/mass are reused, the
-  pitch is swept.
+  tilt is swept.
 - `rho`: air density (kg/m³).
 - `v_wind`: freestream wind speed (m/s).
 - `elev_deg`: line elevation above horizontal (degrees).
 
 # Returns
-- `(pitch_opt_deg, F_line_max_N)::Tuple{Float64,Float64}`.
+- `(tilt_opt_deg, F_line_max_N)::Tuple{Float64,Float64}`.
 
 # Examples
 ```jldoctest
 julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 0.0, 5.0);
 
-julia> pitch, F = optimal_pitch(r, 1.225, 8.0, 50.0);
+julia> tilt, F = optimal_rotor_tilt(r, 1.225, 8.0, 50.0);
 
-julia> pitch     # peaks where α_eff hits the PCA-2 L/D sweet spot (~50°)
+julia> tilt     # peaks where α_eff hits the PCA-2 L/D sweet spot (~50°)
 10.0
+
+julia> F > r.mass * 9.81 * cosd(50.0)  # rotor overcomes its own weight
+true
 ```
 """
-function optimal_pitch(rotor::AutogyroRotor, rho, v_wind, elev_deg)
-    best_pitch = 0.0
+function optimal_rotor_tilt(rotor::AutogyroRotor, rho, v_wind, elev_deg)
+    best_tilt = 0.0
     best_F = -Inf
-    for pitch in -30.0:0.5:30.0
+    for tilt in -30.0:0.5:30.0
         test_rotor = AutogyroRotor(
             rotor.radius, rotor.hub_radius, rotor.n_blades,
-            rotor.blade_chord, pitch, rotor.blade_pitch_deg, rotor.mass)
+            rotor.blade_chord, tilt, rotor.blade_pitch_deg, rotor.mass)
         F_line, _, _, _, _ = rotor_force_along_line(test_rotor, rho, v_wind, elev_deg)
         if F_line > best_F
             best_F = F_line
-            best_pitch = pitch
+            best_tilt = tilt
         end
     end
-    return best_pitch, best_F
+    return best_tilt, best_F
 end
 
 """
-    optimal_pitches(stack::AutogyroStack, rho, v_wind) -> Vector{Float64}
+    optimal_rotor_tilts(stack::AutogyroStack, rho, v_wind) -> Vector{Float64}
 
-Optimise pitch independently for each rotor in the stack, at the stack's base
-line elevation. Because v1 has no wake interaction, each rotor sees freestream
-and is optimised in isolation via [`optimal_pitch`](@ref).
+Optimise disk tilt independently for each rotor in the stack, at the stack's
+base line elevation. Because v1 has no wake interaction, each rotor sees
+freestream and is optimised in isolation via [`optimal_rotor_tilt`](@ref).
 
 # Arguments
 - `stack::AutogyroStack`: the rotor stack.
@@ -55,7 +75,7 @@ and is optimised in isolation via [`optimal_pitch`](@ref).
 - `v_wind`: freestream wind speed (m/s).
 
 # Returns
-- `Vector{Float64}`: optimal pitch (degrees), one per rotor, top → bottom.
+- `Vector{Float64}`: optimal tilt (degrees), one per rotor, top → bottom.
 
 # Examples
 ```jldoctest
@@ -63,15 +83,15 @@ julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 0.0, 0.0, 5.0);
 
 julia> stack = AutogyroStack([r, r, r], fill(10.0, 3), 0.004, 50.0);
 
-julia> optimal_pitches(stack, 1.225, 8.0)
+julia> optimal_rotor_tilts(stack, 1.225, 8.0)
 3-element Vector{Float64}:
  10.0
  10.0
  10.0
 ```
 """
-function optimal_pitches(stack::AutogyroStack, rho, v_wind)
-    return [optimal_pitch(r, rho, v_wind, stack.line_angle_deg)[1] for r in stack.rotors]
+function optimal_rotor_tilts(stack::AutogyroStack, rho, v_wind)
+    return [optimal_rotor_tilt(r, rho, v_wind, stack.line_angle_deg)[1] for r in stack.rotors]
 end
 
 """

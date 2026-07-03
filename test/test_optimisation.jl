@@ -2,31 +2,31 @@
 
 @testset "Optimisation" begin
 
-    @testset "optimal_pitch — single rotor" begin
+    @testset "optimal_rotor_tilt — single rotor" begin
         rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 0.0, 5.0)
         rho = 1.225
         v_wind = 8.0
         elev = 50.0
 
-        pitch_opt, F_max = CoaxialAutogyroStacking.optimal_pitch(rotor, rho, v_wind, elev)
+        tilt_opt, F_max = CoaxialAutogyroStacking.optimal_rotor_tilt(rotor, rho, v_wind, elev)
 
         # Optimal tilt should be in a reasonable range
-        @test -20.0 <= pitch_opt <= 30.0
+        @test -20.0 <= tilt_opt <= 30.0
 
         # F_max should match the force at optimal tilt
         F_line_check, _, _, _, _ = CoaxialAutogyroStacking.rotor_force_along_line(
-            CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, pitch_opt, 0.0, 5.0),
+            CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, tilt_opt, 0.0, 5.0),
             rho, v_wind, elev)
         @test F_max ≈ F_line_check atol=1.0
     end
 
-    @testset "optimal_pitch — compared to zero tilt" begin
+    @testset "optimal_rotor_tilt — compared to zero tilt" begin
         rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 0.0, 5.0)
         rho = 1.225
         v_wind = 8.0
         elev = 50.0
 
-        pitch_opt, F_opt = CoaxialAutogyroStacking.optimal_pitch(rotor, rho, v_wind, elev)
+        tilt_opt, F_opt = CoaxialAutogyroStacking.optimal_rotor_tilt(rotor, rho, v_wind, elev)
 
         # Zero-tilt force for comparison
         _, F_zero, _, _, _ = CoaxialAutogyroStacking.rotor_force_along_line(
@@ -36,7 +36,7 @@
         @test F_opt >= F_zero
     end
 
-    @testset "optimal_pitches — multi-rotor stack" begin
+    @testset "optimal_rotor_tilts — multi-rotor stack" begin
         r1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 0.0, 0.0, 5.0)
         r2 = CoaxialAutogyroStacking.AutogyroRotor(1.2, 0.05, 3, 0.12, 0.0, 0.0, 3.0)
         stack = CoaxialAutogyroStacking.AutogyroStack(
@@ -48,11 +48,11 @@
         rho = 1.225
         v_wind = 8.0
 
-        pitches = CoaxialAutogyroStacking.optimal_pitches(stack, rho, v_wind)
+        tilts = CoaxialAutogyroStacking.optimal_rotor_tilts(stack, rho, v_wind)
 
-        @test length(pitches) == 2
+        @test length(tilts) == 2
         # Each tilt should be in reasonable range
-        @test all(-20.0 .<= pitches .<= 30.0)
+        @test all(-20.0 .<= tilts .<= 30.0)
     end
 
     @testset "lift_force_steady — integration API" begin

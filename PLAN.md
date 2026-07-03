@@ -122,7 +122,7 @@ CoaxialAutogyroStacking.jl/
 │   ├── rotor.jl                     ← AutogyroRotor + forces
 │   ├── line_section.jl              ← bare line drag
 │   ├── stack.jl                     ← AutogyroStack + tension profile
-│   ├── optimisation.jl              ← optimal_pitch / optimal_pitches
+│   ├── optimisation.jl              ← optimal_rotor_tilt / optimal_rotor_tilts / lift_force_steady
 │   └── sweep.jl                     ← parameter_sweep (Phase 8)
 ├── test/
 │   ├── runtests.jl
