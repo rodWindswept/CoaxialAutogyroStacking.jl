@@ -37,3 +37,28 @@ function bare_line_drag(rho, v_wind, diameter, length, line_angle_deg)
     A_projected = diameter * length
     return q * A_projected * CD
 end
+
+"""
+    line_mass_per_m(diameter, density) -> Float64
+
+Mass per metre (kg/m) of a cylindrical line.
+
+`mass_per_m = density × π × (diameter/2)²`
+"""
+function line_mass_per_m(diameter, density)
+    area = π * (diameter / 2)^2
+    return density * area
+end
+
+"""
+    line_weight_along_line(mass_per_m, length, g, line_angle_deg) -> Float64
+
+Weight component (N) of a line section pulling along the line direction.
+
+At elevation angle φ, the along-line component is `m × g × sin(φ)`.
+This adds to anchor tension — the rotor stack must support the line's own weight.
+"""
+function line_weight_along_line(mass_per_m, length, g, line_angle_deg)
+    total_weight = mass_per_m * length * g
+    return total_weight * sind(line_angle_deg)
+end
