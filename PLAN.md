@@ -22,8 +22,9 @@ Phase 1–5  → DONE  ✓  (PCA-2 data, rotor model, line drag, stack, optimisa
 Phase 6    → DONE  ✓  (Quality gates: 84 tests green)
 Phase 7    → DONE  ✓  (Disk tilt/collective refactor, GLMakie dashboard)
 Phase 8    → DONE  ✓  (Parameter sweep, Pareto analysis, SPEC.md §6 findings)
-Phase 9    → NOW      (Mechanical design specification)
-Phase 10   → v2.0     (BEM autorotation, polygon line geometry)
+Phase 8.5  → TODO    (Viability gates: line weight, noise, Reynolds — from Cameron's PR #1)
+Phase 9    → NOW     (Mechanical design specification)
+Phase 10   → v2.0    (BEM autorotation, polygon line geometry)
 ```
 
 ---
@@ -70,6 +71,58 @@ Pareto front of anchor tension vs mass efficiency vs gust stability.
 - [ ] Notebook generates Pareto-front plots
 - [ ] SPEC.md §6 populated with key findings
 - [ ] All existing tests still green
+
+---
+
+## Phase 8.5 — Viability Gates (Post-PR #1 Integration)
+
+### Goal
+
+Wire Cameron's new functions (`rotor_tip_speed`, `rotor_reynolds_number`,
+`line_mass_per_m`, `line_weight_along_line`) into the stack model and sweep
+pipeline so every configuration is checked against physical viability
+constraints.
+
+### Background
+
+PR #1 (cameron-read-git, 2026-07-13) added four functions that give us the
+physics to answer three questions the model couldn't ask before:
+
+1. **Noise:** Is the blade tip speed below 120 m/s (Mach 0.3)?
+2. **Trust:** Is Re > 5×10⁵ (PCA-2 data valid)?
+3. **Weight:** How much does the line itself weigh, and is it accounted for
+   in the tension budget?
+
+These functions exist and are tested (159/159 green) but aren't yet wired
+into `stack_tension_profile`, `parameter_sweep`, or any consumer API.
+
+### Tasks
+
+| # | Task | Where | What |
+|---|------|-------|------|
+| 1 | Add `line_density` field | `AutogyroStack` struct | Dyneema density (default 970 kg/m³). Needed by `line_mass_per_m` inside `stack_tension_profile`. |
+| 2 | Wire line weight into tension | `stack_tension_profile` | Add `line_weight_along_line` term to the `delta` accumulation. Line sections between rotors now contribute their own weight to anchor tension. |
+| 3 | Add tip_speed column | `parameter_sweep` | Compute `rotor_tip_speed` for the top rotor (or max across stack) at each wind speed. Filterable: `tip_speed > 120` → noisy. |
+| 4 | Add tip_reynolds column | `parameter_sweep` | Compute `rotor_reynolds_number` at each wind speed. Filterable: `tip_reynolds < 5e5` → PCA-2 untrustworthy. |
+| 5 | Create `viability_report` | New function | Takes a stack + flow state, returns a named tuple: `(reynolds_ok, noise_ok, line_weight_fraction, warnings)`. Single entry point for physical viability checks. |
+| 6 | Add Re/noise to Pareto filter | `compute_figures_of_merit` | Optional keyword to exclude configurations below Re threshold or above noise limit from the Pareto front. |
+
+### Design Decision Needed
+
+**Task 1:** Adding `line_density` to `AutogyroStack` is a breaking struct
+change. Alternative: pass `line_density` as a keyword argument to
+`stack_tension_profile` with default 970.0. The struct approach is cleaner
+(long-term — line properties belong with the line) but breaks existing
+constructor calls. **Decide before implementing.**
+
+### Definition of Done
+
+- [ ] `stack_tension_profile` includes line self-weight term
+- [ ] `parameter_sweep` outputs `tip_speed` and `tip_reynolds` columns
+- [ ] `viability_report()` function exists and is tested
+- [ ] Re/noise filters available on Pareto front
+- [ ] All existing tests still green
+- [ ] SPEC.md §5.1 (v1 limitations) updated to note Re regime awareness
 
 ---
 
