@@ -197,3 +197,37 @@ function rotor_force_along_line(rotor::AutogyroRotor, rho, v_wind, line_elevatio
     F_line = F_lift * sind(line_elevation_deg) + F_drag * cosd(line_elevation_deg)
     return F_line, F_lift, F_drag, cl, cd
 end
+
+"""
+    rotor_tip_speed(rotor::AutogyroRotor, v_wind, α_eff_deg) -> Float64
+
+Blade tip speed (m/s) for a rotor in autorotation.
+
+Converts the estimated autorotation RPM to angular velocity and multiplies by
+radius:
+
+    ω = RPM × 2π / 60
+    v_tip = ω × radius
+
+Tip speed is important for noise constraints — the KTD.jl design limit is
+120 m/s to stay well below Mach 0.3, above which tip noise becomes
+significant.
+
+# Arguments
+- `rotor::AutogyroRotor`: the rotor.
+- `v_wind`: freestream wind speed (m/s).
+- `α_eff_deg`: effective disk angle of attack (degrees).
+
+# Examples
+```jldoctest
+julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0);
+
+julia> round(rotor_tip_speed(r, 8.0, 50.0), digits=1)
+15.3
+```
+"""
+function rotor_tip_speed(rotor::AutogyroRotor, v_wind, α_eff_deg)
+    rpm = estimated_autorotation_rpm(rotor, v_wind, α_eff_deg)
+    ω = rpm * 2π / 60.0
+    return ω * rotor.radius
+end
