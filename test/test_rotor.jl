@@ -141,5 +141,54 @@
             @test F_lift == 0.0
             @test F_drag == 0.0
         end
-    end
+
+        @testset "rotor_tip_speed" begin
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
+            # α_eff=50°, v_wind=8 m/s, estimated RPM ≈ 97.5
+            # ω = 97.5 × 2π/60 = 10.21 rad/s → v_tip = 10.21 × 1.5 = 15.3 m/s
+            v_tip = CoaxialAutogyroStacking.rotor_tip_speed(rotor, 8.0, 50.0)
+            @test v_tip ≈ 15.3 atol=0.5
+        end
+
+        @testset "rotor_tip_speed — zero wind" begin
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
+            v_tip = CoaxialAutogyroStacking.rotor_tip_speed(rotor, 0.0, 50.0)
+            @test v_tip == 0.0
+        end
+
+        @testset "rotor_tip_speed — independent of radius at same λ" begin
+            # At constant λ, tip speed depends only on v_through = v_wind × sin(α_eff)
+            # v_tip = λ × v_through → independent of radius
+            rotor1 = CoaxialAutogyroStacking.AutogyroRotor(1.0, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
+            rotor2 = CoaxialAutogyroStacking.AutogyroRotor(2.0, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
+            v1 = CoaxialAutogyroStacking.rotor_tip_speed(rotor1, 8.0, 50.0)
+            v2 = CoaxialAutogyroStacking.rotor_tip_speed(rotor2, 8.0, 50.0)
+            @test v1 ≈ v2  atol=1e-6
+        end
+
+        @testset "rotor_reynolds_number" begin
+            # Re = ρ × v_tip × chord / μ
+            # R=1.5, c=0.15, α=50°, v=8, ρ=1.225, μ=1.81e-5
+            # v_through = 8 × sin(50°) ≈ 6.128, v_tip = 2.5 × 6.128 ≈ 15.32
+            # Re = 1.225 × 15.32 × 0.15 / 1.81e-5 ≈ 155,500
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
+            Re = CoaxialAutogyroStacking.rotor_reynolds_number(rotor, 1.225, 8.0, 50.0)
+            @test Re ≈ 155_500 atol=2_000
+        end
+
+        @testset "rotor_reynolds_number — zero wind" begin
+            rotor = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
+            Re = CoaxialAutogyroStacking.rotor_reynolds_number(rotor, 1.225, 0.0, 50.0)
+            @test Re == 0.0
+        end
+
+        @testset "rotor_reynolds_number — scales with chord" begin
+            # Double chord → double Re (same tip speed, same ρ/μ)
+            rotor1 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.1, 2, 0.10, 10.0, 0.0, 5.0)
+            rotor2 = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.1, 2, 0.20, 10.0, 0.0, 5.0)
+            Re1 = CoaxialAutogyroStacking.rotor_reynolds_number(rotor1, 1.225, 8.0, 50.0)
+            Re2 = CoaxialAutogyroStacking.rotor_reynolds_number(rotor2, 1.225, 8.0, 50.0)
+            @test Re2 ≈ 2.0 * Re1  atol=1e-6
+        end
+        end
 end
