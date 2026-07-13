@@ -231,3 +231,41 @@ function rotor_tip_speed(rotor::AutogyroRotor, v_wind, α_eff_deg)
     ω = rpm * 2π / 60.0
     return ω * rotor.radius
 end
+
+"""
+    rotor_reynolds_number(rotor::AutogyroRotor, rho, v_wind, α_eff_deg; μ=1.81e-5) -> Float64
+
+Blade-tip Reynolds number for a rotor in autorotation.
+
+    Re = ρ × v_tip × chord / μ
+
+where `v_tip` comes from [`rotor_tip_speed`](@ref) and `μ` is the dynamic
+viscosity of air (default 1.81×10⁻⁵ Pa·s at 15°C).
+
+Reynolds number determines the flow regime at the blade tip:
+- Re < 5×10⁴: laminar separation — poor lift, high drag
+- Re ≈ 10⁵: transitional — marginal, scale-effects dominate
+- Re > 5×10⁵: fully turbulent — predictable, design-safe
+
+Small model autogyro rotors (R < 1 m, chord < 0.1 m) can operate in the
+transitional regime, where performance degrades significantly.
+
+# Arguments
+- `rotor::AutogyroRotor`: the rotor.
+- `rho`: air density (kg/m³).
+- `v_wind`: freestream wind speed (m/s).
+- `α_eff_deg`: effective disk angle of attack (degrees).
+- `μ`: dynamic viscosity of air (Pa·s), defaults to 1.81×10⁻⁵.
+
+# Examples
+```jldoctest
+julia> r = AutogyroRotor(1.5, 0.1, 2, 0.15, 10.0, 0.0, 5.0);
+
+julia> round(rotor_reynolds_number(r, 1.225, 8.0, 50.0), digits=-3)
+156000.0
+```
+"""
+function rotor_reynolds_number(rotor::AutogyroRotor, rho, v_wind, α_eff_deg; μ=1.81e-5)
+    v_tip = rotor_tip_speed(rotor, v_wind, α_eff_deg)
+    return rho * v_tip * rotor.blade_chord / μ
+end
