@@ -118,4 +118,45 @@
         @test profile[1] ≈ 0.0 atol=0.01     # at topmost rotor
         @test profile[2] == 0.0               # slack below hanging rotor, not negative
     end
+
+    @testset "AutogyroStack — line_density default" begin
+        r = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
+        stack = CoaxialAutogyroStacking.AutogyroStack(
+            [r], [10.0], 0.004, 50.0)
+        @test stack.line_density == 970.0   # Dyneema default
+    end
+
+    @testset "AutogyroStack — line_density override" begin
+        r = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
+        stack = CoaxialAutogyroStacking.AutogyroStack(
+            [r], [10.0], 0.004, 50.0, line_density=1440.0)  # Spectra
+        @test stack.line_density == 1440.0
+    end
+
+    @testset "stack_tension_profile — line weight adds to anchor tension" begin
+        r = CoaxialAutogyroStacking.AutogyroRotor(1.5, 0.05, 4, 0.15, 10.0, 0.0, 5.0)
+
+        # Stack with zero-density line (no line weight) — like the old model
+        stack_no_weight = CoaxialAutogyroStacking.AutogyroStack(
+            [r], [30.0], 0.004, 50.0, line_density=0.0)
+        profile_no_weight = CoaxialAutogyroStacking.stack_tension_profile(
+            stack_no_weight, 1.225, 8.0)
+
+        # Stack with Dyneema-density line (with line weight)
+        stack_with_weight = CoaxialAutogyroStacking.AutogyroStack(
+            [r], [30.0], 0.004, 50.0, line_density=970.0)
+        profile_with_weight = CoaxialAutogyroStacking.stack_tension_profile(
+            stack_with_weight, 1.225, 8.0)
+
+        # Line weight should increase anchor tension
+        @test profile_with_weight[end] > profile_no_weight[end]
+
+        # The difference should match expected line weight for 30m of 4mm Dyneema:
+        # mass_per_m = 970 × π × (0.002)² ≈ 0.0122 kg/m
+        # total mass = 0.0122 × 30 = 0.366 kg
+        # weight = 0.366 × 9.81 = 3.59 N
+        # along-line = 3.59 × sin(50°) ≈ 2.75 N
+        expected_extra = 0.0122 * 30.0 * 9.81 * sind(50.0)
+        @test profile_with_weight[end] - profile_no_weight[end] ≈ expected_extra atol=0.1
+    end
 end

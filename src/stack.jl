@@ -1,7 +1,7 @@
 # src/stack.jl — Multi-rotor stack and tension profile computation
 
 """
-    AutogyroStack(rotors, section_lengths, line_diameter, line_angle_deg)
+    AutogyroStack(rotors, section_lengths, line_diameter, line_angle_deg; line_density=970.0)
 
 Multiple autogyro rotors stacked coaxially on a single kite line, each with
 independent pitch. Immutable.
@@ -20,6 +20,8 @@ The constructor asserts `length(section_lengths) == length(rotors)`.
   entries. `section_lengths[1]` is between rotor 1 and rotor 2;
   `section_lengths[end]` is below the bottom rotor down to the anchor.
 - `line_diameter::Float64`: line diameter (m).
+- `line_density::Float64`: line material density (kg/m³). Defaults to 970
+  (Dyneema SK75). Used for computing line self-weight in the tension profile.
 - `line_angle_deg::Float64`: base line elevation angle (degrees).
 
 # Examples
@@ -36,11 +38,13 @@ struct AutogyroStack
     rotors           :: Vector{AutogyroRotor}
     section_lengths  :: Vector{Float64}
     line_diameter    :: Float64
+    line_density     :: Float64
     line_angle_deg   :: Float64
 
-    function AutogyroStack(rotors, section_lengths, line_diameter, line_angle_deg)
+    function AutogyroStack(rotors, section_lengths, line_diameter, line_angle_deg;
+                           line_density=970.0)
         @assert length(section_lengths) == length(rotors)
-        new(rotors, section_lengths, line_diameter, line_angle_deg)
+        new(rotors, section_lengths, line_diameter, line_density, line_angle_deg)
     end
 end
 
@@ -63,8 +67,8 @@ terminates the line) downward to the anchor.
 
 # Physics
 At each rotor the net along-line force is `F_line − W·cosθ` (positive means the
-rotor pulls the line taut, adding tension below it); bare-line section drag adds
-further tension.
+rotor pulls the line taut, adding tension below it); bare-line section drag and
+line self-weight add further tension.
 
 # Examples
 ```jldoctest
@@ -75,9 +79,9 @@ julia> stack = AutogyroStack([r, r, r], fill(10.0, 3), 0.004, 50.0);
 julia> round.(stack_tension_profile(stack, 1.225, 8.0), digits=1)
 4-element Vector{Float64}:
    0.0
- 296.1
- 592.2
- 888.2
+ 296.5
+ 593.0
+ 889.5
 ```
 """
 function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
@@ -100,7 +104,15 @@ function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
         # along-line force is downward (F_line < W_cos), the segment above it
         # goes slack and tension at this position is zero.  The rotor hangs (or
         # sits on the ground) and does not add to the tension below.
-        delta = F_drag_section + (F_line - W_cos)
+        #
+        # Line self-weight (from line_mass_per_m + line_weight_along_line)
+        # always adds to tension when the section is taut — the stack must
+        # lift not just the rotors but the Dyneema line itself.
+        mass_per_m = line_mass_per_m(stack.line_diameter, stack.line_density)
+        F_line_weight = line_weight_along_line(
+            mass_per_m, section_len, 9.81, stack.line_angle_deg)
+
+        delta = F_drag_section + (F_line - W_cos) + F_line_weight
         profile[k] = max(0.0, profile[k-1] + delta)
     end
 
