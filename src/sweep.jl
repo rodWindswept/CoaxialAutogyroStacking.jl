@@ -95,6 +95,8 @@ DataFrame with columns:
 - `anchor_tension`: anchor tension at this wind speed (N)
 - `total_lift`: total aerodynamic lift from all rotors (N)
 - `profile_min`, `profile_max`: tension range across segment positions (N)
+- `tip_speed`: max blade tip speed across the stack (m/s) — noise gate, flag if > 120
+- `tip_reynolds`: min tip Reynolds number across the stack — PCA-2 trust gate, flag if < 5×10⁵
 
 # Examples
 
@@ -151,6 +153,10 @@ function parameter_sweep(;
                         # Build stack
                         stack = AutogyroStack(rotors, section_lens, line_dia, elev)
 
+                        # Effective AoA per rotor depends only on tilt +
+                        # elevation, not wind speed — compute once per config
+                        alphas = [effective_alpha(r, elev) for r in rotors]
+
                         # Compute tension at each wind speed
                         for v in wind_speeds
                             profile = stack_tension_profile(stack, rho, v)
@@ -161,6 +167,14 @@ function parameter_sweep(;
                                 fl, _, _, _, _ = rotor_force_along_line(r, rho, v, elev)
                                 total_lift += fl
                             end
+
+                            # Phase 8.5 viability columns (worst case across stack):
+                            #   tip_speed    → max (noise gate: loudest rotor)
+                            #   tip_reynolds → min (trust gate: least reliable rotor)
+                            tip_speeds = [rotor_tip_speed(r, v, α)
+                                          for (r, α) in zip(rotors, alphas)]
+                            tip_res = [rotor_reynolds_number(r, rho, v, α)
+                                       for (r, α) in zip(rotors, alphas)]
 
                             results[idx] = (
                                 radius       = radius,
@@ -173,6 +187,8 @@ function parameter_sweep(;
                                 total_lift   = total_lift,
                                 profile_min  = minimum(profile),
                                 profile_max  = maximum(profile),
+                                tip_speed    = maximum(tip_speeds),
+                                tip_reynolds = minimum(tip_res),
                             )
                             idx += 1
                         end

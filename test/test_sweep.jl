@@ -80,6 +80,47 @@ using DataFrames
         @test all(df.anchor_tension .>= 0.0)
     end
 
+    @testset "viability columns — tip_speed & tip_reynolds" begin
+        df = CoaxialAutogyroStacking.parameter_sweep(
+            radii=[1.0],
+            stack_counts=[1, 3],
+            spacings=[10.0],
+            profiles=["uniform", "graded"],
+            wind_speeds=[6.0, 12.0],
+            elevations=[55.0],
+        )
+
+        # Phase 8.5 Tasks 3-4: every sweep row carries viability numbers
+        @test "tip_speed" in names(df)
+        @test "tip_reynolds" in names(df)
+
+        # Physically meaningful: both strictly positive at positive wind
+        @test all(df.tip_speed .> 0.0)
+        @test all(df.tip_reynolds .> 0.0)
+
+        # Constant tip-speed-ratio model: doubling wind doubles tip speed
+        lo = df[(df.wind_speed .== 6.0) .& (df.n_rotors .== 1) .&
+                (df.profile .== "uniform"), :].tip_speed[1]
+        hi = df[(df.wind_speed .== 12.0) .& (df.n_rotors .== 1) .&
+                (df.profile .== "uniform"), :].tip_speed[1]
+        @test hi ≈ 2.0 * lo rtol = 1e-6
+
+        # Consistency: for a single-rotor stack the reported Re must be the
+        # Re of that same rotor, i.e. Re = rho * v_tip * chord / mu
+        row = df[(df.wind_speed .== 6.0) .& (df.n_rotors .== 1) .&
+                 (df.profile .== "uniform"), :]
+        re_expected = 1.225 * row.tip_speed[1] * 0.15 / 1.81e-5
+        @test row.tip_reynolds[1] ≈ re_expected rtol = 1e-6
+
+        # Worst-case semantics on a mixed-tilt stack (graded, 3 rotors):
+        # reported tip_speed is the max across rotors, tip_reynolds the min —
+        # so tip_reynolds must NOT exceed the Re implied by max tip speed
+        g = df[(df.wind_speed .== 6.0) .& (df.n_rotors .== 3) .&
+               (df.profile .== "graded"), :]
+        re_from_max_tip = 1.225 * g.tip_speed[1] * 0.15 / 1.81e-5
+        @test g.tip_reynolds[1] <= re_from_max_tip + 1e-9
+    end
+
     @testset "compute_figures_of_merit" begin
         df = CoaxialAutogyroStacking.parameter_sweep(
             radii=[1.5],
