@@ -119,7 +119,7 @@ constructor calls. **Decide before implementing.**
 
 - [ ] `stack_tension_profile` includes line self-weight term
 - [ ] `parameter_sweep` outputs `tip_speed` and `tip_reynolds` columns
-- [ ] `viability_report()` function exists and is tested
+- [x] `viability_report()` function exists and is tested
 - [ ] Re/noise filters available on Pareto front
 - [ ] All existing tests still green
 - [ ] SPEC.md §5.1 (v1 limitations) updated to note Re regime awareness

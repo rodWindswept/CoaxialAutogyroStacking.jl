@@ -12,6 +12,7 @@ include("line_section.jl")
 include("stack.jl")
 include("optimisation.jl")
 include("sweep.jl")
+include("viability.jl")
 
 export pca2_interp
 export AutogyroRotor, rotor_disk_area, rotor_solidity, effective_alpha, rotor_force_along_line, estimated_autorotation_rpm, rotor_tip_speed, rotor_reynolds_number
@@ -20,5 +21,6 @@ export AutogyroStack, stack_tension_profile
 export optimal_rotor_tilt, optimal_rotor_tilts, lift_force_steady
 export parameter_sweep, compute_figures_of_merit, pareto_front
 export uniform_tilt, top_draggy_tilt, bottom_lifty_tilt, graded_tilt
+export viability_report
 
 end # module CoaxialAutogyroStacking

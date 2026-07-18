@@ -8,4 +8,5 @@ using CoaxialAutogyroStacking
     include("test_stack.jl")
     include("test_optimisation.jl")
     include("test_sweep.jl")
+    include("test_viability.jl")
 end
