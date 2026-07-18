@@ -113,12 +113,14 @@ using DataFrames
         @test row.tip_reynolds[1] ≈ re_expected rtol = 1e-6
 
         # Worst-case semantics on a mixed-tilt stack (graded, 3 rotors):
-        # reported tip_speed is the max across rotors, tip_reynolds the min —
-        # so tip_reynolds must NOT exceed the Re implied by max tip speed
+        # tip_reynolds must be the MIN across rotors. Since Re ∝ tip speed
+        # (same chord), max(Re) == Re implied by max tip speed — so a strict
+        # < is required here: a min→max regression produces equality and
+        # would sneak past a <=.
         g = df[(df.wind_speed .== 6.0) .& (df.n_rotors .== 3) .&
                (df.profile .== "graded"), :]
         re_from_max_tip = 1.225 * g.tip_speed[1] * 0.15 / 1.81e-5
-        @test g.tip_reynolds[1] <= re_from_max_tip + 1e-9
+        @test g.tip_reynolds[1] < re_from_max_tip
     end
 
     @testset "compute_figures_of_merit" begin
