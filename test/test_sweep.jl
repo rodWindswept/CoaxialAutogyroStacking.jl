@@ -147,6 +147,48 @@ using DataFrames
         @test fom.min_tension[1] <= fom.mean_anchor_tension[1] <= fom.max_tension[1]
     end
 
+    @testset "compute_figures_of_merit — viability gates" begin
+        # Synthetic sweep data: two configs, 3 wind speeds each
+        # Config A (radius=1.0, uniform): mixed viability — one row fails Re gate
+        # Config B (radius=3.0, graded): all rows pass both gates
+        df = DataFrame(
+            radius       = [1.0, 1.0, 1.0, 3.0, 3.0, 3.0],
+            n_rotors     = [1, 1, 1, 3, 3, 3],
+            spacing      = [10.0, 10.0, 10.0, 10.0, 10.0, 10.0],
+            profile      = ["uniform", "uniform", "uniform",
+                            "graded", "graded", "graded"],
+            elevation    = [55.0, 55.0, 55.0, 55.0, 55.0, 55.0],
+            wind_speed   = [4.0, 8.0, 12.0, 4.0, 8.0, 12.0],
+            anchor_tension = [50.0, 200.0, 450.0, 100.0, 400.0, 900.0],
+            total_lift   = [60.0, 240.0, 540.0, 120.0, 480.0, 1080.0],
+            profile_min  = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            profile_max  = [50.0, 200.0, 450.0, 100.0, 400.0, 900.0],
+            tip_speed    = [40.0, 80.0, 120.0, 60.0, 120.0, 180.0],
+            tip_reynolds = [2.0e5, 4.0e5, 6.0e5, 8.0e5, 1.6e6, 2.4e6],
+        )
+
+        # No filter: both configs present
+        fom_all = CoaxialAutogyroStacking.compute_figures_of_merit(df)
+        @test nrow(fom_all) == 2
+
+        # Reynolds gate (min 5e5): Config A has a row at 2e5 → excluded
+        fom_re = CoaxialAutogyroStacking.compute_figures_of_merit(
+            df; reynolds_min=5e5)
+        @test nrow(fom_re) == 1
+        @test fom_re.radius[1] == 3.0
+
+        # Noise gate (max 120 m/s): Config B has a row at 180 → excluded
+        fom_noise = CoaxialAutogyroStacking.compute_figures_of_merit(
+            df; tip_speed_limit=120.0)
+        @test nrow(fom_noise) == 1
+        @test fom_noise.radius[1] == 1.0
+
+        # Both gates: Config A fails Re, Config B fails noise → none survive
+        fom_both = CoaxialAutogyroStacking.compute_figures_of_merit(
+            df; reynolds_min=5e5, tip_speed_limit=120.0)
+        @test nrow(fom_both) == 0
+    end
+
     @testset "pareto_front" begin
         # Create a simple dataset with known Pareto front
         df = DataFrame(
