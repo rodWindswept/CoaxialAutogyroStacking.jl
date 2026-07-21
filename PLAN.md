@@ -98,14 +98,14 @@ into `stack_tension_profile`, `parameter_sweep`, or any consumer API.
 
 ### Tasks
 
-| # | Task | Where | What |
-|---|------|-------|------|
-| 1 | Add `line_density` field | `AutogyroStack` struct | Dyneema density (default 970 kg/m³). Needed by `line_mass_per_m` inside `stack_tension_profile`. |
-| 2 | Wire line weight into tension | `stack_tension_profile` | Add `line_weight_along_line` term to the `delta` accumulation. Line sections between rotors now contribute their own weight to anchor tension. |
-| 3 | Add tip_speed column | `parameter_sweep` | Compute `rotor_tip_speed` for the top rotor (or max across stack) at each wind speed. Filterable: `tip_speed > 120` → noisy. |
-| 4 | Add tip_reynolds column | `parameter_sweep` | Compute `rotor_reynolds_number` at each wind speed. Filterable: `tip_reynolds < 5e5` → PCA-2 untrustworthy. |
-| 5 | Create `viability_report` | New function | Takes a stack + flow state, returns a named tuple: `(reynolds_ok, noise_ok, line_weight_fraction, warnings)`. Single entry point for physical viability checks. |
-| 6 | Add Re/noise to Pareto filter | `compute_figures_of_merit` | Optional keyword to exclude configurations below Re threshold or above noise limit from the Pareto front. |
+| # | Task | Where | What | Status |
+|---|------|-------|------|--------|
+| 1 | Add `line_density` field | `AutogyroStack` struct | Dyneema density (default 970 kg/m³). | ✓ |
+| 2 | Wire line weight into tension | `stack_tension_profile` | Add `line_weight_along_line` term to the `delta` accumulation. | ✓ |
+| 3 | Add tip_speed column | `parameter_sweep` | Compute `rotor_tip_speed` for the top rotor (or max across stack). | ✓ |
+| 4 | Add tip_reynolds column | `parameter_sweep` | Compute `rotor_reynolds_number` at each wind speed. | ✓ |
+| 5 | Create `viability_report` | New function | Single entry point for physical viability checks. | ✓ |
+| 6 | Add Re/noise to Pareto filter | `compute_figures_of_merit` | Optional keyword to exclude configurations below Re threshold or above noise limit. | ✓ |
 
 ### Design Decision Needed
 
@@ -117,11 +117,11 @@ constructor calls. **Decide before implementing.**
 
 ### Definition of Done
 
-- [ ] `stack_tension_profile` includes line self-weight term
-- [ ] `parameter_sweep` outputs `tip_speed` and `tip_reynolds` columns
-- [ ] `viability_report()` function exists and is tested
-- [ ] Re/noise filters available on Pareto front
-- [ ] All existing tests still green
+- [x] `stack_tension_profile` includes line self-weight term
+- [x] `parameter_sweep` outputs `tip_speed` and `tip_reynolds` columns
+- [x] `viability_report()` function exists and is tested
+- [x] Re/noise filters available on Pareto front
+- [x] All existing tests still green
 - [ ] SPEC.md §5.1 (v1 limitations) updated to note Re regime awareness
 
 ---

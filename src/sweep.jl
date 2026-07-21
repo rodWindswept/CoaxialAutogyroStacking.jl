@@ -95,6 +95,8 @@ DataFrame with columns:
 - `anchor_tension`: anchor tension at this wind speed (N)
 - `total_lift`: total aerodynamic lift from all rotors (N)
 - `profile_min`, `profile_max`: tension range across segment positions (N)
+- `tip_speed`: max blade tip speed across the stack (m/s) — noise gate, flag if > 120
+- `tip_reynolds`: min tip Reynolds number across the stack — PCA-2 trust gate, flag if < 5×10⁵
 
 # Examples
 
@@ -151,6 +153,10 @@ function parameter_sweep(;
                         # Build stack
                         stack = AutogyroStack(rotors, section_lens, line_dia, elev)
 
+                        # Effective AoA per rotor depends only on tilt +
+                        # elevation, not wind speed — compute once per config
+                        alphas = [effective_alpha(r, elev) for r in rotors]
+
                         # Compute tension at each wind speed
                         for v in wind_speeds
                             profile = stack_tension_profile(stack, rho, v)
@@ -161,6 +167,14 @@ function parameter_sweep(;
                                 fl, _, _, _, _ = rotor_force_along_line(r, rho, v, elev)
                                 total_lift += fl
                             end
+
+                            # Phase 8.5 viability columns (worst case across stack):
+                            #   tip_speed    → max (noise gate: loudest rotor)
+                            #   tip_reynolds → min (trust gate: least reliable rotor)
+                            tip_speeds = [rotor_tip_speed(r, v, α)
+                                          for (r, α) in zip(rotors, alphas)]
+                            tip_res = [rotor_reynolds_number(r, rho, v, α)
+                                       for (r, α) in zip(rotors, alphas)]
 
                             results[idx] = (
                                 radius       = radius,
@@ -173,6 +187,8 @@ function parameter_sweep(;
                                 total_lift   = total_lift,
                                 profile_min  = minimum(profile),
                                 profile_max  = maximum(profile),
+                                tip_speed    = maximum(tip_speeds),
+                                tip_reynolds = minimum(tip_res),
                             )
                             idx += 1
                         end
@@ -190,16 +206,51 @@ end
 # ── Post-processing: figures of merit ─────────────────────────────────────────
 
 """
-    compute_figures_of_merit(df::DataFrame) -> DataFrame
+    compute_figures_of_merit(df::DataFrame; rotor_mass_per_unit=5.0,
+                             reynolds_min=nothing, tip_speed_limit=nothing) -> DataFrame
 
 Group sweep results by configuration and compute:
 - `mean_anchor_tension`: mean anchor tension across wind speeds (N)
 - `tension_per_kg`: anchor tension per unit rotor mass (N/kg)
 - `tension_cv`: coefficient of variation across wind speeds (lower = more stable)
 
+# Keyword Arguments
+- `rotor_mass_per_unit`: mass of a single rotor (kg), default 5.0.
+- `reynolds_min`: if set, exclude configurations where any wind-speed row has
+  `tip_reynolds < reynolds_min` (PCA-2 trust gate). Default `nothing` (no filter).
+- `tip_speed_limit`: if set, exclude configurations where any wind-speed row has
+  `tip_speed > tip_speed_limit` (noise gate). Default `nothing` (no filter).
+
 Returns a DataFrame with one row per unique configuration.
 """
-function compute_figures_of_merit(df::DataFrame; rotor_mass_per_unit=5.0)
+function compute_figures_of_merit(df::DataFrame; rotor_mass_per_unit=5.0,
+                                   reynolds_min=nothing, tip_speed_limit=nothing)
+    # Phase 8.5 Task 6: optional viability gates — filter out configs that
+    # fail Re or noise limits at ANY wind speed before computing FOMs.
+    # A config is excluded if a single row in that config violates either gate.
+    if reynolds_min !== nothing || tip_speed_limit !== nothing
+        config_cols = [:radius, :n_rotors, :spacing, :profile, :elevation]
+        gdf = groupby(df, config_cols)
+        passing = Set()
+        for g in gdf
+            keep = true
+            if reynolds_min !== nothing
+                keep &= all(g.tip_reynolds .>= reynolds_min)
+            end
+            if tip_speed_limit !== nothing
+                keep &= all(g.tip_speed .<= tip_speed_limit)
+            end
+            if keep
+                push!(passing, (g.radius[1], g.n_rotors[1], g.spacing[1],
+                                g.profile[1], g.elevation[1]))
+            end
+        end
+        keep_rows = [(row.radius, row.n_rotors, row.spacing,
+                      row.profile, row.elevation) in passing
+                     for row in eachrow(df)]
+        df = df[keep_rows, :]
+    end
+
     # Group by configuration (everything except wind_speed and tension cols)
     config_cols = [:radius, :n_rotors, :spacing, :profile, :elevation]
     gdf = groupby(df, config_cols)
