@@ -206,14 +206,39 @@ lift_force_steady(stack::AutogyroStack, rho, v_wind) -> (F_hub, T_anchor, elevat
   resolved. BEM deferred to v2.
 - **No blade pitch parameterisation:** the PCA-2 lookup is 1-D (AoA only).
   Blade pitch field exists on struct but is unused.
+- **Re regime awareness:** `viability_report()` and sweep viability columns
+  (`tip_speed`, `tip_reynolds`) flag configurations outside PCA-2's valid
+  Re range (Re < 5×10⁵) or above the 120 m/s noise limit. (Added Phase 8.5)
 - **Steady-state only:** no time dynamics, no gust response, no launch/land
   transients.
 
-### 5.2 v2 (planned)
+### 5.2 v2 (current)
 
-- Autorotation RPM from blade-element torque balance
-- Polygon line geometry (segments at different angles)
-- Mechanical design specification complete
+- Blade-element momentum (BEM) replaces PCA-2 disk lookup
+- Autorotation RPM solved from torque equilibrium (Q = 0 via bisection on
+  `bem_induction`)
+- Polygon line geometry: segment angles determined by force equilibrium at
+  each rotor (`solve_polygon_angles`). Graded stacking is now meaningful —
+  top-rotor tilt reshapes the line, altering effective AoA for rotors below.
+- Airfoil data: NACA 0012 CL/CD tables at Re = 10⁵, 2×10⁵, 5×10⁵, 10⁶
+  (XFoil 6.96, airfoiltools.com). Higher-Re tables scaled from Re=10⁵
+  using Abbott & von Doenhoff (1959).
+- BEM-aware parameter sweep (`parameter_sweep_bem`) and multivariate
+  coordinate-descent tilt optimisation (`optimal_rotor_tilts_bem`).
+
+**Known limitations (v2.0):**
+- 1-D axial BEM — does not model cross-flow (rotor-disk AoA effects
+  are projected via `v_through = v_wind × sin(α_eff)`). Under-predicts
+  forces compared to PCA-2 disk model (~10×) due to 2-D airfoil data
+  not capturing rotational augmentation and disk-averaging effects.
+- Steady-state only — no time dynamics, gust response, or launch/land
+  transients.
+- No tip-loss model (Prandtl factor). Conservative near blade tips.
+- No 3-D rotational corrections to airfoil data (Snel, Du & Selig).
+- Polygon line uses Jacobi iteration — may not converge for extreme
+  tilt profiles.
+- BEM is ~100× slower than PCA-2 lookup — parameter sweeps use reduced
+  grids (default 8 configurations vs 8,640).
 
 ### 5.3 v3 (future)
 
@@ -367,13 +392,13 @@ continuous lift at cruise wind.
 
 ## 7. Phased Evolution
 
-| Phase | TRL | Deliverable |
-|-------|-----|-------------|
-| **v1.0** | 1–2 | Steady-state force model, PCA-2 disk, parameter sweep results, SPEC.md |
-| **v1.1** | 2–3 | Mechanical design specification, schematics, 3D models |
-| **v2.0** | 3–4 | BEM autorotation model, polygon line geometry, graded stacking optimisation |
-| **v3.0** | 5–6 | Multi-rotor dynamics, gust response, blade pitch control, fabrication drawings |
-| **v4.0** | 7+ | KTD.jl integration, moving anchor, wake interaction |
+| Phase | TRL | Deliverable | Status |
+|-------|-----|-------------|--------|
+| **v1.0** | 1–2 | Steady-state force model, PCA-2 disk, parameter sweep results, SPEC.md | ✓ DONE |
+| **v1.1** | 2–3 | Mechanical design specification, schematics, 3D models | ✓ DONE |
+| **v2.0** | 3–4 | BEM autorotation model, polygon line geometry, graded stacking optimisation | ✓ DONE |
+| **v3.0** | 5–6 | Multi-rotor dynamics, gust response, blade pitch control, fabrication drawings | planned |
+| **v4.0** | 7+ | KTD.jl integration, moving anchor, wake interaction | planned |
 
 ---
 
