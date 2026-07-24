@@ -119,4 +119,28 @@
         # Rope cannot push — anchor tension is zero, not negative
         @test T_anchor == 0.0
     end
+
+    @testset "optimal_rotor_tilts_bem — polygon-aware multivariate optimisation" begin
+        rho = 1.225
+        v_wind = 8.0
+        elev = 55.0
+
+        # Two identical rotors — coordinate descent should find non-uniform tilts
+        r = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
+        stack = AutogyroStack([r, r], [10.0, 15.0], 0.004, elev)
+
+        tilts_opt, T_opt = optimal_rotor_tilts_bem(stack, rho, v_wind)
+
+        @test length(tilts_opt) == 2
+        @test all(0.0 .<= tilts_opt .<= 30.0)
+        @test T_opt > 0.0
+
+        # Optimised tilts should differ from uniform (graded stacking works!)
+        @test tilts_opt != [10.0, 10.0]
+
+        # Optimised tension should exceed uniform-tilt tension
+        stack_uniform = AutogyroStack([r, r], [10.0, 15.0], 0.004, elev)
+        profile_uniform = stack_tension_profile_polygon(stack_uniform, rho, v_wind)
+        @test T_opt >= profile_uniform[end]  # optimisation doesn't hurt
+    end
 end

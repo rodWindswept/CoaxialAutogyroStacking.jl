@@ -141,3 +141,87 @@ function lift_force_steady(stack::AutogyroStack, rho, v_wind)
 
     return total_F_line, profile[end], stack.line_angle_deg
 end
+
+# ── Phase 10d Task 12: BEM-aware multivariate tilt optimisation ────────────
+
+"""
+    optimal_rotor_tilts_bem(stack::AutogyroStack, rho, v_wind; tilt_candidates=0:5:30)
+
+Coordinate-descent optimisation of disk tilts for all rotors, using polygon
+line geometry and BEM aerodynamics. Unlike v1's per-rotor independent
+optimisation, this accounts for rotor-to-rotor coupling: changing a top rotor's
+tilt reshapes the line, altering effective AoA for every rotor below.
+
+# Algorithm
+1. Start with current tilts from the stack's rotors.
+2. For each rotor i (top→bottom), try all candidate tilts, pick the one
+   that maximises anchor tension (via [`stack_tension_profile_polygon`](@ref)).
+3. Repeat until tilts stabilise (max 10 iterations).
+
+# Returns
+- `tilts::Vector{Float64}`: optimal tilt per rotor (degrees).
+- `T_anchor::Float64`: resulting anchor tension (N).
+"""
+function optimal_rotor_tilts_bem(stack::AutogyroStack, rho, v_wind;
+                                  tilt_candidates=0:5:30)
+    n = length(stack.rotors)
+    tilts = [r.tilt_deg for r in stack.rotors]  # start from current
+
+    for _ in 1:10
+        improved = false
+
+        for i in 1:n
+            best_tilt = tilts[i]
+            best_T = -Inf
+
+            for t in tilt_candidates
+                trial_tilts = copy(tilts)
+                trial_tilts[i] = t
+
+                trial_rotors = [AutogyroRotor(
+                    stack.rotors[j].radius, stack.rotors[j].hub_radius,
+                    stack.rotors[j].n_blades, stack.rotors[j].blade_chord,
+                    trial_tilts[j], stack.rotors[j].blade_pitch_deg,
+                    stack.rotors[j].mass) for j in 1:n]
+
+                trial_stack = AutogyroStack(
+                    trial_rotors, stack.section_lengths,
+                    stack.line_diameter, stack.line_angle_deg,
+                    line_density=stack.line_density)
+
+                profile = stack_tension_profile_polygon(trial_stack, rho, v_wind)
+                T_anchor = profile[end]
+
+                if T_anchor > best_T
+                    best_T = T_anchor
+                    best_tilt = t
+                end
+            end
+
+            if best_tilt != tilts[i]
+                tilts[i] = best_tilt
+                improved = true
+            end
+        end
+
+        if !improved
+            break
+        end
+    end
+
+    # Final evaluation
+    final_rotors = [AutogyroRotor(
+        stack.rotors[j].radius, stack.rotors[j].hub_radius,
+        stack.rotors[j].n_blades, stack.rotors[j].blade_chord,
+        tilts[j], stack.rotors[j].blade_pitch_deg,
+        stack.rotors[j].mass) for j in 1:n]
+    final_stack = AutogyroStack(
+        final_rotors, stack.section_lengths,
+        stack.line_diameter, stack.line_angle_deg,
+        line_density=stack.line_density)
+    profile = stack_tension_profile_polygon(final_stack, rho, v_wind)
+
+    return tilts, profile[end]
+end
+
+export optimal_rotor_tilts_bem
