@@ -22,9 +22,9 @@ Phase 1–5  → DONE  ✓  (PCA-2 data, rotor model, line drag, stack, optimisa
 Phase 6    → DONE  ✓  (Quality gates: 84 tests green)
 Phase 7    → DONE  ✓  (Disk tilt/collective refactor, GLMakie dashboard)
 Phase 8    → DONE  ✓  (Parameter sweep, Pareto analysis, SPEC.md §6 findings)
-Phase 8.5  → TODO    (Viability gates: line weight, noise, Reynolds — from Cameron's PR #1)
-Phase 9    → NOW     (Mechanical design specification)
-Phase 10   → v2.0    (BEM autorotation, polygon line geometry)
+Phase 8.5  → DONE  ✓  (Viability gates: line weight, noise, Reynolds — PR #3 merged)
+Phase 9    → DONE  ✓  (Mechanical design specification)
+Phase 10   → NEXT    (BEM autorotation, polygon line geometry)
 ```
 
 ---
@@ -135,11 +135,24 @@ documented in schematics and 3D models.
 
 ### Tasks
 
-1. Finalise dual-molding sandwich bearing geometry with correct tilt axis
-2. Dimension swashplate, actuator mounts, pushrod linkage
-3. Size empennage (H-stab, V-fin) for trim authority at target AoA
-4. Specify webbing capture and spliced-eye Dyneema integration
-5. Generate fabrication-ready drawings (OpenSCAD → dimensioned SVG/PDF)
+1. Finalise dual-molding sandwich bearing geometry with correct tilt axis ✓
+2. Dimension swashplate, actuator mounts, pushrod linkage ✓
+3. Size empennage (H-stab, V-fin) for trim authority at target AoA ✓
+4. Specify webbing capture and spliced-eye Dyneema integration ✓
+5. Generate fabrication-ready drawings (OpenSCAD → dimensioned SVG/PDF) ✓
+
+### Definition of Done
+
+- [x] Schematics/PRD.md — complete element inventory, coordinate system, forces ✓
+- [x] Schematics/DIMENSIONS.md — dimensioned components with safety margins ✓
+- [x] Schematics/parameters.scad — auto-generated from Julia model ✓
+- [x] Schematics/single_unit.scad — full 3D assembly (343 lines) ✓
+- [x] Schematics/assembly_v4.pdf — dimensioned LaTeX cross-section (103 KB) ✓
+- [x] Schematics/renders/single_unit_iso_v2.png — isometric render ✓
+- [x] Schematics/renders/single_unit_front_v2.png — front view ✓
+- [x] Schematics/renders/single_unit_side_v2.png — side view ✓
+- [x] Schematics/renders/assembly_cross_section_v4.svg — vector cross-section ✓
+- [x] All 193 tests green ✓
 
 ---
 

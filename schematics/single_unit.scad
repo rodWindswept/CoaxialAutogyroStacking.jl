@@ -36,6 +36,7 @@ ZT_BOTTOM_MOLDING= 638;   // top of bottom molding (20mm tall, to 658)
 ZT_GENERATOR     = 643;   // generator at bearing level, on tube
 ZT_SWASHPLATE    = 620;   // right under bottom molding
 ZT_ACTUATORS     = 560;   // actuators below swashplate
+ZT_HUB_CENTER    = 679;   // midpoint of hub (ZT_ROTOR_DISK)
 ZT_EMPENNAGE     = 120;   // tail boom mount
 ZT_BOTTOM_TIE    = 20;    // bottom rope tie — primary load path
 
