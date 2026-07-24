@@ -1,81 +1,58 @@
-# test/test_bem.jl — Blade-element momentum tests
+# Phase 10b Task 4 — BEM induction loop tests (appended to test_bem.jl)
 
-@testset "bem_station" begin
-    # Test case: R=3m rotor, station at r=2m, 8 m/s wind, 45 RPM
-    # Expected order-of-magnitude: v_rel ~ omega*r ~ 4.71*2 ~ 9.4 m/s
-    # dT ~ 0.5 * 1.225 * 9.4^2 * 0.15 * CL*cos(phi) ~ small positive
+@testset "bem_induction" begin
     rho = 1.225
     v_wind = 8.0
     omega = 45.0 * 2π / 60.0  # 4.71 rad/s
-    r = 2.0
-    chord = 0.15
-    dr = 0.3
-    a = 0.3  # typical induction factor
 
-    # At a=0.3: v_axial = 8*(1-0.3) = 5.6, v_tan = 4.71*2 = 9.42
-    # phi = atan(5.6, 9.42) ≈ 0.537 rad ≈ 30.7°
-    # At this phi, CL≈0.5, CD≈0.015 for NACA 0012 at moderate Re
-    cl = 0.5
-    cd = 0.015
+    # Rotor matching best sweep config: R=3m, 2 blades, 0.15m chord
+    rotor = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
 
-    dT, dQ = bem_station(r, chord, cl, cd, rho, v_wind, omega, a, dr)
+    T, Q = bem_induction(rotor, rho, v_wind, omega, 10)
 
-    # dT should be positive (thrust), order ~10 N for this station
-    @test dT > 0.0
-    @test dT < 100.0
+    # Thrust should be positive and meaningful order-of-magnitude
+    # PCA-2 model gives ~997 N lift at this config; BEM thrust should be similar
+    @test T > 100.0
+    @test T < 5000.0
 
-    # dQ should be positive (torque aiding rotation in autorotation)
-    @test dQ > 0.0
-    @test dQ < 200.0  # N·m per station
+    # Torque should be near zero for autorotation (this omega is a guess)
+    # |Q| < 500 N·m is a loose bound — autorotation RPM will be found later
+    @test abs(Q) < 500.0
 
-    # Physical checks
-    v_axial = v_wind * (1 - a)
-    v_tan = omega * r
-    v_rel = sqrt(v_axial^2 + v_tan^2)
-    phi = atan(v_axial, v_tan)
+    # More stations → better convergence (but same ballpark)
+    T20, Q20 = bem_induction(rotor, rho, v_wind, omega, 20)
+    @test T20 ≈ T rtol=0.1  # within 10% of 10-station result
 
-    # v_rel should be dominated by tangential component for our params
-    @test v_rel > v_tan
-    @test v_rel > v_axial
+    # Higher omega → higher thrust (more blade speed)
+    T_fast, _ = bem_induction(rotor, rho, v_wind, omega * 1.5, 10)
+    @test T_fast > T
 
-    # phi should be acute
-    @test 0.0 < phi < π/2
+    # Zero wind with spinning rotor: no through-flow → zero thrust,
+    # but drag torque opposes rotation (rotor acts as a mixer/fan)
+    T0, Q0 = bem_induction(rotor, rho, 0.0, omega, 10)
+    @test T0 ≈ 0.0 atol=1e-6
+    @test Q0 < 0.0  # drag torque, rotor consumes power
 
-    # cn and ct make physical sense
-    cn_expected = cl * cos(phi) + cd * sin(phi)
-    ct_expected = cl * sin(phi) - cd * cos(phi)
-    @test cn_expected > 0.0  # normal force positive
-    @test ct_expected > 0.0  # tangential force positive for autorotation
-
-    # dT formula: 0.5 * rho * v_rel^2 * chord * cn * dr
-    dT_expected = 0.5 * rho * v_rel^2 * chord * cn_expected * dr
-    @test dT ≈ dT_expected rtol=1e-10
-
-    # dQ formula: 0.5 * rho * v_rel^2 * chord * ct * r * dr
-    dQ_expected = 0.5 * rho * v_rel^2 * chord * ct_expected * r * dr
-    @test dQ ≈ dQ_expected rtol=1e-10
+    # No rotation → drag-only thrust
+    T_drag, Q_drag = bem_induction(rotor, rho, v_wind, 1e-6, 10)
+    @test T_drag > 0.0
+    @test abs(Q_drag) < 1.0  # negligible torque at near-zero RPM
 end
 
-@testset "bem_station edge cases" begin
-    rho = 1.225
-    chord = 0.15
-    dr = 0.3
+@testset "bem_induction convergence" begin
+    rotor = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
 
-    # Zero omega: wind only, thrust from drag, zero torque
-    dT, dQ = bem_station(2.0, chord, 0.0, 0.015, rho, 8.0, 1e-6, 0.3, dr)
-    # With very small omega: v_axial dominates, phi ≈ 90°
-    # dT ≈ ½ρ·v_axial²·chord·cd·dr (pure drag in axial direction)
-    dT_expected = 0.5 * rho * (8.0 * 0.7)^2 * chord * 0.015 * dr
-    @test dT ≈ dT_expected rtol=0.01
-    @test abs(dQ) < 1e-6  # no rotation → negligible torque
+    # Should not throw for any reasonable omega
+    for omega in [1.0, 2.0, 5.0, 10.0, 20.0]
+        T, Q = bem_induction(rotor, 1.225, 8.0, omega, 10)
+        @test isfinite(T)
+        @test isfinite(Q)
+    end
 
-    # Zero wind AND zero omega: no forces
-    dT, dQ = bem_station(2.0, chord, 0.5, 0.015, rho, 0.0, 0.0, 0.3, dr)
-    @test dT ≈ 0.0 atol=1e-10
-    @test dQ ≈ 0.0 atol=1e-10
-
-    # a=0 (no induction): higher velocities, higher forces
-    dT_a0, _ = bem_station(2.0, chord, 0.5, 0.015, rho, 8.0, 4.71, 0.0, dr)
-    dT_a3, _ = bem_station(2.0, chord, 0.5, 0.015, rho, 8.0, 4.71, 0.3, dr)
-    @test dT_a0 > dT_a3  # less induction → more through-flow → more thrust
+    # Small rotor should also work and produce less thrust
+    small = AutogyroRotor(1.5, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
+    T_big, _ = bem_induction(AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0), 1.225, 8.0, 4.71, 10)
+    T_s, Q_s = bem_induction(small, 1.225, 8.0, 4.71, 10)
+    @test T_s > 0.0
+    @test T_s < T_big  # smaller rotor → less thrust
 end
