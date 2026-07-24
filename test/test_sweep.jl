@@ -208,4 +208,36 @@ using DataFrames
         @test nrow(pf2) >= 1
         @test (3.0, 1.0) in zip(pf2.x, pf2.y)  # best: highest x, lowest y
     end
+
+    @testset "parameter_sweep_bem — BEM-based sweep" begin
+        # Tiny grid: 2 radii × 1 count × 1 spacing × 1 profile × 1 wind × 1 elev = 2 configs
+        df = CoaxialAutogyroStacking.parameter_sweep_bem(
+            radii=[1.5, 3.0],
+            stack_counts=[1],
+            spacings=[15.0],
+            profiles=["uniform"],
+            wind_speeds=[8.0],
+            elevations=[55.0],
+        )
+
+        # Should have 2 rows
+        @test nrow(df) == 2
+
+        # Check columns exist
+        @test "anchor_tension" in names(df)
+        @test "autorotation_rpm" in names(df)
+        @test "tip_speed_bem" in names(df)
+
+        # Larger rotor → more tension
+        r3_row = df[df.radius .== 3.0, :]
+        r15_row = df[df.radius .== 1.5, :]
+        @test r3_row.anchor_tension[1] > r15_row.anchor_tension[1]
+
+        # RPM should be physical
+        @test all(df.autorotation_rpm .> 0.0)
+        @test all(df.autorotation_rpm .< 500.0)
+
+        # Tip speed should be below noise limit
+        @test all(df.tip_speed_bem .< 120.0)
+    end
 end

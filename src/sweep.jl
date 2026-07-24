@@ -315,3 +315,83 @@ end
 
 export parameter_sweep, compute_figures_of_merit, pareto_front
 export uniform_tilt, top_draggy_tilt, bottom_lifty_tilt, graded_tilt
+
+# ── Phase 10d Task 11: BEM-based parameter sweep ──────────────────────────
+
+"""
+    parameter_sweep_bem(; kwargs...) -> DataFrame
+
+BEM-based parameter sweep using polygon line geometry. Same parameter grid as
+[`parameter_sweep`](@ref) but uses [`rotor_force_bem`](@ref) for aerodynamics
+and [`stack_tension_profile_polygon`](@ref) for tension accumulation.
+
+BEM is ~100× slower than PCA-2 — use a smaller grid for exploration.
+"""
+function parameter_sweep_bem(;
+    radii          = [1.5, 3.0],
+    stack_counts   = [1, 2],
+    spacings       = [15.0],
+    profiles       = ["uniform"],
+    wind_speeds    = [8.0],
+    elevations     = [55.0],
+    rho            = 1.225,
+    line_dia       = 0.004,
+    rotor_mass     = 5.0,
+    hub_radius     = 0.05,
+    n_blades       = 2,
+    blade_chord    = 0.15,
+)
+    total_combos = length(radii) * length(stack_counts) * length(spacings) *
+                   length(profiles) * length(elevations)
+    n_rows = total_combos * length(wind_speeds)
+    results = Vector{Any}(undef, n_rows)
+
+    idx = 1
+    for radius in radii
+        for n in stack_counts
+            for spacing in spacings
+                for profile_name in profiles
+                    tilts = TILT_PROFILES[profile_name](n)
+                    for elev in elevations
+                        rotors = [AutogyroRotor(radius, hub_radius, n_blades,
+                            blade_chord, tilt, 0.0, rotor_mass) for tilt in tilts]
+                        section_lens = fill(spacing, n)
+                        stack = AutogyroStack(rotors, section_lens, line_dia, elev)
+
+                        for v in wind_speeds
+                            profile = stack_tension_profile_polygon(stack, rho, v)
+                            anchor_t = profile[end]
+
+                            # BEM per-rotor data
+                            rpms = Float64[]
+                            tip_speeds = Float64[]
+                            for r in rotors
+                                _, _, rpm = rotor_force_bem(r, rho, v, elev)
+                                push!(rpms, rpm)
+                                push!(tip_speeds, rpm * 2π / 60.0 * r.radius)
+                            end
+
+                            results[idx] = (
+                                radius         = radius,
+                                n_rotors       = n,
+                                spacing        = spacing,
+                                profile        = profile_name,
+                                elevation      = elev,
+                                wind_speed     = v,
+                                anchor_tension = anchor_t,
+                                autorotation_rpm = maximum(rpms),
+                                tip_speed_bem  = maximum(tip_speeds),
+                            )
+                            idx += 1
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    resize!(results, idx - 1)
+    return DataFrame(results)
+end
+
+export parameter_sweep_bem
