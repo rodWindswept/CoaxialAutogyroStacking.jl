@@ -32,3 +32,6 @@ schematics/*.png
 schematics/*.bak
 !schematics/renders/*.png
 .hermes/
+* backup*
+notebooks/explorer.jl
+notebooks/learn.jl
