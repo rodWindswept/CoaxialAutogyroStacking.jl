@@ -31,3 +31,4 @@ schematics/*.pdf
 schematics/*.png
 schematics/*.bak
 !schematics/renders/*.png
+.hermes/
