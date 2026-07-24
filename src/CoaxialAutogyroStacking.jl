@@ -8,6 +8,7 @@ module CoaxialAutogyroStacking
 
 include("pca2_data.jl")
 include("airfoil_data.jl")
+include("bem.jl")
 include("rotor.jl")
 include("line_section.jl")
 include("stack.jl")
