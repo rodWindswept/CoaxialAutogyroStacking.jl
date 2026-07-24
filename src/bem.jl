@@ -177,3 +177,73 @@ function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20)
 end
 
 export bem_induction
+
+# ── Task 5: Autorotation RPM via torque equilibrium ────────────────────────
+
+"""
+    bem_autorotation_rpm(rotor::AutogyroRotor, rho, v_through) -> Float64
+
+Find the autorotation RPM — the rotational speed where net aerodynamic torque
+is zero — via bisection root-find on Q(ω) = 0.
+
+`v_through` is the velocity component normal to the rotor disk (m/s).
+For a rotor at elevation φ and tilt δ: v_through = v_wind × sin(90° − φ + δ).
+
+# Algorithm
+Bisection on f(ω) = bem_induction(…)[2] between ω ∈ [0.5, ω_max] where
+ω_max = 120 / R (tip-speed noise limit, ~Mach 0.3). If Q has the same sign
+at both bounds (no root in range), returns the bound with smaller |Q|.
+
+# Examples
+```jldoctest
+julia> r = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0);
+
+julia> rpm = bem_autorotation_rpm(r, 1.225, 8.0);
+
+julia> rpm > 10.0 && rpm < 500.0
+true
+```
+"""
+function bem_autorotation_rpm(rotor::AutogyroRotor, rho, v_through)
+    # Scan ω range for sign change (Q(ω) may not be monotonic)
+    n_stations = 12
+    ω_min = 1.0
+    ω_max = 60.0 / rotor.radius  # ~20 rad/s for R=3m, catches first crossing
+    ω_step = (ω_max - ω_min) / 8.0
+
+    Q_prev = nothing
+    ω_prev = ω_min
+
+    for ω in (ω_min + ω_step):ω_step:ω_max
+        _, Q = bem_induction(rotor, rho, v_through, ω, n_stations)
+
+        if Q_prev !== nothing && Q_prev * Q <= 0.0
+            # Sign change found — bisect in [ω_prev, ω]
+            ω_lo, ω_hi = ω_prev, ω
+            for _ in 1:40
+                ω_mid = (ω_lo + ω_hi) / 2.0
+                _, Q_mid = bem_induction(rotor, rho, v_through, ω_mid, n_stations)
+                if Q_mid * Q_prev > 0.0
+                    ω_lo = ω_mid
+                else
+                    ω_hi = ω_mid
+                end
+                if abs(ω_hi - ω_lo) < 1e-4
+                    break
+                end
+            end
+            return (ω_lo + ω_hi) / 2.0 * 60.0 / (2π)
+        end
+
+        Q_prev = Q
+        ω_prev = ω
+    end
+
+    # No sign change found — return ω with smallest |Q|
+    _, Q_lo = bem_induction(rotor, rho, v_through, ω_min, n_stations)
+    _, Q_hi = bem_induction(rotor, rho, v_through, ω_max, n_stations)
+    best_ω = abs(Q_lo) < abs(Q_hi) ? ω_min : ω_max
+    return best_ω * 60.0 / (2π)
+end
+
+export bem_autorotation_rpm

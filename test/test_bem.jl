@@ -56,3 +56,34 @@ end
     @test T_s > 0.0
     @test T_s < T_big  # smaller rotor → less thrust
 end
+
+@testset "bem_autorotation_rpm" begin
+    rotor = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
+    rho = 1.225
+    v_wind = 8.0
+
+    rpm = bem_autorotation_rpm(rotor, rho, v_wind)
+
+    # RPM should be in a physically plausible range
+    @test rpm > 10.0
+    @test rpm < 500.0
+
+    # At autorotation RPM, torque should be near zero
+    omega = rpm * 2π / 60.0
+    T, Q = bem_induction(rotor, rho, v_wind, omega, 15)
+    @test abs(Q) < 10.0  # near torque equilibrium
+
+    # Thrust at autorotation should be positive and meaningful
+    @test T > 50.0
+
+    # Higher wind → higher RPM
+    rpm_12 = bem_autorotation_rpm(rotor, rho, 12.0)
+    @test rpm_12 > rpm
+
+    # Smaller rotor: RPM may be higher or lower depending on v_through/R ratio
+    # Just verify it returns a physically plausible value
+    small = AutogyroRotor(1.5, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
+    rpm_small = bem_autorotation_rpm(small, rho, v_wind)
+    @test rpm_small > 1.0
+    @test rpm_small < 800.0  # wide bound for small rotors
+end
