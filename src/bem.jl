@@ -247,3 +247,50 @@ function bem_autorotation_rpm(rotor::AutogyroRotor, rho, v_through)
 end
 
 export bem_autorotation_rpm
+
+# ── Task 6: Full BEM force computation ─────────────────────────────────────
+
+"""
+    rotor_force_bem(rotor::AutogyroRotor, rho, v_wind, elev_deg) -> (F_line, T, rpm)
+
+Full blade-element momentum force computation for a single rotor.
+Replaces the PCA-2 empirical lookup with physics-based BEM.
+
+# Algorithm
+1. Effective disk AoA: α_eff = 90° − elev + tilt
+2. Through-disk velocity: v_through = v_wind × sin(α_eff)
+3. Autorotation RPM from torque equilibrium: [`bem_autorotation_rpm`](@ref)
+4. Thrust from full BEM pass: [`bem_induction`](@ref)
+5. Along-line force: F_line ≈ T × cos(tilt_deg)  (first-order projection)
+
+# Returns
+- `F_line`: force projected onto the line axis (N).
+- `T`: BEM thrust normal to rotor disk (N).
+- `rpm`: autorotation rotational speed.
+
+# Examples
+```jldoctest
+julia> r = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0);
+
+julia> F_line, T, rpm = rotor_force_bem(r, 1.225, 8.0, 55.0);
+
+julia> F_line > 0.0 && rpm > 0.0
+true
+```
+"""
+function rotor_force_bem(rotor::AutogyroRotor, rho, v_wind, elev_deg)
+    α_eff = effective_alpha(rotor, elev_deg)
+    v_through = v_wind * sind(α_eff)
+
+    rpm = bem_autorotation_rpm(rotor, rho, v_through)
+    omega = rpm * 2π / 60.0
+
+    T, _ = bem_induction(rotor, rho, v_through, omega, 20)
+
+    # First-order: along-line component of thrust
+    F_line = T * cosd(rotor.tilt_deg)
+
+    return F_line, T, rpm
+end
+
+export rotor_force_bem

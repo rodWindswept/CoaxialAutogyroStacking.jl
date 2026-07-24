@@ -87,3 +87,37 @@ end
     @test rpm_small > 1.0
     @test rpm_small < 800.0  # wide bound for small rotors
 end
+
+@testset "rotor_force_bem" begin
+    rho = 1.225
+    v_wind = 8.0
+    elev = 55.0
+    rotor = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
+
+    F_line, T, rpm = rotor_force_bem(rotor, rho, v_wind, elev)
+
+    # F_line should be positive and same order as PCA-2 (~1294 N at this config)
+    @test F_line > 100.0
+    @test F_line < 3000.0
+
+    # Thrust should be positive
+    @test T > 0.0
+
+    # RPM should be physically plausible
+    @test rpm > 20.0
+    @test rpm < 300.0
+
+    # Higher wind → more force
+    F_12, _, _ = rotor_force_bem(rotor, rho, 12.0, elev)
+    @test F_12 > F_line
+
+    # Steeper elevation → less through-disk velocity → less force
+    F_65, _, _ = rotor_force_bem(rotor, rho, v_wind, 65.0)
+    @test F_65 < F_line
+
+    # Zero tilt: disk perpendicular to line, different α_eff
+    rotor_flat = AutogyroRotor(3.0, 0.05, 2, 0.15, 0.0, 0.0, 5.0)
+    F_flat, _, rpm_flat = rotor_force_bem(rotor_flat, rho, v_wind, elev)
+    @test F_flat > 0.0
+    @test rpm_flat > 0.0
+end
