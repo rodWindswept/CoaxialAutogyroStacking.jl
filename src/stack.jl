@@ -118,3 +118,52 @@ function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
 
     return profile
 end
+
+# ── Phase 10c Task 8-9: Polygon-line tension profile ──────────────────────
+
+"""
+    stack_tension_profile_polygon(stack::AutogyroStack, rho, v_wind) -> Vector{Float64}
+
+Tension profile using polygon line geometry. Unlike the v1 straight-line model,
+each rotor sees its own segment angle determined by force equilibrium
+([`solve_polygon_angles`](@ref)). This enables graded stacking where top-rotor
+tilt reshapes the line for rotors below.
+
+Accumulates tension top→bottom using polygon segment angles, including
+bare-line drag and line self-weight along each segment.
+
+# Returns
+- `Vector{Float64}` with `n_rotors + 1` entries (N).
+"""
+function stack_tension_profile_polygon(stack::AutogyroStack, rho, v_wind)
+    # Solve segment angles from force equilibrium
+    θ, _, _ = solve_polygon_angles(
+        stack.rotors, stack.line_angle_deg, rho, v_wind)
+
+    n = length(stack.rotors)
+    profile = zeros(Float64, n + 1)
+    # profile[1] = 0 (above top rotor)
+
+    for i in 1:n
+        rotor = stack.rotors[i]
+        seg_angle = θ[i]
+        seg_len = stack.section_lengths[i]
+
+        # BEM force at this segment's angle
+        F_line, _, _ = rotor_force_bem(rotor, rho, v_wind, seg_angle)
+        W_cos = rotor.mass * 9.81 * cosd(seg_angle)
+
+        # Section drag and line weight along this segment
+        F_drag_section = bare_line_drag(rho, v_wind, stack.line_diameter, seg_len, seg_angle)
+
+        mass_per_m = line_mass_per_m(stack.line_diameter, stack.line_density)
+        F_line_weight = line_weight_along_line(mass_per_m, seg_len, 9.81, seg_angle)
+
+        delta = F_drag_section + (F_line - W_cos) + F_line_weight
+        profile[i+1] = max(0.0, profile[i] + delta)
+    end
+
+    return profile
+end
+
+export stack_tension_profile_polygon

@@ -159,4 +159,28 @@
         expected_extra = 0.0122 * 30.0 * 9.81 * sind(50.0)
         @test profile_with_weight[end] - profile_no_weight[end] ≈ expected_extra atol=0.1
     end
+
+    @testset "stack_tension_profile_polygon" begin
+        # Single rotor: should match polygon solver
+        r = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
+        stack = AutogyroStack([r], [15.0], 0.004, 55.0)
+        profile = stack_tension_profile_polygon(stack, 1.225, 8.0)
+
+        @test length(profile) == 2  # top + anchor
+        @test profile[1] ≈ 0.0 atol=1e-6
+        @test profile[2] > 0.0
+
+        # Two rotors: tension monotonically increasing
+        stack2 = AutogyroStack([r, r], [10.0, 15.0], 0.004, 55.0)
+        profile2 = stack_tension_profile_polygon(stack2, 1.225, 8.0)
+        @test length(profile2) == 3
+        @test profile2[1] ≈ 0.0 atol=1e-6
+        @test profile2[3] > profile2[2] > profile2[1]
+
+        # Three rotors: all positive tensions
+        stack3 = AutogyroStack([r, r, r], fill(10.0, 3), 0.004, 55.0)
+        profile3 = stack_tension_profile_polygon(stack3, 1.225, 8.0)
+        @test all(profile3 .>= 0.0)
+        @test profile3[end] > profile2[end]  # more rotors → more tension
+    end
 end
