@@ -24,7 +24,7 @@ Phase 7    → DONE  ✓  (Disk tilt/collective refactor, GLMakie dashboard)
 Phase 8    → DONE  ✓  (Parameter sweep, Pareto analysis, SPEC.md §6 findings)
 Phase 8.5  → DONE  ✓  (Viability gates: line weight, noise, Reynolds — PR #3 merged)
 Phase 9    → DONE  ✓  (Mechanical design specification)
-Phase 10   → NEXT    (BEM autorotation, polygon line geometry)
+Phase 10   → DONE  ✓  (BEM autorotation, polygon line geometry)
 ```
 
 ---
@@ -122,7 +122,7 @@ constructor calls. **Decide before implementing.**
 - [x] `viability_report()` function exists and is tested
 - [x] Re/noise filters available on Pareto front
 - [x] All existing tests still green
-- [ ] SPEC.md §5.1 (v1 limitations) updated to note Re regime awareness
+- [x] SPEC.md §5.1 (v1 limitations) updated to note Re regime awareness ✓
 
 ---
 
