@@ -5,6 +5,7 @@ using CoaxialAutogyroStacking
     include("test_pca2_data.jl")
     include("test_airfoil_data.jl")
     include("test_bem.jl")
+    include("test_polygon_line.jl")
     include("test_rotor.jl")
     include("test_line_section.jl")
     include("test_stack.jl")
