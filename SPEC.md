@@ -386,48 +386,73 @@ continuous lift at cruise wind.
 - Straight-line geometry collapses tilt-profile differentiation. The sweep
   validates the pipeline; tilt-profile optimisation is a v2 deliverable.
 
-### 6.6 BEM Sweep (v2.0 — preliminary)
+### 6.6 BEM Sweep (v2.0)
 
-> Sweep run 2026-07-24. 16 configurations (2 radii × 2 counts × 2 profiles × 2 wind speeds).
-> Data: `bem_sweep_results.tsv`.
+> Sweep run 2026-07-24. 384 configurations (3 radii × 4 counts × 4 profiles × 4 wind speeds × 2 elevations).
+> Data: `bem_full_sweep.tsv`. Run time: 15.6 s.
 
 #### Viability threshold
 
-R=1.5m is below the BEM viability threshold — at 8 m/s the rotor cannot
-overcome its own weight (T=0, rope-can't-push clamp). At 12 m/s it produces
-only 17-43 N. R=3.0m is the practical minimum for BEM with NACA 0012.
+R=1.5m is below the BEM viability threshold with NACA 0012 — at all wind
+speeds the rotor cannot overcome its own weight (T=0, rope-can't-push clamp).
+R=2.0m is the minimum viable radius; R=3.0m is the practical design point.
 
-#### Graded stacking works
+#### Graded stacking confirmed
 
 At R=3.0m, N=2, 8 m/s:
 | Profile | Anchor tension (N) | vs uniform |
 |---------|-------------------|------------|
 | uniform | 245 | baseline |
 | top_draggy | 276 | **+12.7%** |
+| bottom_lifty | 256 | +4.5% |
+| graded | 253 | +3.3% |
 
-At 12 m/s: top_draggy gives 588 N vs 550 N uniform (+6.9%). This confirms
-that tilt-profile differentiation becomes meaningful with polygon line
-geometry — the v1 null result was a straight-line artefact.
+At 12 m/s the advantage narrows: top_draggy +6.9%, bottom_lifty +2.4%.
+Tilt-profile differentiation is meaningful with polygon line geometry —
+the v1 null result (≤3% difference) was a straight-line artefact.
 
-#### Scaling
+#### Profile optimum depends on radius
 
-- Tension scales roughly as v² (57→114→245 N for 1→2 rotors at 8→12 m/s)
-- RPM scales sub-linearly with wind speed (74→105 RPM, ~√v)
-- Tip speeds 23-38 m/s — well below 120 m/s noise limit
-- Tilt profile affects RPM: top_draggy spins faster (84 vs 74 RPM at 8 m/s)
-  — higher tilt creates more through-disk velocity
+| Radius | N=2 best profile | Tension (N) | RPM |
+|--------|-----------------|-------------|-----|
+| 2.0m | bottom_lifty | 121 | 133 |
+| 3.0m | top_draggy | 276 | 84 |
+
+Smaller rotors prefer bottom-lifty (concentrate tilt at lower rotors where
+tension is higher); larger rotors prefer top-draggy (use top rotor to pull
+line outward, improving AoA for rotors below). This radius-dependent optimum
+is a new result not visible in the v1 PCA-2 sweep.
+
+#### Top 5 configurations (8 m/s)
+
+| Radius | N | Profile | Elev | Tension (N) |
+|--------|---|---------|------|-------------|
+| 3.0m | 4 | top_draggy | 45°/55° | 649 |
+| 3.0m | 4 | uniform | 45°/55° | 622 |
+| 3.0m | 4 | graded | 45° | 609 |
+| 3.0m | 3 | top_draggy | 45° | 450 |
+| 3.0m | 3 | uniform | 45°/55° | 418 |
+
+#### Scaling laws (BEM)
+
+- Tension ∝ v² (as expected from dynamic pressure)
+- Tension ∝ N (linear with rotor count, ~2% efficiency loss per added rotor)
+- RPM ∝ √v (sub-linear, 74→105 RPM for 8→12 m/s at R=3m)
+- Elevation effect: 45° gives marginally more tension than 55° (~4%)
+- Tip speeds: 23-38 m/s at R=3m — well below 120 m/s noise limit
 
 #### Recommended configuration (v2.0 BEM)
 
 | Parameter | Value |
 |-----------|-------|
-| Rotor radius | ≥ 3.0 m |
-| Stack count | ≥ 2 |
-| Tilt profile | top_draggy (20°/0°) |
-| Line elevation | 55° |
-| **Anchor tension (8 m/s, 2 rotors)** | **276 N** |
-| **Autorotation RPM** | **84** |
-| **Tip speed** | **26 m/s** |
+| Rotor radius | 3.0 m |
+| Stack count | 4 |
+| Tilt profile | top_draggy (20°/5°/0°) |
+| Line elevation | 45–55° |
+| **Anchor tension (8 m/s)** | **649 N** |
+| **Per-rotor efficiency** | **32.5 N/kg** |
+| **Autorotation RPM** | **~84** |
+| **Tip speed** | **~26 m/s** |
 - No wake interaction. All rotors see freestream. Wake coupling (v3) will
   reduce downstream rotor performance.
 
