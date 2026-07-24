@@ -7,6 +7,7 @@ module CoaxialAutogyroStacking
 # Phase 8:   Parameter sweep + Pareto-front analysis
 
 include("pca2_data.jl")
+include("airfoil_data.jl")
 include("rotor.jl")
 include("line_section.jl")
 include("stack.jl")
@@ -15,6 +16,7 @@ include("sweep.jl")
 include("viability.jl")
 
 export pca2_interp
+export naca0012_cl, naca0012_cd
 export AutogyroRotor, rotor_disk_area, rotor_solidity, effective_alpha, rotor_force_along_line, estimated_autorotation_rpm, rotor_tip_speed, rotor_reynolds_number
 export bare_line_drag, line_mass_per_m, line_weight_along_line
 export AutogyroStack, stack_tension_profile
