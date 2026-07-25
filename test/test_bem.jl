@@ -1,6 +1,7 @@
 # Phase 10b Task 4 — BEM induction loop tests (appended to test_bem.jl)
 
 using Statistics
+const C = CoaxialAutogyroStacking
 
 @testset "bem_induction" begin
     rho = 1.225
@@ -159,4 +160,18 @@ end
 
     # Ratio should be roughly constant across wind speeds
     @test std(ratios) / mean(ratios) < 0.2  # CV < 20%
+end
+
+@testset "Snel stall delay in BEM" begin
+    # With large chord (high c/r), post-stall stations get CL boost
+    # R=1.5m, chord=0.3m → c/r=0.2 at tip, higher near root
+    r = AutogyroRotor(1.5, 0.05, 2, 0.3, 8.0, 0.0, 3.0)
+
+    # At low ω (autorotation), stations operate at high α (post-stall)
+    omega = 9.0  # rad/s (~86 RPM)
+
+    T_no, _ = C.bem_induction(r, 1.225, 5.0, omega, 20; stall_delay=false)
+    T_3d, _ = C.bem_induction(r, 1.225, 5.0, omega, 20; stall_delay=true)
+
+    @test T_3d >= T_no  # 3-D correction never reduces thrust
 end

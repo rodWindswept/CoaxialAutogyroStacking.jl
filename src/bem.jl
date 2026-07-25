@@ -106,7 +106,7 @@ julia> T > 0.0
 true
 ```
 """
-function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20)
+function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20; stall_delay=true)
     dr = (rotor.radius - rotor.hub_radius) / n_stations
     mu = 1.81e-5  # dynamic viscosity of air
 
@@ -123,6 +123,7 @@ function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20)
         # Induction factor iteration
         a = 0.3
         cl, cd = 0.0, 0.0
+        cl_3d = 0.0  # will hold 3-D corrected CL for force integration
         for _ in 1:100
             v_axial = v_wind * (1.0 - a)
             v_tan = omega * r_i
@@ -133,6 +134,15 @@ function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20)
 
             cl = naca0012_cl(alpha_deg, Re_local)
             cd = naca0012_cd(alpha_deg, Re_local)
+
+            # 3-D stall-delay correction (Snel) if enabled — computed for
+            # force integration only (2-D CL drives induction iteration).
+            cl_3d = cl
+            if stall_delay
+                c_over_r = clamp(rotor.blade_chord / r_i, 0.0, 0.5)
+                lambda_local = omega * r_i / max(v_wind, 0.1)
+                cl_3d = snel_cl_3d(cl_3d, alpha_deg, lambda_local, c_over_r)
+            end
 
             cn = cl * cos(phi) + cd * sin(phi)
             sigma_local = rotor.n_blades * rotor.blade_chord / (2π * r_i)
@@ -166,7 +176,7 @@ function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20)
         end
 
         # Compute forces at this station with converged (or last) a
-        dT, dQ = bem_station(r_i, rotor.blade_chord, cl, cd, rho, v_wind, omega, a, dr)
+        dT, dQ = bem_station(r_i, rotor.blade_chord, cl_3d, cd, rho, v_wind, omega, a, dr)
 
         # Accumulate (per blade → total for all blades)
         T_total += dT * rotor.n_blades
