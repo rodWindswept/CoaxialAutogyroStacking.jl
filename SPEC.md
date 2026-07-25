@@ -465,6 +465,7 @@ is a new result not visible in the v1 PCA-2 sweep.
 | **v1.0** | 1–2 | Steady-state force model, PCA-2 disk, parameter sweep results, SPEC.md | ✓ DONE |
 | **v1.1** | 2–3 | Mechanical design specification, schematics, 3D models | ✓ DONE |
 | **v2.0** | 3–4 | BEM autorotation model, polygon line geometry, graded stacking optimisation | ✓ DONE |
+| **v2.1** | 3–4 | 3-D stall-delay correction (Snel) — improves root thrust by 35% at high c/r but negligible at design-point tip stations. BEM vs PCA-2 gap ~10× confirmed as 2-D/disk-averaged fundamental limit. | ✓ DONE |
 | **v3.0** | 5–6 | Multi-rotor dynamics, gust response, blade pitch control, fabrication drawings | planned |
 | **v4.0** | 7+ | KTD.jl integration, moving anchor, wake interaction | planned |
 
