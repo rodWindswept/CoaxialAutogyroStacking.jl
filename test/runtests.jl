@@ -12,4 +12,5 @@ using CoaxialAutogyroStacking
     include("test_optimisation.jl")
     include("test_sweep.jl")
     include("test_viability.jl")
+    include("test_stall_delay.jl")
 end

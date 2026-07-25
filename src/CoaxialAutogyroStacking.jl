@@ -16,6 +16,7 @@ include("stack.jl")
 include("optimisation.jl")
 include("sweep.jl")
 include("viability.jl")
+include("stall_delay.jl")
 
 export pca2_interp
 export naca0012_cl, naca0012_cd
@@ -26,5 +27,6 @@ export optimal_rotor_tilt, optimal_rotor_tilts, lift_force_steady
 export parameter_sweep, compute_figures_of_merit, pareto_front
 export uniform_tilt, top_draggy_tilt, bottom_lifty_tilt, graded_tilt
 export viability_report
+export snel_cl_3d
 
 end # module CoaxialAutogyroStacking
