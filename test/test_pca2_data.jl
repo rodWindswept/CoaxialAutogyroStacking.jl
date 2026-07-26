@@ -52,4 +52,11 @@
         @test cl_high ≈ 0.00 atol=1e-12
         @test cd_high ≈ 1.25 atol=1e-12
     end
+
+    @testset "External Consumer Interface Lock (KTD.jl assertion)" begin
+        # Locks down the precise pca2_interp outputs expected by KiteTurbineDynamics.jl
+        cl_ktd, cd_ktd = CoaxialAutogyroStacking.pca2_interp(30.0)
+        @test cl_ktd ≈ 0.85 atol=1e-12
+        @test cd_ktd ≈ 0.35 atol=1e-12
+    end
 end

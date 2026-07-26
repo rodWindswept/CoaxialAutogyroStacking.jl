@@ -23,8 +23,10 @@ Phase 6    → DONE  ✓  (Quality gates: 84 tests green)
 Phase 7    → DONE  ✓  (Disk tilt/collective refactor, GLMakie dashboard)
 Phase 8    → DONE  ✓  (Parameter sweep, Pareto analysis, SPEC.md §6 findings)
 Phase 8.5  → DONE  ✓  (Viability gates: line weight, noise, Reynolds — PR #3 merged)
+Phase 8.6  → DONE  ✓  (Doc staleness sweep, pca2 assertion, HANDOVER.md)
 Phase 9    → DONE  ✓  (Mechanical design specification)
-Phase 10   → DONE  ✓  (BEM autorotation, polygon line geometry)
+Phase 10   → DONE  ✓  (v2.0 BEM autorotation, polygon line geometry)
+Phase 10f  → DONE  ✓  (v2.1 Snel 3-D stall delay correction)
 ```
 
 ---
@@ -66,11 +68,11 @@ Pareto front of anchor tension vs mass efficiency vs gust stability.
 
 ### Definition of Done
 
-- [ ] `parameter_sweep()` passes tests
-- [ ] Sweep completes and produces a results CSV
-- [ ] Notebook generates Pareto-front plots
-- [ ] SPEC.md §6 populated with key findings
-- [ ] All existing tests still green
+- [x] `parameter_sweep()` passes tests
+- [x] Sweep completes and produces a results CSV
+- [x] Notebook generates Pareto-front plots
+- [x] SPEC.md §6 populated with key findings
+- [x] All existing tests still green
 
 ---
 
@@ -83,19 +85,6 @@ Wire Cameron's new functions (`rotor_tip_speed`, `rotor_reynolds_number`,
 pipeline so every configuration is checked against physical viability
 constraints.
 
-### Background
-
-PR #1 (cameron-read-git, 2026-07-13) added four functions that give us the
-physics to answer three questions the model couldn't ask before:
-
-1. **Noise:** Is the blade tip speed below 120 m/s (Mach 0.3)?
-2. **Trust:** Is Re > 5×10⁵ (PCA-2 data valid)?
-3. **Weight:** How much does the line itself weigh, and is it accounted for
-   in the tension budget?
-
-These functions exist and are tested (159/159 green) but aren't yet wired
-into `stack_tension_profile`, `parameter_sweep`, or any consumer API.
-
 ### Tasks
 
 | # | Task | Where | What | Status |
@@ -106,14 +95,6 @@ into `stack_tension_profile`, `parameter_sweep`, or any consumer API.
 | 4 | Add tip_reynolds column | `parameter_sweep` | Compute `rotor_reynolds_number` at each wind speed. | ✓ |
 | 5 | Create `viability_report` | New function | Single entry point for physical viability checks. | ✓ |
 | 6 | Add Re/noise to Pareto filter | `compute_figures_of_merit` | Optional keyword to exclude configurations below Re threshold or above noise limit. | ✓ |
-
-### Design Decision Needed
-
-**Task 1:** Adding `line_density` to `AutogyroStack` is a breaking struct
-change. Alternative: pass `line_density` as a keyword argument to
-`stack_tension_profile` with default 970.0. The struct approach is cleaner
-(long-term — line properties belong with the line) but breaks existing
-constructor calls. **Decide before implementing.**
 
 ### Definition of Done
 
@@ -126,20 +107,36 @@ constructor calls. **Decide before implementing.**
 
 ---
 
+## Phase 8.6 — Doc Staleness Sweep & Agent Handover
+
+### Goal
+
+Fix stale documentation references, guard the `pca2_interp` external dependency,
+and establish `HANDOVER.md` for Cameron's agent.
+
+### Tasks
+
+| # | Task | Where | What |
+|---|------|-------|------|
+| 1 | Fix broken/stale file maps | `PLAN.md`, `AGENTS.md` | Synchronise `src/` (12 modules) and `test/` (12 modules) file maps |
+| 2 | Guard `pca2_interp` output | `test/test_pca2_data.jl` | One `@test pca2_interp(α, λ) ≈ KNOWN_VALUE` assertion locking PCA-2 table for KTD |
+| 3 | Create `HANDOVER.md` | root | Comprehensive handover guide with academic/investor result framing and chart exploration framework |
+
+### Definition of Done
+
+- [x] File maps in PLAN.md and AGENTS.md match `src/` and `test/` contents
+- [x] `pca2_interp` has a locked-down output assertion in the test suite
+- [x] `HANDOVER.md` exists in root with post-pull checklist & charting exploration guide
+- [x] All existing tests still green
+
+---
+
 ## Phase 9 — Mechanical Design Specification
 
 ### Goal
 
 Complete the mechanical design of a single lifting autogyro kite unit,
 documented in schematics and 3D models.
-
-### Tasks
-
-1. Finalise dual-molding sandwich bearing geometry with correct tilt axis ✓
-2. Dimension swashplate, actuator mounts, pushrod linkage ✓
-3. Size empennage (H-stab, V-fin) for trim authority at target AoA ✓
-4. Specify webbing capture and spliced-eye Dyneema integration ✓
-5. Generate fabrication-ready drawings (OpenSCAD → dimensioned SVG/PDF) ✓
 
 ### Definition of Done
 
@@ -152,24 +149,23 @@ documented in schematics and 3D models.
 - [x] Schematics/renders/single_unit_front_v2.png — front view ✓
 - [x] Schematics/renders/single_unit_side_v2.png — side view ✓
 - [x] Schematics/renders/assembly_cross_section_v4.svg — vector cross-section ✓
-- [x] All 193 tests green ✓
 
 ---
 
-## Phase 10 — v2.0 Dynamics (planned)
+## Phase 10 & 10f — v2.0 & v2.1 BEM Dynamics
 
 ### Goal
 
-Upgrade from steady-state disk model to time-stepping BEM with polygon line
-geometry.
+Upgrade from steady-state disk model to BEM autorotation, polygon line geometry,
+and 3-D Snel stall delay.
 
-### Key Changes
+### Key Features Completed
 
-- Blade-element momentum replaces PCA-2 lookup
-- Rotor RPM solved from torque equilibrium each timestep
-- Line segments at independent angles (polygon chain, not straight line)
-- Graded stacking becomes the primary optimisation variable
-- SPEC.md updated with v2 limitations and interface contracts
+- Blade-element momentum replaces PCA-2 lookup ([`src/bem.jl`](src/bem.jl))
+- Airfoil polars for NACA 0012 ([`src/airfoil_data.jl`](src/airfoil_data.jl))
+- Snel 3-D stall-delay correction ([`src/stall_delay.jl`](src/stall_delay.jl))
+- Polygon line geometry equilibrium solver ([`src/polygon_line.jl`](src/polygon_line.jl))
+- Full 384-configuration BEM parameter sweep ([`bem_full_sweep.tsv`](bem_full_sweep.tsv))
 
 ---
 
@@ -178,59 +174,55 @@ geometry.
 ```
 CoaxialAutogyroStacking.jl/
 ├── SPEC.md                    ← specification (source of truth)
-├── PLAN.md                    ← this file (implementation road map)
+├── PLAN.md                    ← implementation roadmap (this file)
+├── HANDOVER.md                ← agent handover, result framing & charting guide
 ├── CONTEXT.md                 ← glossary of domain terms
 ├── AGENTS.md                  ← working conventions for contributors
 ├── Project.toml
 ├── src/
 │   ├── CoaxialAutogyroStacking.jl   ← module entry
-│   ├── pca2_data.jl                 ← PCA-2 empirical data
-│   ├── rotor.jl                     ← AutogyroRotor + forces
+│   ├── airfoil_data.jl              ← NACA 0012 polar lookup tables
+│   ├── bem.jl                       ← BEM solver + autorotation RPM
 │   ├── line_section.jl              ← bare line drag
+│   ├── optimisation.jl              ← optimal_rotor_tilt / optimal_rotor_tilts
+│   ├── pca2_data.jl                 ← PCA-2 empirical data + pca2_interp
+│   ├── polygon_line.jl              ← polygon chain line geometry
+│   ├── rotor.jl                     ← AutogyroRotor + forces
 │   ├── stack.jl                     ← AutogyroStack + tension profile
-│   ├── optimisation.jl              ← optimal_rotor_tilt / optimal_rotor_tilts / lift_force_steady
-│   └── sweep.jl                     ← parameter_sweep (Phase 8)
+│   ├── stall_delay.jl               ← Snel 3-D stall delay correction
+│   ├── sweep.jl                     ← parameter_sweep (PCA-2 and BEM)
+│   └── viability.jl                 ← tip speed, Reynolds & viability checks
 ├── test/
 │   ├── runtests.jl
-│   ├── test_pca2_data.jl
-│   ├── test_rotor.jl
+│   ├── test_airfoil_data.jl
+│   ├── test_bem.jl
 │   ├── test_line_section.jl
-│   ├── test_stack.jl
 │   ├── test_optimisation.jl
-│   └── test_sweep.jl                (Phase 8)
+│   ├── test_pca2_data.jl
+│   ├── test_polygon_line.jl
+│   ├── test_rotor.jl
+│   ├── test_stack.jl
+│   ├── test_stall_delay.jl
+│   ├── test_sweep.jl
+│   └── test_viability.jl
 ├── notebooks/
-│   ├── dashboard.jl                 ← GLMakie interactive dashboard
-│   └── sweep_results.jl             ← Pluto Pareto-front notebook (Phase 8)
+│   ├── dashboard.jl                 ← Pluto interactive dashboard
+│   └── sweep_plots.jl               ← Pluto / CairoMakie Pareto plots
 ├── schematics/
-│   ├── assembly_v2.tex/pdf          ← cross-section of single unit
-│   ├── rotor_assembly_v2.scad/png   ← 3D single unit
-│   ├── rotor_stack_world.scad/png   ← 3D stack in world space
-│   ├── tube_capture.tex/pdf         ← webbing + spliced eye detail
-│   └── inline_autogyro_mech.tex/pdf ← bearing approach comparison
+│   ├── single_unit.scad             ← 3D single unit
+│   ├── assembly_cross_section_v4.svg← vector cross-section
+│   └── renders/                     ← PNG renders
 └── scripts/
-    └── dashboard.jl                 ← standalone dashboard launcher
+    ├── bem_full_sweep.jl            ← full BEM parameter sweep script
+    └── dashboard.jl                 ← GLMakie standalone dashboard launcher
 ```
 
 ---
 
 ## Key Decisions
 
-1. **PCA-2 empirical data** — same validated tables as KTD.jl/src/lift_kite.jl
-2. **No wake interaction** — downstream rotors see freestream; wakes deferred to v3
-3. **Independent pitch → effective AoA shift** — computationally cheap, physically grounded
-4. **Standalone, integration-ready** — `lift_force_steady` dispatch pattern mirrors KTD.jl
-5. **TDD throughout** — every function: RED → GREEN → REFACTOR
-6. **Topmost rotor terminates the line** — no phantom free-end section (fixed Phase 7)
-7. **SPEC.md is the source of truth** — PLAN.md is implementation only
-
----
-
-## Working Conventions
-
-See [`AGENTS.md`](AGENTS.md). Key points:
-
-- Strict TDD: RED → GREEN → REFACTOR, one task at a time
-- SI units, angles in degrees at API boundary
-- Rotors ordered top→bottom, section_lengths has n_rotors entries
-- Pure functions, immutable structs
-- One commit per phase, master stays green
+1. **PCA-2 empirical data** — validated tables for v1 steady disk model.
+2. **BEM + Snel 3D Stall Delay** — physics baseline for v2; 2D $C_L$ solves induction, 3D $C_{L,3D}$ computes force.
+3. **No wake interaction (v1 & v2)** — downstream rotors see freestream; wakes deferred to v3.
+4. **Standalone, integration-ready** — `lift_force_steady` dispatch pattern mirrors KTD.jl.
+5. **Strict TDD throughout** — RED → GREEN → REFACTOR for all tasks.

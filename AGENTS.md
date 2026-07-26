@@ -11,7 +11,8 @@ terminates the line) down to the anchor (bottom). Empirical PCA-2 rotor-disk dat
 fold into `KiteTurbineDynamics.jl`.
 
 Read [`PLAN.md`](PLAN.md) first — it is the source of truth for scope, task
-order, and key decisions.
+order, and key decisions. Read [`HANDOVER.md`](HANDOVER.md) for post-pull workflows,
+academic/investor result framing, and chart exploration guidelines.
 
 ## The loop (non-negotiable)
 
@@ -26,19 +27,34 @@ Every new `src/` file is `include`d in `src/CoaxialAutogyroStacking.jl` and its
 public names added to the `export` block. Every new test file is `include`d in
 `test/runtests.jl`.
 
+## Post-Pull Action (Mandatory for Agents)
+
+Upon pulling `master`:
+1. Run `julia --project=. test/runtests.jl` (must be 100% green).
+2. **Run a Doc Staleness Sweep**: Verify file maps in `PLAN.md` and `AGENTS.md` match `src/` and `test/`. Check constructor signatures (e.g. `AutogyroStack(..., line_density=970.0)`).
+3. Read [`HANDOVER.md`](HANDOVER.md) for current phase objectives.
+
 ## File map
 
 ```
 src/
   CoaxialAutogyroStacking.jl   module entry — includes + exports
-  pca2_data.jl                 PCA-2 table + pca2_interp
-  rotor.jl                     AutogyroRotor + single-rotor forces
+  airfoil_data.jl              NACA 0012 polar lookup tables
+  bem.jl                       BEM solver + autorotation RPM
   line_section.jl              bare_line_drag
+  optimisation.jl              optimal_rotor_tilt / optimal_rotor_tilts
+  pca2_data.jl                 PCA-2 table + pca2_interp
+  polygon_line.jl              polygon chain line geometry solver
+  rotor.jl                     AutogyroRotor + single-rotor forces
   stack.jl                     AutogyroStack + stack_tension_profile
-  optimisation.jl              optimal_rotor_tilt / optimal_rotor_tilts / lift_force_steady
-test/   one test_<module>.jl per src module, all run by runtests.jl
-notebooks/  Pluto dashboards
-scripts/    runnable entrypoints
+  stall_delay.jl               Snel 3-D stall delay correction
+  sweep.jl                     parameter_sweep (PCA-2 and BEM)
+  viability.jl                 rotor_tip_speed, rotor_reynolds_number, viability_report
+
+test/                          12 test_<module>.jl files (one per src/ module)
+notebooks/                     Pluto dashboards (dashboard.jl, sweep_plots.jl)
+schematics/                    OpenSCAD 3D models and SVG/PDF cross-sections
+scripts/                       runnable entrypoints (bem_full_sweep.jl, dashboard.jl)
 ```
 
 ## Conventions
@@ -65,11 +81,6 @@ scripts/    runnable entrypoints
 
 One commit per task/phase, message prefixed with the phase: e.g.
 `Phase 4 Tasks 8-9: AutogyroStack + stack_tension_profile`. Keep `master` green.
-
-## Scope guard (v1)
-
-No wake interaction — downstream rotors see freestream. Do not add wake coupling
-without bumping scope to v2 and updating `PLAN.md`.
 
 ## References
 

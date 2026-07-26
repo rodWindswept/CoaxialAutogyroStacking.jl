@@ -19,7 +19,7 @@ end
 # ╔═╡ bbbbbbbb-0000-0000-0000-000000000001
 begin
 	import Pkg
-	Pkg.activate(raw"/home/rod/Documents/GitHub/CoaxialAutogyroStacking.jl")
+	Pkg.activate(joinpath(@__DIR__, ".."))
 	
 	using CoaxialAutogyroStacking
 	using WGLMakie
