@@ -78,20 +78,6 @@ h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppe
 /* Hero slide */
 .hero-slide { flex-direction:row; padding:0; overflow:hidden; }
 .hero-bg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-/* Hero illustration — 4 rotors on a line */
-.hero-illustration { position:relative; width:500px; height:700px; transform:rotate(-35deg); }
-.dyn-line { position:absolute; left:50%; top:5%; bottom:5%; width:3px; background:linear-gradient(to bottom,var(--accent),var(--accent2)); margin-left:-1.5px; border-radius:2px; }
-.hi-rotor { position:absolute; left:50%; transform:translateX(-50%); width:120px; height:120px; }
-.hi-r1 { bottom:8%; }
-.hi-r2 { bottom:28%; }
-.hi-r3 { bottom:48%; }
-.hi-r4 { bottom:68%; }
-.hi-disk { position:absolute; inset:0; border-radius:50%; border:2px solid var(--accent); background:radial-gradient(circle,rgba(56,152,236,0.15) 30%,transparent 70%); }
-.hi-blade { position:absolute; top:50%; height:4px; background:var(--accent); border-radius:2px; }
-.hi-b1 { left:-40px; right:50%; margin-top:-2px; }
-.hi-b2 { left:50%; right:-40px; margin-top:-2px; }
-.hi-ground { position:absolute; bottom:0; left:10%; right:10%; height:2px; background:var(--dim); }
-.hi-anchor { position:absolute; bottom:-2px; left:50%; width:12px; height:12px; background:var(--accent); border-radius:50%; margin-left:-6px; }
 .hero-text { position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; padding:0 100px; flex:1; }
 .hero-text h1 { font-size:7rem; line-height:0.95; text-transform:uppercase; }
 .hero-text h3 { margin-bottom:16px; }
@@ -108,16 +94,8 @@ h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppe
 
 <!-- SLIDE 0: HERO -->
 <div class="slide active hero-slide" id="s0">
-<div class="hero-bg">
-  <div class="hero-illustration">
-    <div class="dyn-line"></div>
-    <div class="hi-rotor hi-r1"><div class="hi-disk"></div><div class="hi-blade hi-b1"></div><div class="hi-blade hi-b2"></div></div>
-    <div class="hi-rotor hi-r2"><div class="hi-disk"></div><div class="hi-blade hi-b1"></div><div class="hi-blade hi-b2"></div></div>
-    <div class="hi-rotor hi-r3"><div class="hi-disk"></div><div class="hi-blade hi-b1"></div><div class="hi-blade hi-b2"></div></div>
-    <div class="hi-rotor hi-r4"><div class="hi-disk"></div><div class="hi-blade hi-b1"></div><div class="hi-blade hi-b2"></div></div>
-    <div class="hi-ground"></div>
-    <div class="hi-anchor"></div>
-  </div>
+<div class="hero-bg" style="display:flex;align-items:center;justify-content:center;">
+  <img src="../schematics/renders/single_unit_front_v2.png" style="width:55%;height:auto;opacity:1;filter:none;position:relative;z-index:1;">
 </div>
 <div class="hero-stack" style="display:none"></div>
 <div class="hero-text">
