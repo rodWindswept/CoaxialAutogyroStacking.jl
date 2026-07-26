@@ -1,6 +1,6 @@
-# Phase 9 — Mechanical Design Specification (skeleton)
+# Phase 9 — Mechanical Design Specification (complete)
 
-> Drafted 2026-06-19. Pick up when ready.
+> Completed 2026-07-03. See schematics/PRD.md and schematics/DIMENSIONS.md for final output.
 
 ## Inventory of existing work
 

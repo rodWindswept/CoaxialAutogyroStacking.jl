@@ -3,8 +3,10 @@ module CoaxialAutogyroStacking
 # CoaxialAutogyroStacking.jl — Multiple independently-pitched autogyro rotors
 # stacked inline on a kite line, computing forces and tension profiles.
 #
-# Phase 1–7: PCA-2 empirical data, rotor model, line drag, stack, optimisation
-# Phase 8:   Parameter sweep + Pareto-front analysis
+# Phase 1–8:   PCA-2 empirical data, rotor model, line drag, stack, optimisation, sweep
+# Phase 8.5:   Viability gates (line weight, noise, Reynolds)
+# Phase 9:     Mechanical design specification (OpenSCAD, PRD, dimensions)
+# Phase 10:    BEM autorotation + polygon line geometry + Snel stall delay (v2.1)
 
 include("pca2_data.jl")
 include("airfoil_data.jl")
