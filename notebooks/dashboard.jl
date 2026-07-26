@@ -145,9 +145,10 @@ let
 	fig_side = Figure(size=(700, 550))
 	ax = Axis(fig_side[1, 1],
 		title="Kite Line Side View — $(round(_v_wind,digits=1)) m/s$( _v_wind > 10 ? " (high wind)" : "")",
-		xlabel="Horizontal (m)", ylabel="Height (m)",
+		xlabel="Horizontal Downwind Distance (m)",
+		ylabel="Altitude (m)",
 		aspect=DataAspect(),
-		limits=(-5, total_len + 12, -3, total_len*sind(_elev) + 12))
+		limits=(-5, total_len*cos(er) + 12, -3, total_len*sind(_elev) + 12))
 	
 	# Ground
 	lines!(ax, [Point2f(-3, 0), Point2f(total_len*cos(er)+5, 0)],
