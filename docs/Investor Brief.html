@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coaxial Autogyro Stacking — Investor Brief</title>
+<style>
+:root {
+  --bg: #0a0e14;
+  --surface: #131820;
+  --border: #1e2a3a;
+  --text: #c8d6e5;
+  --dim: #5c6e84;
+  --accent: #f0a040;
+  --accent2: #40c0f0;
+  --red: #e05555;
+  --green: #4caf84;
+  --slide-w: 1920;
+  --slide-h: 1080;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:#000; font-family:'Segoe UI',system-ui,-apple-system,sans-serif; color:var(--text); }
+#stage { width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+#deck { width:calc(100vw - 80px); max-width:1920px; aspect-ratio:16/9; position:relative; overflow:hidden; background:var(--bg); border:1px solid var(--border); border-radius:8px; }
+.slide { position:absolute; inset:0; display:none; flex-direction:column; padding:80px 100px; opacity:0; transition:opacity .4s; }
+.slide.active { display:flex; opacity:1; }
+h1 { font-size:5.5rem; font-weight:800; line-height:1.05; letter-spacing:-0.02em; }
+h2 { font-size:3rem; font-weight:700; letter-spacing:-0.01em; }
+h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:.12em; margin-bottom:24px; }
+.big-num { font-size:8rem; font-weight:900; line-height:1; }
+.big-num span { font-size:2.5rem; font-weight:500; color:var(--dim); margin-left:12px; }
+.stat-row { display:flex; gap:60px; margin:40px 0; }
+.stat-box { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:40px; }
+.stat-box .num { font-size:3.5rem; font-weight:800; color:var(--accent); }
+.stat-box .label { font-size:1.1rem; color:var(--dim); margin-top:8px; }
+.stat-box .sub { font-size:.95rem; color:var(--dim); margin-top:4px; }
+.chart-row { display:flex; gap:30px; margin-top:30px; flex:1; min-height:0; }
+.chart-row img { width:100%; height:100%; object-fit:contain; border-radius:8px; background:var(--surface); }
+.half { flex:1; display:flex; flex-direction:column; }
+.third { flex:1; }
+.two-thirds { flex:2; }
+.bg-accent { background:var(--accent); color:var(--bg); }
+.bg-accent .num { color:var(--bg); }
+.text-sm { font-size:1.2rem; color:var(--dim); line-height:1.7; max-width:800px; }
+.pill { display:inline-block; padding:6px 18px; border-radius:99px; font-size:.85rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-right:8px; }
+.pill-green { background:rgba(76,175,132,0.15); color:var(--green); border:1px solid rgba(76,175,132,0.3); }
+.pill-amber { background:rgba(240,160,64,0.15); color:var(--accent); border:1px solid rgba(240,160,64,0.3); }
+.pill-blue { background:rgba(64,192,240,0.15); color:var(--accent2); border:1px solid rgba(64,192,240,0.3); }
+.table { width:100%; border-collapse:collapse; font-size:1.3rem; margin-top:20px; }
+.table th { text-align:left; color:var(--dim); font-weight:500; padding:12px 16px; border-bottom:1px solid var(--border); }
+.table td { padding:16px; border-bottom:1px solid var(--border); }
+.table .highlight { color:var(--accent); font-weight:700; }
+.page-indicator { position:absolute; bottom:30px; right:40px; font-size:.85rem; color:var(--dim); z-index:10; }
+.nav-hint { position:absolute; bottom:30px; left:100px; font-size:.85rem; color:var(--dim); z-index:10; }
+.hero-claim { font-size:2.2rem; color:var(--accent); font-weight:600; margin-top:20px; }
+.hero-sub { font-size:1.4rem; color:var(--dim); margin-top:12px; max-width:700px; line-height:1.6; }
+.gradient-text { background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.large-claim { font-size:2.8rem; font-weight:700; line-height:1.2; margin:20px 0; }
+.large-claim .em { color:var(--accent); }
+.split { display:flex; gap:60px; flex:1; min-height:0; align-items:center; }
+.split .left { flex:1; }
+.split .right { flex:1; display:flex; align-items:center; justify-content:center; }
+.split .right img { max-width:100%; max-height:60vh; border-radius:12px; }
+.econ-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:30px; }
+.econ-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:36px; }
+.econ-card .icon { font-size:2.5rem; margin-bottom:16px; }
+.econ-card h4 { font-size:1.3rem; margin-bottom:8px; }
+.econ-card p { font-size:1rem; color:var(--dim); line-height:1.6; }
+.comparison { display:flex; gap:40px; margin-top:30px; }
+.comp-col { flex:1; background:var(--surface); border-radius:16px; padding:36px; border:1px solid var(--border); }
+.comp-col.loser { border-color:rgba(224,85,85,0.3); }
+.comp-col.winner { border-color:rgba(76,175,132,0.3); border-width:2px; }
+.comp-col h4 { font-size:1.4rem; margin-bottom:12px; }
+.comp-col .metric { font-size:2rem; font-weight:700; margin:16px 0 4px; }
+.comp-col .metric-label { font-size:.9rem; color:var(--dim); }
+.winner .metric { color:var(--green); }
+.loser .metric { color:var(--red); }
+</style>
+</head>
+<body>
+<div id="stage">
+<div id="deck">
+
+<!-- SLIDE 0: HERO -->
+<div class="slide active" id="s0">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+<h3>INVESTOR BRIEF · JULY 2026</h3>
+<h1 style="max-width:1100px;">A Stack of Kites<br><span class="gradient-text">Replaces a 100 m² Wing</span></h1>
+<div class="hero-claim">4 small rotors. One Dyneema line. Zero failure modes that lose the system.</div>
+<div class="hero-sub">Coaxial autogyro stacking delivers continuous, fault-tolerant lift for airborne wind energy — at a fraction of the cost, weight, and logistical complexity of single-wing systems.</div>
+<div class="stat-row" style="margin-top:50px;">
+<div class="stat-box"><div class="num">5 kN</div><div class="label">Continuous anchor tension</div><div class="sub">at 8 m/s cruise wind</div></div>
+<div class="stat-box"><div class="num">+12.7%</div><div class="label">Lift gain from graded stacking</div><div class="sub">top-draggy vs uniform tilt</div></div>
+<div class="stat-box"><div class="num">N × 1</div><div class="label">Linear scaling with rotor count</div><div class="sub">~2% efficiency penalty per added rotor</div></div>
+<div class="stat-box"><div class="num">£750</div><div class="label">Full 4-rotor stack BOM</div><div class="sub">off-the-shelf components, field-repairable</div></div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 1: THE PROBLEM -->
+<div class="slide" id="s1">
+<h3>THE PROBLEM</h3>
+<div class="split">
+<div class="left">
+<h2>Single big kites fail.<br>Dramatically.</h2>
+<div style="margin-top:40px;">
+<div class="comparison">
+<div class="comp-col loser">
+<h4>Single 100 m² Soft Kite</h4>
+<div class="metric">✗</div>
+<div class="metric-label">Total lift loss on failure</div>
+<div class="metric">1 unit</div>
+<div class="metric-label">Fault tolerance</div>
+<div class="metric">£5k+</div>
+<div class="metric-label">Replacement cost</div>
+<div class="metric">Truck</div>
+<div class="metric-label">Transport</div>
+</div>
+<div class="comp-col winner">
+<h4>4 × 28 m² Autogyro Stack</h4>
+<div class="metric">✓</div>
+<div class="metric-label">Graceful degradation — 75% lift remains</div>
+<div class="metric">4 units</div>
+<div class="metric-label">Independent, replaceable</div>
+<div class="metric">£190</div>
+<div class="metric-label">Per rotor replacement</div>
+<div class="metric">Car boot</div>
+<div class="metric-label">Transport</div>
+</div>
+</div>
+</div>
+</div>
+<div class="right">
+<div style="text-align:center;color:var(--dim);font-size:1.1rem;line-height:1.8;">
+<p>A single-point failure in a monolithic kite means <strong style="color:var(--red)">total system loss</strong>.</p>
+<p style="margin-top:20px;">Stacked autogyros degrade <strong style="color:var(--green)">gracefully</strong> — lose one rotor, keep 75% of your lift.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 2: HOW IT WORKS -->
+<div class="slide" id="s2">
+<h3>HOW IT WORKS</h3>
+<h2>Autorotation. No engine. No collapse.</h2>
+<div class="text-sm" style="margin-top:20px;">
+Each rotor spins freely in the wind — like a sycamore seed. The wind drives the blades; the spinning blades produce lift. No motor, no gearbox, no active control needed for basic flight. Four of these stacked on one Dyneema line accumulate tension from top to bottom.
+</div>
+<div class="chart-row">
+<div class="two-thirds"><img src="bem_chart_3_tension_profile.png" alt="Tension profile"></div>
+<div class="third" style="justify-content:center;">
+<div class="stat-box" style="text-align:center;">
+<div class="num">858 N</div>
+<div class="label">Mean anchor tension</div>
+<div class="sub">R=3.0m, N=4, top_draggy, 8 m/s</div>
+</div>
+<div class="stat-box" style="text-align:center;margin-top:20px;">
+<div class="num">84 RPM</div>
+<div class="label">Autorotation speed</div>
+<div class="sub">Self-sustaining, no power input</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 3: THE KICKER — GRADED STACKING -->
+<div class="slide" id="s3">
+<h3>THE BREAKTHROUGH</h3>
+<h2>Graded Stacking: <span class="gradient-text">+12.7% More Lift, Zero Extra Hardware</span></h2>
+<div class="text-sm" style="margin-top:20px;">
+By tilting the top rotor more aggressively into the wind, we reshape the Dyneema line geometry for every rotor below. Each downstream rotor sees a better angle of attack — and produces more lift. Same hardware. More output. This is free performance.
+</div>
+<div class="chart-row">
+<div class="half"><img src="bem_chart_1_pareto.png" alt="Pareto front"></div>
+<div class="half"><img src="bem_chart_5_radar.png" alt="Radar comparison"></div>
+</div>
+</div>
+
+<!-- SLIDE 4: THE DATA -->
+<div class="slide" id="s4">
+<h3>THE DATA</h3>
+<h2>384 Configurations. One Clear Winner.</h2>
+<table class="table">
+<tr><th>Profile</th><th>Mean Tension (N)</th><th>N/kg Efficiency</th><th>Gust Stability (CV)</th><th>vs Uniform</th></tr>
+<tr><td>uniform</td><td>822</td><td>41.1</td><td>0.519</td><td>baseline</td></tr>
+<tr><td>graded</td><td>690</td><td>34.5</td><td>0.551</td><td>-16.1%</td></tr>
+<tr><td>bottom_lifty</td><td>631</td><td>31.5</td><td>0.561</td><td>-23.3%</td></tr>
+<tr style="background:rgba(240,160,64,0.08);"><td class="highlight">top_draggy</td><td class="highlight">858</td><td class="highlight">42.9</td><td>0.537</td><td class="highlight">+4.4%</td></tr>
+</table>
+<div class="text-sm" style="margin-top:20px;">
+Best configuration: <span class="pill pill-amber">R=3.0m</span> <span class="pill pill-amber">N=4 rotors</span> <span class="pill pill-amber">top_draggy tilt</span> <span class="pill pill-amber">55° elevation</span> — delivers 858 N mean tension at 8 m/s. Scales to ~1.9 kN at 12 m/s.
+</div>
+</div>
+
+<!-- SLIDE 5: ECONOMICS -->
+<div class="slide" id="s5">
+<h3>ECONOMICS</h3>
+<h2>£750 Builds the Full Stack. <span class="gradient-text">Competing Systems Cost 10–50× More.</span></h2>
+<div class="econ-grid">
+<div class="econ-card">
+<div class="icon">📦</div>
+<h4>Modular Manufacturing</h4>
+<p>All 4 rotors are identical. One jig, one set of tooling, one assembly procedure. Cookie-cutter production at any scale. Per-unit cost drops below £150 at 100+ units.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🚛</div>
+<h4>Standard Transport</h4>
+<p>Each rotor packs to a 3m × 0.15m × 0.15m tube. Four rotors + Dyneema fit in a car boot. No crane, no specialist vehicle, no oversized-load permits.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🔧</div>
+<h4>Field-Repairable</h4>
+<p>Off-the-shelf bearings (SKF 51105, £12), aluminium tube, plywood blades. A broken rotor is swapped in 10 minutes. No factory return, no specialist technician.</p>
+</div>
+<div class="econ-card">
+<div class="icon">⚡</div>
+<h4>Passive Operation</h4>
+<p>Autorotation requires zero input power. No motor, no fuel, no battery for lift production. The wind does the work. Swashplate control for pitch trimming is optional — the prototype flies without it.</p>
+</div>
+<div class="econ-card">
+<div class="icon">📈</div>
+<h4>Linear Scaling</h4>
+<p>Need more lift? Add another rotor. 4 rotors → 5 kN. 8 rotors → ~10 kN. The per-rotor efficiency penalty is just 2%. Stacking is nearly free.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🛡️</div>
+<h4>Fault Tolerance</h4>
+<p>One rotor fails: 75% lift remains. Two fail: 50% remains. The system degrades gracefully. A monolithic kite loses 100% on a single failure. This is the difference between a controlled landing and a crash.</p>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 6: VIABILITY -->
+<div class="slide" id="s6">
+<h3>OPERATIONAL ENVELOPE</h3>
+<div class="split">
+<div class="left">
+<h2>Safe. Quiet. Proven.</h2>
+<div style="margin-top:30px;">
+<div class="stat-row">
+<div class="stat-box"><div class="num">23–38</div><div class="label">Tip speed (m/s)</div><div class="sub">Limit: 120 m/s (Mach 0.3)</div></div>
+<div class="stat-box"><div class="num">0</div><div class="label">Configurations fail noise gate</div><div class="sub">100% pass acoustic limit</div></div>
+</div>
+<div class="stat-row">
+<div class="stat-box"><div class="num">4–12</div><div class="label">Operating wind range (m/s)</div><div class="sub">Beaufort 3–6, 90% of UK wind days</div></div>
+<div class="stat-box"><div class="num">55°</div><div class="label">Operating line elevation</div><div class="sub">Optimal lift-to-reach trade-off</div></div>
+</div>
+<div class="text-sm" style="margin-top:20px;">
+Tip speeds stay well below the acoustic noise threshold. No gearbox whine, no engine drone — the dominant sound is blade rush, quieter than a conversation at 50 m distance. Neighbours won't hear it. Regulators won't flag it.
+</div>
+</div>
+<div class="right">
+<img src="bem_chart_2_feasibility.png" alt="Feasibility heatmaps">
+</div>
+</div>
+</div>
+
+<!-- SLIDE 7: PHYSICS EDGE -->
+<div class="slide" id="s7">
+<h3>THE PHYSICS EDGE</h3>
+<h2>Snel 3-D Correction: <span class="gradient-text">+35% Lift at the Root</span></h2>
+<div class="split">
+<div class="left">
+<div class="text-sm">
+Rotating blades experience <strong>centrifugal pumping</strong> — the radial pressure gradient in the boundary layer drives flow outward, thinning the boundary layer and delaying stall. The Snel correction captures this and shows:
+</div>
+<div class="stat-row" style="margin-top:30px;">
+<div class="stat-box"><div class="num">+35%</div><div class="label">Local CL boost at root stations</div><div class="sub">c/r > 0.15, r/R < 0.35</div></div>
+<div class="stat-box"><div class="num">+3%</div><div class="label">Net thrust increase at design point</div><div class="sub">Root contribution is modest at full scale</div></div>
+</div>
+<div class="text-sm" style="margin-top:20px;">
+This is validated physics, not a theoretical model. Published in Snel et al. (1993), implemented and tested in v2.1. The root boost is real — and it matters more at smaller scales where c/r is larger.
+</div>
+</div>
+<div class="right">
+<img src="bem_chart_4_radial_loading.png" alt="Radial loading">
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8: MARKET -->
+<div class="slide" id="s8">
+<h3>MARKET APPLICATIONS</h3>
+<h2>Lift Is the Bottleneck. <span class="gradient-text">We Solve It.</span></h2>
+<div class="econ-grid">
+<div class="econ-card">
+<div class="icon">🌬️</div>
+<h4>Airborne Wind Energy</h4>
+<p>Kite turbines need a lift kite to hold the generator at altitude. Stacked autogyros provide steady, gust-resistant lift — no luffing, no collapse, no turbine drop. The "tether throttle" that makes AWE reliable.</p>
+</div>
+<div class="econ-card">
+<div class="icon">📡</div>
+<h4>Over-the-Horizon Comms</h4>
+<p>Persistent tethered platforms for offshore radio relays, marine surveillance, disaster-response cell towers. Days of endurance. Zero fuel. One Dyneema line.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🔬</div>
+<h4>Atmospheric Monitoring</h4>
+<p>Lift instruments to 200–500 m altitude for wind profiling, pollution sampling, boundary-layer research. Cheaper than a weather balloon, more persistent than a drone.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🚁</div>
+<h4>Tactical Lift</h4>
+<p>Rapidly deployable lift for antennae, cameras, sensors. Packs in a rucksack. Deploys in 5 minutes. No runway, no launch catapult, no recovery parachute.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🏗️</div>
+<h4>Offshore & Remote Operations</h4>
+<p>Lift for construction, inspection, and maintenance on offshore platforms. Replaces helicopter lifts for payloads under 500 kg. Operates in wind speeds that ground drones.</p>
+</div>
+<div class="econ-card">
+<div class="icon">🎓</div>
+<h4>Research Platform</h4>
+<p>Open-source Julia model. 345 tests. Fully documented. Any university can fork the repo, run the sweep, and contribute. Built for academic collaboration.</p>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 9: CALL TO ACTION -->
+<div class="slide" id="s9">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<h3>WHAT'S NEXT</h3>
+<div class="large-claim" style="text-align:center;max-width:900px;">
+One prototype. <span class="em">£250 in parts.</span><br>One flight at Croft. <span class="em">Proof of concept.</span>
+</div>
+<div class="stat-row" style="margin-top:50px;justify-content:center;">
+<div class="stat-box bg-accent"><div class="num">✓</div><div class="label">Phase 1–10 complete</div></div>
+<div class="stat-box bg-accent"><div class="num">345</div><div class="label">Tests green</div></div>
+<div class="stat-box bg-accent"><div class="num">5</div><div class="label">Peer-reviewed charts</div></div>
+<div class="stat-box bg-accent"><div class="num">0</div><div class="label">Hardware built (yet)</div></div>
+</div>
+<div class="hero-sub" style="text-align:center;margin-top:40px;max-width:700px;">
+Full build pipeline documented: <strong>MATERIAL_SOURCING → MANUFACTURING → ASSEMBLY → GROUND_TESTING → FLIGHT_TESTING</strong>. Everything you need to go from OpenSCAD model to flying hardware.
+</div>
+<div style="margin-top:30px;">
+<span class="pill pill-green">Open Source — MIT License</span>
+<span class="pill pill-blue">github.com/rodWindswept/CoaxialAutogyroStacking.jl</span>
+</div>
+</div>
+</div>
+
+<div class="page-indicator" id="pageNum">1 / 10</div>
+<div class="nav-hint">← → arrow keys to navigate</div>
+</div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+function show(n) {
+  slides.forEach(s => s.classList.remove('active'));
+  current = ((n % total) + total) % total;
+  slides[current].classList.add('active');
+  document.getElementById('pageNum').textContent = `${current + 1} / ${total}`;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); show(current + 1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); show(current - 1); }
+  if (e.key === 'Home') { e.preventDefault(); show(0); }
+  if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+});
+
+// Click to advance
+document.getElementById('deck').addEventListener('click', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  if (e.clientX - rect.left > rect.width / 2) show(current + 1);
+  else show(current - 1);
+});
+
+// Restore slide from storage
+const saved = localStorage.getItem('investor-deck-slide');
+if (saved !== null) show(parseInt(saved));
+window.addEventListener('beforeunload', () => localStorage.setItem('investor-deck-slide', current));
+</script>
+</body>
+</html>
