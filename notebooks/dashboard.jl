@@ -37,12 +37,15 @@ md"## 🎬 Scenario Preset"
 @bind _scenario Select(["Custom ✏️", "🚀 Launch (low angle, aggressive lift)", "✈️ Cruise (optimal)", "🛬 Landing (steep, depowered)", "🌪️ Storm gust"])
 
 # ╔═╡ 00000000-0000-0000-0000-000000000005
-md"## 🎛️ Wind & Line"
+md"## 🎛️ Wind, Line & Flight Mode"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000006
 @bind _wind_speed Slider(3.0:0.5:20.0, default=8.0, show_value=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000007
+@bind _auto_elev CheckBox(default=true)
+
+# ╔═╡ 00000000-0000-0000-0000-000000000023
 @bind _elevation Slider(10.0:1.0:80.0, default=55.0, show_value=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000008
@@ -88,19 +91,8 @@ md"## 📐 Physics Computation"
 begin
 	# Scenario presets override individual sliders when selected
 	_wind  = _wind_speed
-	_elev  = _elevation
 	_pitch = _pitch_global
 	_turb  = _turbulence
-	
-	if startswith(_scenario, "🚀")
-		_wind = 6.0;  _elev = 30.0;  _pitch = 15.0
-	elseif startswith(_scenario, "✈️")
-		_wind = 8.0;  _elev = 55.0;  _pitch = 5.0
-	elseif startswith(_scenario, "🛬")
-		_wind = 5.0;  _elev = 75.0;  _pitch = -10.0
-	elseif startswith(_scenario, "🌪️")
-		_wind = 16.0; _elev = 45.0;  _pitch = -5.0; _turb = true
-	end
 	
 	rho = 1.225
 	g_const = 9.81
@@ -117,12 +109,42 @@ begin
 	
 	_diam_m = _line_diam_mm / 1000.0
 	_secs = fill(_section_len, _n)
-	_stack = AutogyroStack(_rotors, _secs, _diam_m, _elev)
 	
 	# Turbulent wind
 	_t_sim = 0.0
 	_v_wind = _turb ? _wind * (1.0 + 0.08*sin(2π*_t_sim/8.0) + 0.05*sin(2π*_t_sim/2.3)) : _wind
+
+	# Line elevation angle:
+	# If _auto_elev is true (default), line elevation angle EMERGES 100% from autogyro L/D physics equilibrium!
+	if _auto_elev
+		_eq_elev = 55.0
+		for _ in 1:8
+			_test_forces = [rotor_force_along_line(r, rho, _v_wind, _eq_elev) for r in _rotors]
+			_flift = sum(f[2] for f in _test_forces)
+			_fdrag = sum(f[3] for f in _test_forces) + bare_line_drag(rho, _v_wind, _diam_m, sum(_secs), _eq_elev)
+			_total_mass = sum(r.mass for r in _rotors) + line_mass_per_m(_diam_m, 970.0) * sum(_secs)
+			_fweight = _total_mass * g_const
+			_next = _fdrag > 0 ? atand(max(0.0, _flift - _fweight), _fdrag) : 10.0
+			_next = clamp(_next, 10.0, 85.0)
+			if abs(_next - _eq_elev) < 0.05; break; end
+			_eq_elev = _next
+		end
+		_elev = _eq_elev
+	else
+		_elev = _elevation
+	end
+
+	if startswith(_scenario, "🚀")
+		_wind = 6.0;  _pitch = 15.0;  if !_auto_elev; _elev = 30.0; end
+	elseif startswith(_scenario, "✈️")
+		_wind = 8.0;  _pitch = 5.0;   if !_auto_elev; _elev = 55.0; end
+	elseif startswith(_scenario, "🛬")
+		_wind = 5.0;  _pitch = -10.0; if !_auto_elev; _elev = 75.0; end
+	elseif startswith(_scenario, "🌪️")
+		_wind = 16.0; _pitch = -5.0; _turb = true; if !_auto_elev; _elev = 45.0; end
+	end
 	
+	_stack = AutogyroStack(_rotors, _secs, _diam_m, _elev)
 	_profile = stack_tension_profile(_stack, rho, _v_wind)
 	
 	_rotor_forces = [(begin
@@ -130,7 +152,7 @@ begin
 		(F_line, F_lift, F_drag, cl, cd, effective_alpha(rot, _elev))
 	end) for rot in _stack.rotors]
 	
-	md"**Active preset:** $(_scenario) | Wind: $(round(_wind,digits=1)) m/s | Elev: $(round(_elev,digits=0))° | Pitch: $(round(_pitch,digits=0))° | Turb: $(_turb)"
+	md"**Active preset:** $(_scenario) | Wind: $(round(_v_wind,digits=1)) m/s | **Line Elev ($(_auto_elev ? "Auto L/D physics" : "Manual override")): $(round(_elev,digits=1))°** | Pitch: $(round(_pitch,digits=0))° | Turb: $(_turb)"
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000030
