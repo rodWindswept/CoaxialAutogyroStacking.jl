@@ -244,15 +244,20 @@ let
 	total_drag = sum(f[3] for f in _rotor_forces)
 	sys_ld = total_drag > 0 ? total_lift / total_drag : Inf
 	
+	total_mass = sum(r.mass for r in _stack.rotors) + line_mass_per_m(_stack.line_diameter, _stack.line_density) * sum(_secs)
+	total_weight = total_mass * 9.81
+	eq_elev = total_drag > 0 ? atand(max(0.0, total_lift - total_weight), total_drag) : 0.0
+	
 	lines = String[]
-	push!(lines, "| Parameter        | Value |")
-	push!(lines, "|:-----------------|:------|")
-	push!(lines, "| Wind speed       | $(round(_v_wind,digits=1)) m/s $(_turb ? "🌊 TURB" : "💨") |")
-	push!(lines, "| Line elevation   | $(round(_elev,digits=0))° |")
-	push!(lines, "| Line spec        | Ø$(round(_line_diam_mm,digits=1))mm × $(round((_n+1)*_section_len,digits=0))m |")
-	push!(lines, "| **Anchor tension** | **$(round(_profile[end],digits=0)) N** |")
-	push!(lines, "| **System L/D**   | **$(round(sys_ld,digits=2))** |")
-	push!(lines, "| Total lift/drag  | $(round(total_lift,digits=0)) / $(round(total_drag,digits=0)) N |")
+	push!(lines, "| Parameter        | Value | Control Type |")
+	push!(lines, "|:-----------------|:------|:-------------|")
+	push!(lines, "| Wind speed       | $(round(_v_wind,digits=1)) m/s $(_turb ? "🌊 TURB" : "💨") | Environmental Input |")
+	push!(lines, "| Line elevation (preset) | $(round(_elev,digits=0))° | Target Trajectory |")
+	push!(lines, "| **Equilibrium elevation** | **$(round(eq_elev,digits=1))°** | **Physics Resultant (L/D balance)** |")
+	push!(lines, "| Line spec        | Ø$(round(_line_diam_mm,digits=1))mm × $(round(sum(_secs),digits=0))m | Design Parameter |")
+	push!(lines, "| **Anchor tension** | **$(round(_profile[end],digits=0)) N** | Output Lift Delivered |")
+	push!(lines, "| **System L/D**   | **$(round(sys_ld,digits=2))** | Efficiency Metric |")
+	push!(lines, "| Total lift/drag  | $(round(total_lift,digits=0)) / $(round(total_drag,digits=0)) N | Force Vector Sum |")
 	push!(lines, "")
 	
 	n_neg = count(<(0), _profile)
@@ -261,7 +266,7 @@ let
 		push!(lines, "")
 	end
 	
-	push!(lines, "| # | Pitch | α_eff | CL | CD | F_line |")
+	push!(lines, "| # | Tilt δ | α_eff | CL | CD | F_line |")
 	push!(lines, "|:--|:-----:|:-----:|:---:|:---:|:------:|")
 	for (i, f) in enumerate(_rotor_forces)
 		push!(lines, "| R$i | $(round(_stack.rotors[i].tilt_deg,digits=1))° | $(round(f[6],digits=1))° | $(round(f[4],digits=3)) | $(round(f[5],digits=3)) | $(round(f[1],digits=0)) N |")
@@ -273,15 +278,15 @@ end
 # ╔═╡ 00000000-0000-0000-0000-000000000060
 md"""
 ---
-### Key Physics
+### Key Physics & Control vs. Resultant Architecture
 
-| Symbol | Meaning |
-|:-------|:--------|
-| α_eff | 90° − line_elevation + pitch — effective disk angle of attack |
-| CL, CD | PCA-2 empirical rotor disk coefficients (linear interp, 0–90°) |
-| F_line | F_lift·sin(elev) + F_drag·cos(elev) — force along kite line axis |
-| Tension | Accumulates from free end downward: each rotor adds F_line − W_rotor·cos(elev) |
-| Compression | Negative tension = rotor can't support its weight at current wind/elev/pitch |
+| Variable / Parameter | Type | Description |
+|:---------------------|:-----|:------------|
+| **Rotor Tilt $\delta$ / Collective Pitch** | **Actuator Control Input** | Set by swashplate actuators or empennage trim per rotor. |
+| **Wind Speed $v_{\text{wind}}$** | **Environmental Input** | Freestream velocity vector. |
+| **Line Elevation $\theta_{\text{eq}}$** | **Equilibrium Resultant** | **Not a direct control slider.** Driven by System $L/D$ balance: $\theta_{\text{eq}} \approx \arctan((F_{\text{lift}} - W)/F_{\text{drag}})$. |
+| **Effective AoA $\alpha_{\text{eff}}$** | **Aerodynamic State** | $\alpha_{\text{eff}} = 90^\circ - \theta_{\text{line}} + \delta$. |
+| **Anchor Tension $T_{\text{anchor}}$** | **System Output** | Cumulative lift delivered to kite turbine hub at ground. |
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000061

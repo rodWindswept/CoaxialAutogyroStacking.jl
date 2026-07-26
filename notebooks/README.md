@@ -1,59 +1,44 @@
-# Dashboards — CoaxialAutogyroStacking.jl
+# Interactive Dashboards & Notebooks — CoaxialAutogyroStacking.jl
 
-Two interactive dashboards for exploring stacked autogyro configurations.
+Two primary interactive environments for exploring stacked autogyro configurations, equilibrium flight mechanics, and parameter sweep results.
 
-## Option 1: GLMakie (native window, recommended)
+---
 
-Standalone app with sliders for all parameters, side view, tension barplot, HUD,
-and power comparison (TRPT vs yo-yo).
+## 1. Native Desktop Dashboard (`scripts/dashboard.jl`)
+
+Standalone GLMakie desktop application with real-time parameter controls, 2D line geometry side view, tension accumulation plots, and performance HUD.
 
 ```bash
-# Run from the project ROOT, not from notebooks/
-cd ~/Documents/GitHub/CoaxialAutogyroStacking.jl
 julia --project=. scripts/dashboard.jl
 ```
 
-**Controls:**
-- Wind speed, elevation, rotor count, radius, pitch, line diameter, section length
-- Per-rotor pitch offsets
-- Turbulence toggle, kite spec toggle
-- Scenario buttons: Launch, Cruise, Land, Optimize, Reset
+**Features:**
+- **Control Inputs:** Wind speed, rotor count, radius, global tilt/pitch, per-rotor tilt offsets, line diameter, section length.
+- **Equilibrium Flight Mechanics:** Computes resultant equilibrium line elevation $\theta_{\text{eq}} \approx \arctan((F_{\text{lift}} - W)/F_{\text{drag}})$ driven by system $L/D$.
+- **Scenario Presets:** Launch, Cruise, Landing, Storm Gust, and Auto-Optimize.
 
-**Requires:** GLMakie (in Project.toml)
+---
 
-## Option 2: Pluto notebook (browser-based)
+## 2. Pluto Interactive Dashboard (`notebooks/dashboard.jl`)
 
-Interactive notebook with sweep result plots and parameter exploration.
-
-```bash
-cd ~/Documents/GitHub/CoaxialAutogyroStacking.jl
-julia --project=. -e 'using Pluto; Pluto.run()'
-```
-
-Then open `notebooks/dashboard.jl` in the Pluto browser window.
-
-**Requires:** Pluto (in Project.toml)
-
-## Option 3: Sweep results viewer
-
-View the Phase 8 parameter sweep results (8,640 evaluations, Pareto fronts).
+Browser-based Pluto notebook for web interactive exploration of stack physics and line geometry.
 
 ```bash
-cd ~/Documents/GitHub/CoaxialAutogyroStacking.jl
-julia --project=. -e 'using Pluto; Pluto.run()'
+julia --project=. -e 'using Pluto; Pluto.run("notebooks/dashboard.jl")'
 ```
 
-Then open `notebooks/sweep_plots.jl` in Pluto.
+---
 
-**Data:** `sweep_results.tsv` (1,728 post-processed configurations)
+## 3. Parameter Sweep & Pareto Viewer (`notebooks/sweep_plots.jl`)
 
-## Backup files
+Plotting and analysis notebook for visualizing multi-objective trade-offs (Tension vs Mass Efficiency $N/\text{kg}$, Tension vs Gust Stability $CV$, and viability envelopes).
 
-`dashboard backup 1.jl` and `dashboard backup 2.jl` are earlier versions
-preserved for reference. Use `dashboard.jl` for current work.
+```bash
+julia --project=. -e 'using Pluto; Pluto.run("notebooks/sweep_plots.jl")'
+```
 
-## Note
+---
 
-The dashboard references `optimal_pitches` which was renamed to
-`optimal_rotor_tilts` in v0.1.1. A compatibility fix was applied.
-If the dashboard fails to load, check that the function name matches.
+## Archive Directory (`notebooks/archive/`)
+
+Prior iteration backups and scratch notebooks are preserved in [`notebooks/archive/`](file:///home/rodbot/Documents/GitHub/CoaxialAutogyroStacking.jl/notebooks/archive/). Primary development uses `dashboard.jl` and `sweep_plots.jl`.

@@ -79,6 +79,13 @@ When communicating the overall significance of this package, Cameron's agent **m
 4. **Fault Tolerance & Fail-Safe Redundancy**:
    * An $N$-rotor stack exhibits graceful degradation: if one rotor experiences mechanical failure, the remaining $N-1$ rotors maintain line tension, preventing catastrophic system loss.
 
+### D. Control vs. Resultant Flight Mechanics (Critical System Paradigm)
+When presenting system controls and flight dynamics in academic papers, investor decks, or UI dashboards:
+- **Actuator Control Inputs**: Swashplate collective pitch / disk tilt angle $\delta_i$ per rotor, winch tether length $L_{\text{tether}}$, and wind speed $v_{\text{wind}}$ (environment).
+- **Equilibrium Resultants**: Line elevation angle $\theta_{\text{line}}$ is **not a direct pilot control**—it is an aerodynamic resultant driven by force vector equilibrium:
+  $$\theta_{\text{eq}} \approx \arctan\left(\frac{F_{\text{lift, total}} - W_{\text{total}}}{F_{\text{drag, total}}}\right)$$
+- All reporting artifacts and UI dashboards must explicitly distinguish between prescribed target elevation angles and calculated system $L/D$ equilibrium elevation states.
+
 ---
 
 ## 3. Chart Exploration & Graphical Representation Standards
