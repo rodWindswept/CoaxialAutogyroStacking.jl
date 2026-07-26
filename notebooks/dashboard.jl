@@ -116,7 +116,7 @@ begin
 	end
 	
 	_diam_m = _line_diam_mm / 1000.0
-	_secs = vcat(_section_len, fill(_section_len, _n))
+	_secs = fill(_section_len, _n)
 	_stack = AutogyroStack(_rotors, _secs, _diam_m, _elev)
 	
 	# Turbulent wind
@@ -155,10 +155,10 @@ let
 	
 	# Tension-colored line
 	cum = 0.0
-	for k in 1:(_n+1)
+	for k in 1:_n
 		s0 = Point2f(cum*cos(er), cum*sin(er))
 		s1 = Point2f((cum+_secs[k])*cos(er), (cum+_secs[k])*sin(er))
-		tn = clamp(abs(_profile[k])/max_t, 0, 1)
+		tn = clamp(abs(_profile[k+1])/max_t, 0, 1)
 		lines!(ax, [s0, s1], color=RGBf(tn, 0.15, 1-tn), linewidth=2.5 + 2*tn)
 		cum += _secs[k]
 	end
