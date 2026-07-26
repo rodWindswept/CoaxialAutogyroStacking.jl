@@ -117,20 +117,23 @@ begin
 	# Line elevation angle:
 	# If _auto_elev is true (default), line elevation angle EMERGES 100% from autogyro L/D physics equilibrium!
 	if _auto_elev
-		_curr_elev = 55.0
-		for _ in 1:8
-			_e = _curr_elev
-			_test_forces = [rotor_force_along_line(r, rho, _v_wind, _e) for r in _rotors]
-			_flift = sum(f[2] for f in _test_forces)
-			_fdrag = sum(f[3] for f in _test_forces) + bare_line_drag(rho, _v_wind, _diam_m, sum(_secs), _e)
-			_total_mass = sum(r.mass for r in _rotors) + line_mass_per_m(_diam_m, 970.0) * sum(_secs)
-			_fweight = _total_mass * g_const
-			_next = _fdrag > 0 ? atand(max(0.0, _flift - _fweight), _fdrag) : 10.0
-			_next = clamp(_next, 10.0, 85.0)
-			if abs(_next - _curr_elev) < 0.05; break; end
-			_curr_elev = _next
+		_elev = let
+			_curr = 55.0
+			for _ in 1:8
+				_tf = [rotor_force_along_line(r, rho, _v_wind, _curr) for r in _rotors]
+				_flift = sum(f[2] for f in _tf)
+				_fdrag = sum(f[3] for f in _tf) + bare_line_drag(rho, _v_wind, _diam_m, sum(_secs), _curr)
+				_tmass = sum(r.mass for r in _rotors) + line_mass_per_m(_diam_m, 970.0) * sum(_secs)
+				_fweight = _tmass * g_const
+				_next = _fdrag > 0 ? atand(max(0.0, _flift - _fweight), _fdrag) : 10.0
+				_next = clamp(_next, 10.0, 85.0)
+				if abs(_next - _curr) < 0.05
+					break
+				end
+				_curr = _next
+			end
+			_curr
 		end
-		_elev = _curr_elev
 	else
 		_elev = _elevation
 	end
