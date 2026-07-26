@@ -77,7 +77,7 @@ h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppe
 .loser .metric { color:var(--red); }
 /* Hero slide */
 .hero-slide { flex-direction:row; padding:0; overflow:hidden; }
-.hero-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 75% 50%, #2d4058 0%, #181f2a 60%); }
+.hero-bg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
 .hero-img { width:100%; height:100%; object-fit:cover; opacity:0.25; filter:brightness(0.6) saturate(1.2); }
 .hero-stack { position:absolute; right:0; top:0; bottom:0; width:55%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; }
 .stack-r { width:auto; height:22%; object-fit:contain; filter:brightness(0.7); opacity:0; animation:stackReveal 0.8s ease-out forwards; }
@@ -102,13 +102,10 @@ h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppe
 
 <!-- SLIDE 0: HERO -->
 <div class="slide active hero-slide" id="s0">
-<div class="hero-bg"></div>
-<div class="hero-stack">
-  <img src="../schematics/renders/single_unit_side_v2.png" class="stack-r stack-r1">
-  <img src="../schematics/renders/single_unit_side_v2.png" class="stack-r stack-r2">
-  <img src="../schematics/renders/single_unit_side_v2.png" class="stack-r stack-r3">
-  <img src="../schematics/renders/single_unit_side_v2.png" class="stack-r stack-r4">
+<div class="hero-bg">
+  <img src="../schematics/renders/single_unit_iso_v2.png" class="hero-img">
 </div>
+<div class="hero-stack" style="display:none"></div>
 <div class="hero-text">
   <h3>COAXIAL AUTOGYRO STACKING</h3>
   <h1>This Replaces<br>a 100 m² Kite</h1>
