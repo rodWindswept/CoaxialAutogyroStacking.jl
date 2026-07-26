@@ -75,6 +75,18 @@ h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppe
 .comp-col .metric-label { font-size:.9rem; color:var(--dim); }
 .winner .metric { color:var(--green); }
 .loser .metric { color:var(--red); }
+/* Hero slide */
+.hero-slide { flex-direction:row; padding:0; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+.hero-img { width:100%; height:100%; object-fit:cover; opacity:0.25; filter:brightness(0.6) saturate(1.2); }
+.hero-text { position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; padding:0 100px; flex:1; }
+.hero-text h1 { font-size:7rem; line-height:0.95; text-transform:uppercase; }
+.hero-text h3 { margin-bottom:16px; }
+.hero-tag { font-size:1.5rem; color:var(--accent); margin-top:24px; max-width:500px; line-height:1.5; font-weight:500; }
+.hero-stats { position:relative; z-index:2; display:flex; flex-direction:column; justify-content:center; gap:12px; padding:0 80px 0 0; }
+.hero-stat { background:rgba(19,24,32,0.85); border:1px solid var(--border); border-radius:12px; padding:24px 32px; display:flex; align-items:center; gap:20px; min-width:320px; }
+.hs-num { font-size:3.5rem; font-weight:900; color:var(--accent); min-width:140px; }
+.hs-label { font-size:1.2rem; color:var(--text); font-weight:500; }
 </style>
 </head>
 <body>
@@ -82,18 +94,20 @@ h3 { font-size:1.6rem; font-weight:600; color:var(--accent); text-transform:uppe
 <div id="deck">
 
 <!-- SLIDE 0: HERO -->
-<div class="slide active" id="s0">
-<div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-<h3>INVESTOR BRIEF · JULY 2026</h3>
-<h1 style="max-width:1100px;">A Stack of Kites<br><span class="gradient-text">Replaces a 100 m² Wing</span></h1>
-<div class="hero-claim">4 small rotors. One Dyneema line. Zero failure modes that lose the system.</div>
-<div class="hero-sub">Coaxial autogyro stacking delivers continuous, fault-tolerant lift for airborne wind energy — at a fraction of the cost, weight, and logistical complexity of single-wing systems.</div>
-<div class="stat-row" style="margin-top:50px;">
-<div class="stat-box"><div class="num">5 kN</div><div class="label">Continuous anchor tension</div><div class="sub">at 8 m/s cruise wind</div></div>
-<div class="stat-box"><div class="num">+12.7%</div><div class="label">Lift gain from graded stacking</div><div class="sub">top-draggy vs uniform tilt</div></div>
-<div class="stat-box"><div class="num">N × 1</div><div class="label">Linear scaling with rotor count</div><div class="sub">~2% efficiency penalty per added rotor</div></div>
-<div class="stat-box"><div class="num">£750</div><div class="label">Full 4-rotor stack BOM</div><div class="sub">off-the-shelf components, field-repairable</div></div>
+<div class="slide active hero-slide" id="s0">
+<div class="hero-bg">
+  <img src="schematics/renders/single_unit_iso_v2.png" alt="Autogyro rotor" class="hero-img">
 </div>
+<div class="hero-text">
+  <h3>COAXIAL AUTOGYRO STACKING</h3>
+  <h1>This Replaces<br>a 100 m² Kite</h1>
+  <div class="hero-tag">4 rotors. One line. Zero failure modes that lose the system.</div>
+</div>
+<div class="hero-stats">
+  <div class="hero-stat"><span class="hs-num">5 kN</span><span class="hs-label">Continuous lift</span></div>
+  <div class="hero-stat"><span class="hs-num">£750</span><span class="hs-label">Full stack cost</span></div>
+  <div class="hero-stat"><span class="hs-num">+12.7%</span><span class="hs-label">Graded stacking gain</span></div>
+  <div class="hero-stat"><span class="hs-num">N×</span><span class="hs-label">Linear scaling</span></div>
 </div>
 </div>
 
