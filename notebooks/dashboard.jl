@@ -153,35 +153,37 @@ let
 	lines!(ax, [Point2f(-3, 0), Point2f(total_len*cos(er)+5, 0)],
 		color=:gray75, linewidth=1, linestyle=:dash)
 	
-	# Tension-colored line
-	cum = 0.0
-	for k in 1:_n
-		s0 = Point2f(cum*cos(er), cum*sin(er))
-		s1 = Point2f((cum+_secs[k])*cos(er), (cum+_secs[k])*sin(er))
-		tn = clamp(abs(_profile[k+1])/max_t, 0, 1)
-		lines!(ax, [s0, s1], color=RGBf(tn, 0.15, 1-tn), linewidth=2.5 + 2*tn)
-		cum += _secs[k]
+	# Rotor positions (top -> bottom: R1 is topmost at total_len, Rn is bottommost at _section_len)
+	rotor_s = [(_n - i + 1) * _section_len for i in 1:_n]
+	
+	# Tension-colored line segments (bottom-up: segment 1 is anchor -> Rn with profile[_n+1])
+	prev_s = 0.0
+	for i in 1:_n
+		next_s = rotor_s[_n - i + 1]
+		s0 = Point2f(prev_s * cos(er), prev_s * sin(er))
+		s1 = Point2f(next_s * cos(er), next_s * sin(er))
+		tn = clamp(abs(_profile[_n - i + 2]) / max_t, 0, 1)
+		lines!(ax, [s0, s1], color=RGBf(tn, 0.15, 1 - tn), linewidth=2.5 + 2 * tn)
+		prev_s = next_s
 	end
 	
-	# Rotor disks
-	cum = _section_len
+	# Rotor disks (top -> bottom R1..Rn)
 	for i in 1:_n
-		cx, cy = cum*cos(er), cum*sin(er)
+		cx = rotor_s[i] * cos(er)
+		cy = rotor_s[i] * sin(er)
 		rx = _rotor_radius
 		ry = max(_rotor_radius * sind(_elev), 0.1)
 		θs = range(0, 2π, length=80)
 		
 		F_line = _rotor_forces[i][1]
-		tn = clamp(abs(F_line)/max_t, 0, 1)
-		col = RGBf(tn, 0.2, 1-tn)
+		tn = clamp(abs(F_line) / max_t, 0, 1)
+		col = RGBf(tn, 0.2, 1 - tn)
 		
-		poly!(ax, Point2f.(cx .+ rx*cos.(θs), cy .+ ry*sin.(θs)),
+		poly!(ax, Point2f.(cx .+ rx * cos.(θs), cy .+ ry * sin.(θs)),
 			color=(col, 0.3), strokecolor=col, strokewidth=2.5)
 		scatter!(ax, Point2f(cx, cy), color=col, markersize=10)
-		text!(ax, "R$i", position=Point2f(cx-1.5, cy+_rotor_radius+1),
+		text!(ax, "R$i", position=Point2f(cx - 1.5, cy + _rotor_radius + 1),
 			fontsize=12, color=:black, align=(:center, :bottom))
-		
-		cum += _section_len
 	end
 	
 	# Anchor
