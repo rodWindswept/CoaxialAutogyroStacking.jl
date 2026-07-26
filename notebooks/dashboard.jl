@@ -45,6 +45,9 @@ md"## 🎛️ Wind, Line & Flight Mode"
 # ╔═╡ 00000000-0000-0000-0000-000000000007
 @bind _auto_elev CheckBox(default=true)
 
+# ╔═╡ 00000000-0000-0000-0000-000000000023
+@bind _elevation Slider(10.0:1.0:80.0, default=55.0, show_value=true)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000008
 @bind _line_diam_mm Slider(2.0:0.5:12.0, default=4.0, show_value=true)
 
@@ -114,19 +117,20 @@ begin
 	# Line elevation angle:
 	# If _auto_elev is true (default), line elevation angle EMERGES 100% from autogyro L/D physics equilibrium!
 	if _auto_elev
-		_eq_elev = 55.0
+		_curr_elev = 55.0
 		for _ in 1:8
-			_test_forces = [rotor_force_along_line(r, rho, _v_wind, _eq_elev) for r in _rotors]
+			_e = _curr_elev
+			_test_forces = [rotor_force_along_line(r, rho, _v_wind, _e) for r in _rotors]
 			_flift = sum(f[2] for f in _test_forces)
-			_fdrag = sum(f[3] for f in _test_forces) + bare_line_drag(rho, _v_wind, _diam_m, sum(_secs), _eq_elev)
+			_fdrag = sum(f[3] for f in _test_forces) + bare_line_drag(rho, _v_wind, _diam_m, sum(_secs), _e)
 			_total_mass = sum(r.mass for r in _rotors) + line_mass_per_m(_diam_m, 970.0) * sum(_secs)
 			_fweight = _total_mass * g_const
 			_next = _fdrag > 0 ? atand(max(0.0, _flift - _fweight), _fdrag) : 10.0
 			_next = clamp(_next, 10.0, 85.0)
-			if abs(_next - _eq_elev) < 0.05; break; end
-			_eq_elev = _next
+			if abs(_next - _curr_elev) < 0.05; break; end
+			_curr_elev = _next
 		end
-		_elev = _eq_elev
+		_elev = _curr_elev
 	else
 		_elev = _elevation
 	end
@@ -315,9 +319,6 @@ md"""
 # ╔═╡ 00000000-0000-0000-0000-000000000061
 md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAutogyroStacking.jl) — 75 tests, strict TDD, PCA-2 empirical data*
 
-# ╔═╡ 00000000-0000-0000-0000-000000000023
-@bind _elevation Slider(10.0:1.0:80.0, default=55.0, show_value=true)
-
 # ╔═╡ Cell order:
 # ╠═bbbbbbbb-0000-0000-0000-000000000001
 # ╠═00000000-0000-0000-0000-000000000003
@@ -325,7 +326,6 @@ md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAu
 # ╠═00000000-0000-0000-0000-000000000005
 # ╠═00000000-0000-0000-0000-000000000006
 # ╠═00000000-0000-0000-0000-000000000007
-# ╠═00000000-0000-0000-0000-000000000022
 # ╠═00000000-0000-0000-0000-000000000023
 # ╠═00000000-0000-0000-0000-000000000008
 # ╠═00000000-0000-0000-0000-000000000009
