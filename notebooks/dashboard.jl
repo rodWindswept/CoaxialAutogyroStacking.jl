@@ -45,9 +45,6 @@ md"## 🎛️ Wind, Line & Flight Mode"
 # ╔═╡ 00000000-0000-0000-0000-000000000007
 @bind _auto_elev CheckBox(default=true)
 
-# ╔═╡ 00000000-0000-0000-0000-000000000023
-@bind _elevation Slider(10.0:1.0:80.0, default=55.0, show_value=true)
-
 # ╔═╡ 00000000-0000-0000-0000-000000000008
 @bind _line_diam_mm Slider(2.0:0.5:12.0, default=4.0, show_value=true)
 
@@ -152,7 +149,8 @@ begin
 		(F_line, F_lift, F_drag, cl, cd, effective_alpha(rot, _elev))
 	end) for rot in _stack.rotors]
 	
-	md"**Active preset:** $(_scenario) | Wind: $(round(_v_wind,digits=1)) m/s | **Line Elev ($(_auto_elev ? "Auto L/D physics" : "Manual override")): $(round(_elev,digits=1))°** | Pitch: $(round(_pitch,digits=0))° | Turb: $(_turb)"
+	_mode_str = _auto_elev ? "Auto L/D physics" : "Manual override"
+	md"**Active preset:** $(_scenario) | Wind: $(round(_v_wind,digits=1)) m/s | **Line Elev ($(_mode_str)): $(round(_elev,digits=1))°** | Pitch: $(round(_pitch,digits=0))° | Turb: $(_turb)"
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000030
@@ -317,6 +315,9 @@ md"""
 # ╔═╡ 00000000-0000-0000-0000-000000000061
 md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAutogyroStacking.jl) — 75 tests, strict TDD, PCA-2 empirical data*
 
+# ╔═╡ 00000000-0000-0000-0000-000000000023
+@bind _elevation Slider(10.0:1.0:80.0, default=55.0, show_value=true)
+
 # ╔═╡ Cell order:
 # ╠═bbbbbbbb-0000-0000-0000-000000000001
 # ╠═00000000-0000-0000-0000-000000000003
@@ -324,6 +325,8 @@ md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAu
 # ╠═00000000-0000-0000-0000-000000000005
 # ╠═00000000-0000-0000-0000-000000000006
 # ╠═00000000-0000-0000-0000-000000000007
+# ╠═00000000-0000-0000-0000-000000000022
+# ╠═00000000-0000-0000-0000-000000000023
 # ╠═00000000-0000-0000-0000-000000000008
 # ╠═00000000-0000-0000-0000-000000000009
 # ╠═00000000-0000-0000-0000-000000000010
