@@ -22,12 +22,18 @@ Each diagram lives in `diagrams/<slug>/` with these files:
 ```
 diagrams/<slug>/
 ├── SPEC.md          # ~1000 word specification (see SPEC format below)
-├── <slug>.py        # Python script that generates the figure (data loading + plotting)
+├── <slug>.py        # Python/matplotlib script OR
+├── <slug>.jl        # Julia/Makie script (preferred for this Julia project)
 ├── <slug>.tex       # TikZ/LaTeX source (if applicable)  
 ├── <slug>.png       # 300dpi raster output
 ├── <slug>.pdf       # Vector output
 └── IMPLICATIONS.md  # One paragraph on what the data shows and its significance
 ```
+
+For this project (CoaxialAutogyroStacking.jl), prefer `.jl` scripts using
+Makie for plotting. The data pipeline is already Julia-native, and Makie is
+a project dependency. Python/matplotlib is acceptable for diagrams where
+TikZ-quality typography is needed.
 
 ## SPEC.md format (mandatory sections)
 
@@ -188,7 +194,14 @@ The user can request new diagram prototypes be added to the registry at any time
 
 ```bash
 cd diagrams/<slug>
-python <slug>.py          # generates data, may output intermediate CSV
+
+# Julia/Makie (preferred for this project)
+julia --project=../.. <slug>.jl
+
+# Python/matplotlib (alternative)
+python <slug>.py
+
+# LaTeX → PDF (if .tex source exists)
 pdflatex -interaction=nonstopmode <slug>.tex
 pdftoppm -png -r 300 <slug>.pdf <slug>
 mv <slug>-1.png <slug>.png

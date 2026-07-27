@@ -8,6 +8,19 @@
 | Slug | Title | Status | Round | Data Source | Last Check | Issues |
 |------|-------|--------|-------|-------------|------------|--------|
 | bem-pareto | No Pareto Trade-off: Tension vs Efficiency | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 | — |
+| bem-feasibility | Feasibility Heatmap: Radius × Wind Speed | prototype | 0/3 | bem_full_sweep.tsv | — | — |
+| bem-tension-accumulation | Tension Accumulation Along Kite Line | prototype | 0/3 | bem_full_sweep.tsv | — | — |
+| bem-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | prototype | 0/3 | bem_full_sweep.tsv | — | — |
+| bem-radar | Radar Comparison: 5 Metrics by Profile | prototype | 0/3 | bem_full_sweep.tsv | — | — |
+| sweep-heatmap | Heatmap: Anchor Tension by Radius × Stack Count | prototype | 0/3 | sweep_results.tsv | — | — |
+| sweep-pareto-cv | Pareto: Tension vs Gust Stability (CV) | prototype | 0/3 | sweep_results.tsv | — | — |
+| sweep-pareto-mass | Pareto: Tension vs Mass Efficiency (PCA-2) | prototype | 0/3 | sweep_results.tsv | — | — |
+| sweep-profile-comparison | Bar Chart: Tension by Tilt Profile | prototype | 0/3 | sweep_results.tsv | — | — |
+| sweep-tension-vs-wind | Line Chart: Anchor Tension vs Wind Speed | prototype | 0/3 | sweep_results.tsv | — | — |
+| viability-gates | Viability Gates Overview | prototype | 0/3 | sweep_results.tsv | — | — |
+| viability-heatmap | Viability Heatmap: Tip Speed × Reynolds | prototype | 0/3 | sweep_results.tsv | — | — |
+| viability-reynolds | Reynolds Number Distribution | prototype | 0/3 | sweep_results.tsv | — | — |
+| viability-tip-speed | Tip Speed Distribution | prototype | 0/3 | sweep_results.tsv | — | — |
 
 ## Status Legend
 
@@ -18,12 +31,14 @@
 - `approved` — All 3 rounds complete, publication-ready
 - `deprecated` — Superseded by a newer diagram
 
-## Suggested initial diagrams
+## Notes
 
-From the corrected BEM sweep (`bem_full_sweep.tsv`, 2026-07-27):
-
-1. `bem-pareto` — Pareto front: anchor tension vs mass efficiency, colored by profile
-2. `bem-profile-comparison` — Bar chart: tension by tilt profile at R=3.0m, N=4
-3. `bem-radius-scaling` — Line chart: tension vs radius for uniform profile
-4. `bem-tension-profile` — Stacked area: tension accumulation along the line for top 3 configs
-5. `bem-chain-geometry` — Polygon chain side-view for top_draggy vs uniform vs graded
+- **bem-pareto** replaces `sweep-pareto-mass` (BEM data supersedes PCA-2 sweep data).
+  Consider deprecating `sweep-pareto-mass` after bem-pareto is published.
+- **Generation approach:** These were originally Pluto notebooks. For the registry
+  pipeline, each diagram should have a standalone `.jl` script (Julia + Makie)
+  rather than Python, since the data pipeline and plotting library are already
+  Julia-native. Pluto notebooks can serve as the interactive exploration layer;
+  the `.jl` script is the reproducible build.
+- **Data sources:** `bem_full_sweep.tsv` (corrected 2026-07-27) for BEM charts;
+  `sweep_results.tsv` for PCA-2 sweep charts; viability data from sweep columns.
