@@ -21,7 +21,7 @@
 | bem-legacy-pareto-count | Pareto: Tension vs N/kg by Stack Count | bem_chart_1_pareto.png | ax1c |
 | bem-legacy-pareto-elevation | Pareto: Tension vs N/kg by Elevation | bem_chart_1_pareto.png | ax1d |
 | bem-legacy-feasibility-radius | Feasibility: Re Viability Heatmap | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
-| bem-legacy-feasibility-heatmap | Feasibility: Heatmap Radius × Wind | bem_chart_2_feasibility.png | ax2b |
+| bem-legacy-feasibility-heatmap | Tip Speed Noise Gate | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
 | bem-legacy-tension-accum | Tension Accumulation Along Line | bem_chart_3_tension_profile.png | — |
 | bem-legacy-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | bem_chart_4_radial_loading.png | — |
 | bem-legacy-radar | Radar: 5 Metrics by Tilt Profile | bem_chart_5_radar.png | — |
