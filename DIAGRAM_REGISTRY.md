@@ -22,7 +22,8 @@
 | bem-legacy-pareto-elevation | Pareto: Tension vs N/kg by Elevation | bem_chart_1_pareto.png | ax1d |
 | bem-legacy-feasibility-radius | Feasibility: Re Viability Heatmap | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
 | bem-legacy-feasibility-heatmap | Tip Speed Noise Gate | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
-| bem-legacy-tension-accum | Tension Accumulation Along Line | bem_chart_3_tension_profile.png | — |
+| bem-legacy-tension-accum | Tension Accumulation Along Line | approved | 3/3 | stack_tension_profile | 2026-07-27 |
+| bem-legacy-tension-accum-v2 | Tension w/ Wind Gradient (α=0.14) | approved | 3/3 | stack_tension_profile | 2026-07-27 |
 | bem-legacy-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | bem_chart_4_radial_loading.png | — |
 | bem-legacy-radar | Radar: 5 Metrics by Tilt Profile | bem_chart_5_radar.png | — |
 
@@ -63,7 +64,7 @@ simplification, instrumentation, and funding priorities.
 | pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling | Which (radius, stack_count) grid points cover the Pareto front? Minimum viable product line. |
 | pca-efficiency | Mass Efficiency Mapped onto PC Space | Pitch Deck | "Every design on this curve gives best bang-for-buck." The efficient frontier in reduced dimensions. |
 
-**Total: 2 approved + 18 legacy + 7 PCA = 27 diagrams registered**
+**Total: 5 approved + 16 legacy + 7 PCA = 28 diagrams registered**
 
 ## Status Legend
 
