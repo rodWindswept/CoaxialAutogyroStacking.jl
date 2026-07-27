@@ -21,13 +21,61 @@ Each diagram lives in `diagrams/<slug>/` with these files:
 
 ```
 diagrams/<slug>/
-├── SPEC.md          # ~1000 word specification: data source, variables, audience, message
+├── SPEC.md          # ~1000 word specification (see SPEC format below)
 ├── <slug>.py        # Python script that generates the figure (data loading + plotting)
 ├── <slug>.tex       # TikZ/LaTeX source (if applicable)  
 ├── <slug>.png       # 300dpi raster output
 ├── <slug>.pdf       # Vector output
 └── IMPLICATIONS.md  # One paragraph on what the data shows and its significance
 ```
+
+## SPEC.md format (mandatory sections)
+
+Every SPEC.md must contain these sections in order. Target ~1000 words.
+
+```markdown
+# SPEC.md — <slug>
+
+## Slug
+`<slug>`
+
+## Title
+<Finding-oriented title, not just a description of what's plotted>
+
+## Data Source
+<Path to source file and date regenerated>
+<List every column used with units and description>
+
+## Aggregation
+<How raw data is grouped/filtered/aggregated before plotting>
+<Filter criteria and viability gates>
+
+## Variables
+<Table: Axis/Channel | Variable | Units | Description for every visual channel>
+
+## Audience
+<Who this diagram is for and how they'll use it>
+
+## Message
+<The one-sentence finding this diagram communicates>
+
+## Chart type
+<Scatter, bar, line, etc.>
+
+## Visual encoding
+<What each visual channel encodes and why>
+
+## Annotation strategy
+<Which points get labels, how they're chosen, where labels are placed>
+
+## Related SPEC sections
+<Cross-references to project documentation>
+
+## Generation
+<How to regenerate: command, dependencies>
+```
+
+Example SPEC.md for reference: see `diagrams/bem-pareto/SPEC.md`.
 
 ## Registry format
 
@@ -55,19 +103,38 @@ Automated checks:
 Automated checks:
 - No label overlaps (bounding-box collision detection)
 - Leader lines don't cross each other
+- Leader lines MUST connect labels to their specific data points — no detached
+  side panels or key tables that break the visual connection
+- Labels MUST be placed in whitespace around data clusters — never on top of
+  or obscuring data points
 - At most 3 visual channels per plot (position, color, size)
-- Color bar or legend is present and legible
+- EVERY visual channel must have an on-chart legend: color/shape in the plot
+  legend, size as a separate size legend with example markers at labeled sizes
 - Font sizes ≥ 8pt at 300dpi output
-- No clipped text or truncated labels
+- No clipped text or truncated labels — including the implications caption
+  at the bottom of the figure. Every line of the caption must be fully visible
+  within the image bounds. Verify by checking the last character of the
+  caption renders completely.
 - White/clean background (no dark themes for publication)
+- Layout MUST be tightly cropped to content — portrait orientation preferred.
+  Use fixed `subplots_adjust` values, NOT `bbox_inches="tight"` (which expands
+  unpredictably when annotations extend beyond axes)
 
 ### Round 3: Communication
 Automated checks:
 - Title states the finding, not just the data
 - IMPLICATIONS.md paragraph is present and substantive
-- A reader unfamiliar with the code can identify what each axis/variable means
+- The implications paragraph MUST also appear on the chart itself as a caption
+  below the plot area, integrated into the figure (not just as a separate file)
+- A reader unfamiliar with the code can identify what each axis, color, shape,
+  and size means without reading external documentation
 - The key message is visible within 3 seconds of viewing
 - Cross-reference to SPEC.md section is present and correct
+- **Spacing and margins:** consistent, generous padding around all elements.
+  No annotation touches the plot border or figure edge. Minimum 20px clear
+  space between any text element and the frame edge. The implications caption
+  has visible whitespace above and below. The title has breathing room from
+  the top plot border. Leader-line labels have padding from axis spines.
 
 At the end of each round, the agent records findings in the registry and
 asks the user for approval before proceeding to the next round. Comments from
@@ -126,6 +193,27 @@ pdflatex -interaction=nonstopmode <slug>.tex
 pdftoppm -png -r 300 <slug>.pdf <slug>
 mv <slug>-1.png <slug>.png
 ```
+
+## Pitfalls (from bem-pareto HITL review)
+
+- **Side panels break visual connection.** Do not move annotations to a
+  separate right-hand panel or key table — the reader cannot tell which
+  label refers to which point. Use leader lines from labels to data.
+- **Labels on top of data.** Never place annotation boxes directly on top
+  of data clusters, even with transparency. Place labels in empty whitespace
+  regions and connect with leader lines.
+- **Missing size legend.** If point size encodes data (e.g. radius, N),
+  there MUST be an on-chart size legend showing example markers at each
+  labeled size value. The reader cannot guess what size means.
+- **`bbox_inches="tight"` expands unpredictably.** When annotations extend
+  beyond the axes, tight bounding box inflates the canvas leaving large
+  empty margins. Use fixed `figsize` + `subplots_adjust` for precise crop.
+- **Implications must be on the chart.** The IMPLICATIONS.md file alone is
+  not enough — the implications paragraph must appear as a caption integrated
+  into the figure itself so it travels with the image.
+- **HITL gates are real.** Do not advance rounds without explicit user
+  approval. The human is the gate — present findings and wait for "approve"
+  before moving to the next round.
 
 ## Adding a new diagram
 
