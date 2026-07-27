@@ -46,7 +46,24 @@
 | sweep-heatmap | Heatmap: Tension by Radius × Stack Count | sweep_heatmap_radius_stack.png | — |
 | sweep-tension-vs-wind | Line: Anchor Tension vs Wind Speed | sweep_tension_vs_wind.png | — |
 
-**Total: 1 approved + 19 prototypes = 20 diagrams registered**
+### Prototypes — PCA Analysis (7 new, from bem_full_sweep.tsv)
+
+Principal Component Analysis of 96 BEM configurations across 7 variables
+(radius, n_rotors, tension, N/kg, RPM, tip_speed, Re). Identifies which
+design levers actually drive variance — directly informs manufacturing
+simplification, instrumentation, and funding priorities.
+
+| Slug | Title | Informs |
+|------|-------|--------|
+| pca-biplot | PCA Biplot: Configurations in PC1/PC2 Space | Design families — which combinations of (R, N, profile) occupy distinct performance regions |
+| pca-scree | PCA Scree Plot: Variance Explained by Component | Funding — if PC1 captures 80%+, the design space is one-dimensional; optimize one thing |
+| pca-loadings | PCA Loadings: Variable Contributions to PC1/PC2 | Engineering effort — which variables actually matter vs which are redundant |
+| pca-correlation | Correlation Heatmap: All Variable Pairs | Instrumentation — RPM∝tip_speed and tension∝N/kg are mechanically linked; don't instrument both |
+| pca-clusters | K-Means Clusters in PC Space by (R, N) | Manufacturing — how many distinct rotor sizes/families are needed to cover the design space |
+| pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling — which (radius, stack_count) combinations cover the Pareto frontier; minimum mold set |
+| pca-efficiency | Mass Efficiency Mapped onto PC Space | Funding pitch — the efficient frontier in reduced dimensions; best bang-for-buck designs |
+
+**Total: 1 approved + 19 legacy + 7 PCA = 27 diagrams registered**
 
 ## Status Legend
 
@@ -59,6 +76,9 @@
 
 ## Notes
 
+- **PCA ≠ PCA-2.** "PCA-2" (Pitcairn) is the 1930s autogyro rotor whose empirical
+  data drives the v1 disk model. "PCA" (Principal Component Analysis) charts below
+  are statistical decomposition of BEM sweep results. No relation.
 - **bem-pareto** (approved) replaces `sweep-pareto-mass` — BEM data supersedes PCA-2.
   Consider deprecating `sweep-pareto-mass` and `sweep-pareto-cv` after BEM versions exist.
 - **Multi-panel split:** `bem_chart_1_pareto.png` (4 subplots), `bem_chart_2_feasibility.png`
