@@ -1,4 +1,4 @@
-# IMPLICATIONS.md — bem-legacy-tension-accum
+# IMPLICATIONS.md — bem-tension-accum
 
 ## Finding
 

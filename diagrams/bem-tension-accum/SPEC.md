@@ -1,7 +1,7 @@
-# SPEC.md — bem-legacy-tension-accum
+# SPEC.md — bem-tension-accum
 
 ## Slug
-`bem-legacy-tension-accum`
+`bem-tension-accum`
 
 ## Title
 Tension Accumulation Along the Polygon Line — R=3.0m, N=4, graded, 45°
@@ -65,9 +65,9 @@ lines against distance from anchor.
 ## Generation
 
 ```bash
-cd diagrams/bem-legacy-tension-accum
+cd diagrams/bem-tension-accum
 julia --project=../.. compute_tension_profile.jl  # generates CSV
-python3 bem-legacy-tension-accum.py                # plots from CSV
+python3 bem-tension-accum.py                # plots from CSV
 ```
 
 Output: PNG (300dpi), PDF.

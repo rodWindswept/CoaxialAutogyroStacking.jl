@@ -16,16 +16,16 @@
 
 | Slug | Title | Source PNG | Subplot |
 |------|-------|-----------|---------|
-| bem-legacy-pareto-profile | Pareto: Tension vs N/kg by Profile | bem_chart_1_pareto.png | ax1a |
-| bem-legacy-pareto-radius | Pareto: Tension vs N/kg by Radius | bem_chart_1_pareto.png | ax1b |
-| bem-legacy-pareto-count | Pareto: Tension vs N/kg by Stack Count | bem_chart_1_pareto.png | ax1c |
-| bem-legacy-pareto-elevation | Pareto: Tension vs N/kg by Elevation | bem_chart_1_pareto.png | ax1d |
-| bem-legacy-feasibility-radius | Feasibility: Re Viability Heatmap | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
-| bem-legacy-feasibility-heatmap | Tip Speed Noise Gate | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
-| bem-legacy-tension-accum | Tension Accumulation Along Line | approved | 3/3 | stack_tension_profile | 2026-07-27 |
-| bem-legacy-tension-accum-v2 | Tension w/ Wind Gradient (α=0.14) | approved | 3/3 | stack_tension_profile | 2026-07-27 |
-| bem-legacy-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | bem_chart_4_radial_loading.png | — |
-| bem-legacy-radar | Radar: 5 Metrics by Tilt Profile | bem_chart_5_radar.png | — |
+| bem-pareto-profile | Pareto: Tension vs N/kg by Profile | bem_chart_1_pareto.png | ax1a |
+| bem-pareto-radius | Pareto: Tension vs N/kg by Radius | bem_chart_1_pareto.png | ax1b |
+| bem-pareto-count | Pareto: Tension vs N/kg by Stack Count | bem_chart_1_pareto.png | ax1c |
+| bem-pareto-elevation | Pareto: Tension vs N/kg by Elevation | bem_chart_1_pareto.png | ax1d |
+| bem-feasibility-radius | Feasibility: Re Viability Heatmap | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
+| bem-feasibility-heatmap | Tip Speed Noise Gate | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
+| bem-tension-accum | Tension Accumulation Along Line | approved | 3/3 | stack_tension_profile | 2026-07-27 |
+| bem-tension-accum-v2 | Tension w/ Wind Gradient (α=0.14) | approved | 3/3 | stack_tension_profile | 2026-07-27 |
+| bem-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | approved | 3/3 | bem_induction | 2026-07-27 |
+| bem-radar | Radar: 5 Metrics by Tilt Profile | bem_chart_5_radar.png | — |
 
 ### Prototypes — Viability Charts (4, from notebooks/viability_charts.jl)
 
@@ -64,7 +64,7 @@ simplification, instrumentation, and funding priorities.
 | pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling | Which (radius, stack_count) grid points cover the Pareto front? Minimum viable product line. |
 | pca-efficiency | Mass Efficiency Mapped onto PC Space | Pitch Deck | "Every design on this curve gives best bang-for-buck." The efficient frontier in reduced dimensions. |
 
-**Total: 5 approved + 16 legacy + 7 PCA = 28 diagrams registered**
+**Total: 6 approved + 14 legacy + 7 PCA = 27 diagrams registered**
 
 ## Status Legend
 

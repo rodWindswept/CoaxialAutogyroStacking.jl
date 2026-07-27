@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bem-legacy-feasibility-heatmap: Tip speed heatmap by (radius, N).
+"""bem-feasibility-heatmap: Tip speed heatmap by (radius, N).
 
 Reads ../../bem_full_sweep.tsv, computes mean tip speed per (radius, n_rotors)
 cell, annotates pass/fail per tip speed ≤ 100 m/s noise gate.
@@ -94,14 +94,14 @@ caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          wrap=True)
 
 plt.subplots_adjust(left=0.14, right=0.91, top=0.92, bottom=0.28)
-fig.savefig("bem-legacy-feasibility-heatmap.png", dpi=300,
+fig.savefig("bem-feasibility-heatmap.png", dpi=300,
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
-fig.savefig("bem-legacy-feasibility-heatmap.pdf",
+fig.savefig("bem-feasibility-heatmap.pdf",
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
 plt.close()
 
-print("bem-legacy-feasibility-heatmap.png + .pdf generated")
+print("bem-feasibility-heatmap.png + .pdf generated")
 print(f"  {len(radii_sorted)} radii × {len(counts_sorted)} counts = "
       f"{np.sum(~np.isnan(tip_mean))} cells")

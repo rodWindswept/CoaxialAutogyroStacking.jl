@@ -1,7 +1,7 @@
-# SPEC.md — bem-legacy-feasibility-radius
+# SPEC.md — bem-feasibility-radius
 
 ## Slug
-`bem-legacy-feasibility-radius`
+`bem-feasibility-radius`
 
 ## Title
 Tip Reynolds Number by Radius and Stack Count — Viability Gate
@@ -92,12 +92,12 @@ adequate cell spacing.
 ## Generation
 
 ```bash
-cd diagrams/bem-legacy-feasibility-radius
-python3 bem-legacy-feasibility-radius.py
+cd diagrams/bem-feasibility-radius
+python3 bem-feasibility-radius.py
 ```
 
 Requires: Python 3, matplotlib, numpy. Input: `../../bem_full_sweep.tsv`.
-Output: `bem-legacy-feasibility-radius.png` (300dpi), PDF.
+Output: `bem-feasibility-radius.png` (300dpi), PDF.
 
 ## Round 1 checks
 

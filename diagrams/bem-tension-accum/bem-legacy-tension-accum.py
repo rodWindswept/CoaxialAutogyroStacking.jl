@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bem-legacy-tension-accum: Tension accumulation along the polygon line.
+"""bem-tension-accum: Tension accumulation along the polygon line.
 
 Computes tension profile data via Julia (compute_tension_profile.jl),
 then plots multi-line chart: tension vs distance from anchor for multiple
@@ -83,12 +83,12 @@ caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          wrap=True)
 
 plt.subplots_adjust(left=0.11, right=0.94, top=0.93, bottom=0.22)
-fig.savefig("bem-legacy-tension-accum.png", dpi=300,
+fig.savefig("bem-tension-accum.png", dpi=300,
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
-fig.savefig("bem-legacy-tension-accum.pdf",
+fig.savefig("bem-tension-accum.pdf",
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
 plt.close()
 
-print("bem-legacy-tension-accum.png + .pdf generated")
+print("bem-tension-accum.png + .pdf generated")

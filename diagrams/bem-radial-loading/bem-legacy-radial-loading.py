@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bem-legacy-radial-loading: CL distribution along blade — 2D vs 3D Snel."""
+"""bem-radial-loading: CL distribution along blade — 2D vs 3D Snel."""
 import csv
 import matplotlib
 matplotlib.use("Agg")
@@ -56,12 +56,12 @@ caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          wrap=True)
 
 plt.subplots_adjust(left=0.11, right=0.88, top=0.92, bottom=0.24)
-fig.savefig("bem-legacy-radial-loading.png", dpi=300,
+fig.savefig("bem-radial-loading.png", dpi=300,
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
-fig.savefig("bem-legacy-radial-loading.pdf",
+fig.savefig("bem-radial-loading.pdf",
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
 plt.close()
 
-print("bem-legacy-radial-loading.png + .pdf generated")
+print("bem-radial-loading.png + .pdf generated")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bem-legacy-feasibility-radius: Tip Reynolds number heatmap by (radius, N).
+"""bem-feasibility-radius: Tip Reynolds number heatmap by (radius, N).
 
 Reads ../../bem_full_sweep.tsv, computes mean tip Reynolds per (radius, n_rotors)
 cell, annotates pass/fail per Re > 5e4 viability gate.
@@ -97,14 +97,14 @@ caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          wrap=True)
 
 plt.subplots_adjust(left=0.12, right=0.92, top=0.90, bottom=0.27)
-fig.savefig("bem-legacy-feasibility-radius.png", dpi=300,
+fig.savefig("bem-feasibility-radius.png", dpi=300,
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
-fig.savefig("bem-legacy-feasibility-radius.pdf",
+fig.savefig("bem-feasibility-radius.pdf",
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
 plt.close()
 
-print("bem-legacy-feasibility-radius.png + .pdf generated")
+print("bem-feasibility-radius.png + .pdf generated")
 print(f"  {len(radii_sorted)} radii × {len(counts_sorted)} counts = "
       f"{np.sum(~np.isnan(re_mean))} cells")

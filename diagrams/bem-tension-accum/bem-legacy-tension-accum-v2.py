@@ -68,12 +68,12 @@ caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          wrap=True)
 
 plt.subplots_adjust(left=0.06, right=0.97, top=0.92, bottom=0.22, wspace=0.25)
-fig.savefig("bem-legacy-tension-accum-v2.png", dpi=300,
+fig.savefig("bem-tension-accum-v2.png", dpi=300,
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
-fig.savefig("bem-legacy-tension-accum-v2.pdf",
+fig.savefig("bem-tension-accum-v2.pdf",
             facecolor="white", edgecolor="none",
             bbox_extra_artists=[caption_text], bbox_inches="tight")
 plt.close()
 
-print("bem-legacy-tension-accum-v2.png + .pdf generated")
+print("bem-tension-accum-v2.png + .pdf generated")

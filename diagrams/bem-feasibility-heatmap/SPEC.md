@@ -1,7 +1,7 @@
-# SPEC.md — bem-legacy-feasibility-heatmap
+# SPEC.md — bem-feasibility-heatmap
 
 ## Slug
-`bem-legacy-feasibility-heatmap`
+`bem-feasibility-heatmap`
 
 ## Title
 Tip Speed by Radius and Stack Count — Noise Gate
@@ -74,12 +74,12 @@ stack count on y-axis, color-coded by mean tip speed.
 ## Generation
 
 ```bash
-cd diagrams/bem-legacy-feasibility-heatmap
-python3 bem-legacy-feasibility-heatmap.py
+cd diagrams/bem-feasibility-heatmap
+python3 bem-feasibility-heatmap.py
 ```
 
 Requires: Python 3, matplotlib, numpy. Input: `../../bem_full_sweep.tsv`.
-Output: `bem-legacy-feasibility-heatmap.png` (300dpi), PDF.
+Output: `bem-feasibility-heatmap.png` (300dpi), PDF.
 
 ## Round 1 checks
 
