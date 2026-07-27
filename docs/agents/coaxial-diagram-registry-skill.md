@@ -65,6 +65,12 @@ Every SPEC.md must contain these sections in order. Target ~1000 words.
 ## Message
 <The one-sentence finding this diagram communicates>
 
+### Plain-language explanation
+<Required for all diagrams. Explain what the chart shows, what the axes/colors/sizes
+mean, and what the patterns imply — in language a non-technical reader (investor,
+manufacturing partner, family member) can understand. No jargon without definition.
+Analogies welcome. Target: someone who's never seen a scatter plot before.>
+
 ## Chart type
 <Scatter, bar, line, etc.>
 
@@ -227,6 +233,51 @@ mv <slug>-1.png <slug>.png
 - **HITL gates are real.** Do not advance rounds without explicit user
   approval. The human is the gate — present findings and wait for "approve"
   before moving to the next round.
+
+## Vision Analysis Prompting
+
+When using `vision_analyze` during HITL rounds, ask binary, measurable
+questions. Vague prompts like "are labels readable?" produce unreliable
+answers and burn tokens. The vision model cannot reliably count items or
+read small text — it hallucinates missing labels and clipped arrows.
+
+### Rules
+
+1. **Ask about specific elements by name.** Not "are all labels visible?"
+   but "Is the text 'n_rotors' visible? Is 'mean tension' visible?"
+2. **Ask about edges.** Not "anything clipped?" but "Does any text extend
+   beyond the right edge of the white axis frame?"
+3. **Ask about overlap.** Not "are labels overlapping?" but "Does the
+   'n_rotors' label box touch any colored data markers?"
+4. **Never ask the vision model to count.** Instead ask "Is there text
+   near the tip of the longest right-pointing arrow?"
+5. **Trust the code over vision.** If the generating script placed an
+   element within axis limits, it IS there. The vision model may miss
+   small fonts. Don't loop — verify coordinates in the script.
+6. **One question per call.** Compound questions produce unreliable
+   results. Ask one specific thing, get PASS/FAIL, then act.
+
+### Templates
+
+```
+# Specific label
+"Is the text 'n_rotors' visible in the lower half of the chart?"
+
+# Frame edge
+"Does any text or line extend beyond the right edge of the axis frame?"
+
+# Caption presence
+"Is there a text block at the very bottom starting with 'IMPLICATIONS:'?"
+
+# Overlap
+"Does the white label box near (2, -1.5) overlap any colored markers?"
+```
+
+### When vision says something is missing
+
+Before editing the chart, verify: is the element drawn at coordinates
+within axis limits? If yes, the vision model is likely wrong — move on.
+Only fix if the coordinates actually fall outside the frame.
 
 ## Adding a new diagram
 

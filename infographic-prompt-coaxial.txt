@@ -1,0 +1,17 @@
+CoaxialAutogyroStacking.jl StonePunk infographic prompt:
+
+A professional StonePunk infographic for "CoaxialAutogyroStacking.jl" — a stacked autogyro lift model for kite turbines. Bento-grid layout with realistic engineering accuracy.
+
+Aesthetic: Neolithic meets AI meets 1980s hi-tech — same StonePunk visual language as its sister project KTD.jl. Dark background with synthwave purple/cyan/gold neon grid lines. Stone megalith textures with Callanish-inspired standing stone silhouettes. Thick outlined retro-futuristic panel borders.
+
+CENTER: A scientifically accurate illustration of stacked autogyro rotors on a single Dyneema line. Show 3 lifting units from top to bottom — each with a 2-blade autogyro rotor disk (tilted forward-down into the wind at angle delta), a tube compression column with the Dyneema line passing through the centre bore, thrust bearings above and below each rotor hub, swashplate actuators beneath the bottom molding, and an empennage (tail boom with V-fin) drooping below the line. The topmost rotor terminates the line. Tension accumulates downward — show increasing line thickness toward the anchor at bottom. Cyan/gold for the rotors, steel-blue for the tubes, dark panel for the empennage. Wind arrows entering from below the rotors (autogyro: inflow comes from below, it's a windmill not a fan).
+
+TOP LEFT: "CoaxialAutogyroStacking.jl" title in large synthwave font. "Stacked Autogyro Lift Model · Multi-Rotor Kite Line Dynamics".
+
+TOP RIGHT: Key metrics in glowing cyan. "830 LOC · TDD-built · 5/6 phases complete · Near v1". "PCA-2 empirical disk → BEM planned for v2". Small "Phase 9" badge.
+
+BOTTOM LEFT: "Architecture" — "Independently-pitched rotors stacked on one Dyneema line. Tension accumulates top→bottom. Graded stacking: top rotors shape the line geometry, bottom rotors exploit it." Small diagram showing rotor index 1 (topmost) through index N (anchor).
+
+BOTTOM RIGHT: "Next" — "Task 11: Integration API — dispatch into KTD.jl via lift_force_steady". "v1 scope: no wake interaction. v2: BEM + wake model."
+
+Footer: "Built on Lewis — stone by stone, rotor by rotor" in gold.
