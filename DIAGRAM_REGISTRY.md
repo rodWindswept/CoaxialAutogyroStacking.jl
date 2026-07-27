@@ -7,9 +7,7 @@
 
 | Slug | Title | Status | Round | Data Source | Last Check | Issues |
 |------|-------|--------|-------|-------------|------------|--------|
-| — | — | — | — | — | — | — |
-
-*No diagrams yet. Add prototypes with `mkdir diagrams/<slug>` and create SPEC.md.*
+| bem-pareto | No Pareto Trade-off: Tension vs Efficiency | R3 | 3/3 | bem_full_sweep.tsv | 2026-07-27 | — |
 
 ## Status Legend
 
