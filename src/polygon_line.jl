@@ -13,11 +13,11 @@ Returns segment angles θ (one per rotor, degrees), tension profile T
 # Physics
 
 For each rotor i (top → bottom):
-- Effective AoA: α_eff = 90° − θ[i] + tilt_i
-- BEM force: F_line from [`rotor_force_bem`](@ref)
+- Effective AoA: α_eff = 90° − θ[i] + tilt_i  (disk-normal angle)
+- BEM thrust T acts along the disk normal at angle α_eff
 - Force equilibrium determines segment angle below:
-    T_x = T_above·cos(θ) + F_line·sin(θ + δ)
-    T_y = T_above·sin(θ) + F_line·cos(θ + δ) − W
+    T_x = T_above·cos(θ) + T·cos(α_eff)
+    T_y = T_above·sin(θ) + T·sin(α_eff) − W
     θ_new = atan(T_y, T_x)
 
 Jacobi iteration until all θ converge within `tol` degrees.
@@ -38,31 +38,36 @@ Jacobi iteration until all θ converge within `tol` degrees.
 function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10, tol=0.1)
     n = length(rotors)
     θ = fill(anchor_angle_deg, n)  # initial guess: straight line
-    F = zeros(n)
+    F_line = zeros(n)
 
     for _ in 1:max_iter
         θ_old = copy(θ)
         T_above = 0.0
 
         for i in 1:n
-            # BEM force at current segment angle
-            F_line, _, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
-            F[i] = F_line
+            # BEM force at current segment angle — use disk-normal thrust T
+            _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
             W = rotors[i].mass * 9.81
 
-            # Force vector sum: T_above (at angle θ[i]) + F_line (at angle θ[i] + δ)
-            # + weight (downward)
-            δ = rotors[i].tilt_deg
-            T_x = T_above * cosd(θ[i]) + F_line * sind(θ[i] + δ)
-            T_y = T_above * sind(θ[i]) + F_line * cosd(θ[i] + δ) - W
+            # Thrust acts at disk-normal angle: α_eff = 90° − θ + δ
+            α_eff = effective_alpha(rotors[i], θ[i])
+
+            # Force equilibrium: T_above at θ[i] + T_thrust at α_eff + weight down
+            T_x = T_above * cosd(θ[i]) + T_thrust * cosd(α_eff)
+            T_y = T_above * sind(θ[i]) + T_thrust * sind(α_eff) - W
 
             T_below = sqrt(T_x^2 + T_y^2)
 
-            # Update segment angle from force equilibrium
-            θ[i] = atand(T_y, T_x)
+            # Compute new segment angle with under-relaxation damping (ω = 0.5)
+            # to suppress Jacobi oscillation from the thrust↔angle feedback loop.
+            θ_new = atand(T_y, T_x)
+            θ[i] = θ[i] + 0.5 * (θ_new - θ[i])
 
             # Clamp to physical range
             θ[i] = clamp(θ[i], 5.0, 85.0)
+
+            # Along-line force for caller use
+            F_line[i] = T_thrust * cosd(rotors[i].tilt_deg)
 
             T_above = T_below
         end
@@ -72,18 +77,17 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
         end
     end
 
-    # Build tension profile
+    # Build tension profile using converged polygon segment angles
     T = zeros(n + 1)
     T[1] = 0.0
-    T_above = 0.0
     for i in 1:n
-        F_line, _, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
-        # Simplified accumulation (line drag/weight omitted for now)
+        _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
+        F_line_i = T_thrust * cosd(rotors[i].tilt_deg)
         W = rotors[i].mass * 9.81 * cosd(θ[i])
-        T[i+1] = max(0.0, T[i] + F_line - W)
+        T[i+1] = max(0.0, T[i] + F_line_i - W)
     end
 
-    return θ, T, F
+    return θ, T, F_line
 end
 
 export solve_polygon_angles

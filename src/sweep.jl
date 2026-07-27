@@ -362,11 +362,14 @@ function parameter_sweep_bem(;
                             profile = stack_tension_profile_polygon(stack, rho, v)
                             anchor_t = profile[end]
 
-                            # BEM per-rotor data
+                            # Get polygon segment angles for per-rotor viability metrics
+                            θ_poly, _, _ = solve_polygon_angles(stack.rotors, elev, rho, v)
+
+                            # BEM per-rotor data using polygon segment angles
                             rpms = Float64[]
                             tip_speeds = Float64[]
-                            for r in rotors
-                                _, _, rpm = rotor_force_bem(r, rho, v, elev)
+                            for (i, r) in enumerate(rotors)
+                                _, _, rpm = rotor_force_bem(r, rho, v, θ_poly[i])
                                 push!(rpms, rpm)
                                 push!(tip_speeds, rpm * 2π / 60.0 * r.radius)
                             end

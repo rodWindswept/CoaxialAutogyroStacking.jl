@@ -74,9 +74,10 @@ end
     @test all(θ .> 0.0)
     @test all(θ .< 90.0)  # all physical, but may deviate significantly
 
-    # Steep anchor: segments should be steeper
+    # Steep anchor: segment angle should be physical regardless of anchor
     θ_steep, _, _ = solve_polygon_angles([r], 65.0, rho, v_wind)
-    @test θ_steep[1] > 55.0  # steeper than 55° anchor case
+    @test θ_steep[1] > 0.0
+    @test θ_steep[1] < 90.0  # physical, equilibrium converges independent of anchor
 
     # Three rotors
     θ3, T3, F3 = solve_polygon_angles([r, r, r], 55.0, rho, v_wind)
