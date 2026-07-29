@@ -24,7 +24,7 @@ total_len = best_n * 15.0
 open("tension_profile.csv", "w") do io
     write(io, "wind_speed,distance_from_anchor,tension\n")
     for v in wind_speeds
-        profile = stack_tension_profile(stack, RHO, v)
+        profile = stack_tension_profile_polygon(stack, RHO, v)
         # profile[1]=0 at top, profile[end]=anchor max
         # Convert to distance from anchor (0=anchor, total_len=top)
         for i in 1:length(profile)

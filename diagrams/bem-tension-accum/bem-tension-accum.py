@@ -68,15 +68,13 @@ ax.grid(True, alpha=0.3, linestyle="--")
 
 # ── Implications caption ───────────────────────────────────────────────────
 caption = (
-    "IMPLICATIONS: Tension accumulates toward the anchor — each rotor "
-    "adds ~1,250 N of along-line force at 8 m/s (~5,200 N at 16 m/s). "
-    "Between rotors, bare-line drag adds further tension. Tension above "
-    "the topmost rotor drops to zero. Note: wind gradient is NOT modeled — "
-    "all rotors see the same freestream speed. With real wind shear "
-    "(exponent 0.14), the top rotor at 60m sees ~28% faster wind than at "
-    "15m, making upper steps larger. Anchor line must be rated for ~20 kN "
-    "at 16 m/s for this 4-rotor stack. Data: BEM v2.0, corrected polygon "
-    "solver. See SPEC.md §6.6."
+    "IMPLICATIONS: Tension accumulates toward the anchor. Each rotor adds "
+    "150–170 N of along-line force at 8 m/s (550–610 N at 16 m/s). "
+    "Between rotors, bare-line drag adds smaller tension. Tension above "
+    "the topmost rotor drops to zero. With wind gradient (α=0.14), anchor "
+    "tension rises 31% (642→840 N at 8 m/s). Anchor line must be rated for "
+    "~2.3 kN at 16 m/s uniform wind, ~3.0 kN with gradient. "
+    "Data: BEM v2.1, corrected polygon solver. See SPEC.md §6.6."
 )
 caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          ha="left", va="bottom", style="italic", family="serif",
