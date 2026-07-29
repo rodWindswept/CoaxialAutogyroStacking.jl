@@ -14,6 +14,13 @@ Quick reminders:
 
 ## Agent skills
 
+### Writing discipline
+
+Follow the clarity rules in `AGENTS.md` for all captions, specs, implications,
+and code comments: active voice, short sentences, one name per thing, no hedges.
+Lint diagram captions with `python3 ste-lint.py <file>` before Round 2 approval
+(score must be < 2.0 violations per 100 words).
+
 ### Domain docs
 
 Start here: `docs/agents/domain.md` — quick start, repo map, physics TL;DR, current state.

@@ -71,22 +71,33 @@ scripts/                       runnable entrypoints (bem_full_sweep.jl, dashboar
 
 ## Writing discipline for diagrams and technical outputs
 
-All diagram captions, SPEC.md, IMPLICATIONS.md, and simulation result
-summaries must follow these rules (derived from ASD-STE100, the aerospace
-simplified technical English standard). These are machine-checkable.
+All diagram captions, SPEC.md, IMPLICATIONS.md, simulation result
+summaries, and code comments must use shorter, clearer sentences.
+These rules derive from ASD-STE100 (the aerospace simplified technical
+English standard) and are machine-checkable.
 
-### Caption rules
+### Rules
 
 - Active voice. "The rotor adds 1,250 N" not "1,250 N is added by the rotor."
 - One name for one thing. Don't call the same quantity "tension" then "force"
-  then "load" in the same caption.
+  then "load" in the same block of text.
 - No hedges. Not "it is important to note that..." or "this may help to..."
   State the finding directly.
-- Short sentences. Max 25 words per sentence, 20 for instruction/result text.
+- Short sentences. Max 25 words for descriptive text, 20 for instructions.
+  Shorter is better. Two short sentences beat one long sentence.
 - No semicolons. Write two sentences.
 - No nominalizations. "We analyzed" not "we performed an analysis."
 - No marketing words. "Works" not "seamless." "Fast" not "blazing."
-- No phrasal verbs. "Remove the panel" not "take off the panel."
+- No phrasal verbs. "Remove" not "take off."
+
+### Code comments
+
+Apply the same clarity rules to comments in `src/` and `test/`:
+- One sentence per comment line. If you need two ideas, write two comments.
+- Active voice. "This function computes the tension profile" not
+  "The tension profile is computed by this function."
+- No hedges in docstrings. State what the function does and what it returns.
+- Keep `@assert` messages under 15 words.
 
 ### Mandatory lint check (Round 2)
 
