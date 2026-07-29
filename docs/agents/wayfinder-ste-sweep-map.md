@@ -16,25 +16,29 @@ docstring passes `ste-lint.py` at < 2.0 violations per 100 words.
 - Run `python3 ste-lint.py <file>` after every change.
 - Apply the Finding/Config/Values/Check/Source format to all results.
 
-## Wave 1 — Docs audit (parallel AFK)
+## Wave 1 — Docs audit ✓ DONE
 
-| # | Ticket | Type | Blocks |
+| # | Ticket | Type | Status |
 |---|--------|------|--------|
-| 01 | [Audit AGENTS.md vs CLAUDE.md](wayfinder-tickets/01-audit-agents-claude.md) | task | — |
-| 02 | [Audit PLAN.md for stale file maps](wayfinder-tickets/02-audit-plan.md) | task | — |
-| 03 | [Audit HANDOVER.md for clarity](wayfinder-tickets/03-audit-handover.md) | task | — |
-| 05 | [Audit diagram SPECs for drift](wayfinder-tickets/05-audit-diagram-specs.md) | task | — |
-| 06 | [Lint all docs/ with ste-lint.py](wayfinder-tickets/06-lint-docs.md) | task | — |
+| 01 | [Audit AGENTS.md vs CLAUDE.md](wayfinder-tickets/01-audit-agents-claude.md) | task | ✓ |
+| 02 | [Audit PLAN.md for stale file maps](wayfinder-tickets/02-audit-plan.md) | task | ✓ |
+| 03 | [Audit HANDOVER.md for clarity](wayfinder-tickets/03-audit-handover.md) | task | ✓ |
+| 05 | [Audit diagram SPECs for drift](wayfinder-tickets/05-audit-diagram-specs.md) | task | ✓ |
+| 06 | [Lint all docs/ with ste-lint.py](wayfinder-tickets/06-lint-docs.md) | task | ✓ |
 
-## Wave 2 — Glossary (HITL, blocked by 01-03)
+## Wave 2 — Glossary (HITL, now unblocked)
 
-| # | Ticket | Type | Blocks |
+| # | Ticket | Type | Status |
 |---|--------|------|--------|
-| 04 | [Build shared vocabulary glossary](wayfinder-tickets/04-build-glossary.md) | grilling | blocked by: 01, 02, 03 |
+| 04 | [Build shared vocabulary glossary](wayfinder-tickets/04-build-glossary.md) | grilling | pending |
 
 ## Decisions so far
 
-<!-- populated as tickets close -->
+- [Audit AGENTS.md vs CLAUDE.md](wayfinder-tickets/01-audit-agents-claude-resolution.md) — 7 issues: no contradictions, but stale "v1" scope label, two competing orientation docs (PLAN vs domain), missing cross-refs in AGENTS.md
+- [Audit PLAN.md](wayfinder-tickets/02-audit-plan-resolution.md) — 7 issues: stale sweep table (lists PCA-2, not BEM), wrong filename, wrong config count, stale test count (345→348)
+- [Audit HANDOVER.md](wayfinder-tickets/03-audit-handover-resolution.md) — 6 issues: 2 critical (stale tension values from pre-bugfix sweep), wrong Re threshold, stale test count
+- [Lint all docs/](wayfinder-tickets/06-lint-docs-resolution.md) — all 6 root doc files fail threshold; worst is CLAUDE.md (4.67), best is PLAN.md (1.96). Top violations: em dashes (107), long sentences, passive voice
+- [Audit diagram SPECs](wayfinder-tickets/05-audit-diagram-specs-resolution.md) — 10 of 12 pass; bem-tension-accum (2.80) and pca-clusters (3.64) fail
 
 ## Not yet specified
 
