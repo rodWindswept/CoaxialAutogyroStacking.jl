@@ -69,6 +69,45 @@ scripts/                       runnable entrypoints (bem_full_sweep.jl, dashboar
   `profile[end]` = anchor (max).
 - Pure functions where possible; structs are immutable.
 
+## Writing discipline for diagrams and technical outputs
+
+All diagram captions, SPEC.md, IMPLICATIONS.md, and simulation result
+summaries must follow these rules (derived from ASD-STE100, the aerospace
+simplified technical English standard). These are machine-checkable.
+
+### Caption rules
+
+- Active voice. "The rotor adds 1,250 N" not "1,250 N is added by the rotor."
+- One name for one thing. Don't call the same quantity "tension" then "force"
+  then "load" in the same caption.
+- No hedges. Not "it is important to note that..." or "this may help to..."
+  State the finding directly.
+- Short sentences. Max 25 words per sentence, 20 for instruction/result text.
+- No semicolons. Write two sentences.
+- No nominalizations. "We analyzed" not "we performed an analysis."
+- No marketing words. "Works" not "seamless." "Fast" not "blazing."
+- No phrasal verbs. "Remove the panel" not "take off the panel."
+
+### Mandatory lint check (Round 2)
+
+Before presenting a diagram for Round 2 approval, run:
+```
+python3 ste-lint.py diagrams/<slug>/<slug>.py
+```
+Score must be < 2.0 violations per 100 words on the caption text.
+If it fails, rewrite the caption before showing the user.
+
+### Technical result format
+
+When reporting simulation results, use this structure:
+```
+Finding: <one sentence>
+Config:  <R, N, wind, profile>
+Values:  <the key numbers>
+Check:   <pass/fail against threshold or expectation>
+Source:  <data file>
+```
+
 ## Definition of done (per task)
 
 - Test written first and passing.
