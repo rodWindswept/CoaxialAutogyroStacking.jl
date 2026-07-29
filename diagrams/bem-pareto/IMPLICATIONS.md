@@ -1,14 +1,23 @@
 # IMPLICATIONS.md — bem-pareto
 
-The Pareto front shows that mass efficiency (N/kg) and raw anchor tension (N)
-are nearly perfectly co-linear — a single configuration (R=3.0m, N=4, graded,
-839 N, 42.0 N/kg) dominates all others on both objectives simultaneously.
-This means there is no trade-off to optimize: the configuration that produces
-the most lift also produces it most efficiently per kilogram of rotor mass.
-The tilt profile has negligible effect at R=3.0m (all four profiles cluster
-within 2%), confirming that polygon chain curvature — while physically real
-after the solver correction — does not translate into a meaningful force
-advantage. For design decisions, this implies: (1) build the largest rotor
-radius the mechanical constraints allow, (2) stack as many rotors as the
-line tension budget permits, and (3) do not over-invest in tilt profile
-optimization — uniform tilt is within 2% of the theoretical optimum.
+## Finding
+
+The Pareto front shows mass efficiency (N/kg) and raw anchor tension (N)
+are co-linear. A single configuration (R=3.0m, N=4, graded, 859 N mean,
+42.9 N/kg) dominates both objectives. There is no trade-off to optimize.
+The configuration that produces the most lift also produces the best
+mass efficiency.
+
+## Significance
+
+The design space is degenerate. The parameter sweep optimization reduces
+to finding the single best configuration. No multi-objective Pareto
+analysis is needed. Engineers can optimize for maximum tension and get
+mass efficiency for free.
+
+## Consequence
+
+- Radius is the primary lever. Larger rotors win on both metrics.
+- Stack count adds tension but dilutes N/kg. N=4 is the sweet spot.
+- Tilt profile has a moderate effect (10.4% spread). Graded tilt wins.
+- Manufacturing focus: R=3.0m, N=4, uniform tilt (simpler, near-optimal).

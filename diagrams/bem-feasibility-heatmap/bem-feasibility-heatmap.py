@@ -80,14 +80,11 @@ ax.set_title(f"Tip Speed — Noise Gate (≤ {TIP_LIMIT} m/s)",
 
 # ── Implications caption ───────────────────────────────────────────────────
 caption = (
-    "IMPLICATIONS: All configurations stay well below 100 m/s tip speed — "
-    "the noise gate does not constrain this design space. Tip speed "
-    "saturates at ~30 m/s for R≥2.0m: larger rotors spin slower, "
-    "self-regulating to the same tip speed via BEM equilibrium. "
-    "R=1.5m is stalled — Re=15k, below the transitional threshold. "
-    "Blades bottom out at 10 RPM regardless of stack count. "
-    "Noise is not a limiting factor at these scales. "
-    "Data: BEM v2.0, corrected polygon solver. See SPEC.md §6.6."
+    "IMPLICATIONS: All configurations stay well below 100 m/s tip speed. "
+    "Maximum tip speed across the sweep is ~39 m/s (R=3.0m, N=4 at 12 m/s). "
+    "Tip speed saturates in the 20–39 m/s range for R≥2.0m. R=1.5m is "
+    "stalled at 1–2 m/s. Noise is not a limiting factor. "
+    "Data: BEM v2.1, corrected polygon solver. See SPEC.md §6.6."
 )
 caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          ha="left", va="bottom", style="italic", family="serif",
