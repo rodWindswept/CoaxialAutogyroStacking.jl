@@ -1,6 +1,9 @@
 #!/usr/bin/env julia
 # scripts/dashboard.jl — Coaxial Autogyro Stacking interactive dashboard
 #
+# Polygon chain geometry with BEM v2.1 aerodynamics.
+# Segment angles are computed from force equilibrium, not set by slider.
+#
 # Usage:
 #   julia --project=. scripts/dashboard.jl
 
@@ -13,12 +16,11 @@ using Printf
 GLMakie.activate!()
 
 # ═══════════════════════════════════════════════════════
-# State
+# State — only parameters you can physically control
 # ═══════════════════════════════════════════════════════
 
 n_rotors       = Observable(3)
 wind_speed     = Observable(8.0)
-elevation      = Observable(55.0)
 rotor_radius   = Observable(1.5)
 pitch_global   = Observable(5.0)
 line_diam      = Observable(0.004)
@@ -26,7 +28,6 @@ section_len    = Observable(10.0)
 turbulence     = Observable(false)
 time_t         = Observable(0.0)
 pitch_offsets  = Observable(fill(0.0, 6))
-kite_spec_idx  = Observable(1)
 
 rho, g = 1.225, 9.81
 
@@ -34,20 +35,31 @@ const KITE_SPECS = [
     (name = "v5 Octagon (871 W/kg)", factor_trpt = 44.4),
     (name = "Canonical 5-line (568 W/kg)", factor_trpt = 28.9),
 ]
+kite_spec_idx = Observable(1)
 
 # ═══════════════════════════════════════════════════════
-# Helpers
+# Physics — polygon solver with BEM
 # ═══════════════════════════════════════════════════════
 
-function build_stack(n, r, diam, slen, elev, pg, offs)
+function build_stack(n, r, diam, slen, pg, offs)
     n = max(1, n)
     rotors = AutogyroRotor[]
     for i in 1:n
         po = i <= length(offs) ? offs[i] : 0.0
-        push!(rotors, AutogyroRotor(r, 0.05, 4, 0.15, pg + po, 0.0, 5.0))
+        # 2 blades, 0.15m chord — matches BEM sweep config
+        push!(rotors, AutogyroRotor(r, 0.05, 2, 0.15, pg + po, 0.0, 5.0))
     end
     section_lens = fill(slen, n)
-    AutogyroStack(rotors, section_lens, diam, elev)
+    AutogyroStack(rotors, section_lens, diam, 45.0)  # anchor angle: initial guess
+end
+
+function solve_stack(n, r, diam, slen, pg, offs, v_wind)
+    stk = build_stack(n, r, diam, slen, pg, offs)
+    # Polygon solver computes per-segment angles from force equilibrium.
+    # The anchor_angle_deg (45°) is just an initial guess — the solver
+    # refines all segment angles including the bottom one.
+    θ, T, F = solve_polygon_angles(stk.rotors, 45.0, rho, v_wind)
+    return stk, θ, T, F
 end
 
 turbulent_wind(v, t, on) = on ? v * (1.0 + 0.08*sin(2pi*t/8.0) + 0.05*sin(2pi*t/2.3) + 0.03*sin(2pi*t/0.7)) : v
@@ -64,51 +76,49 @@ end
 # Figure
 # ═══════════════════════════════════════════════════════
 
-fig = Figure(size=(1400, 1050), fontsize=12)
+fig = Figure(size=(1400, 1100), fontsize=12)
 
 ax_side = Axis(fig[1, 1],
-    title="Kite Line — Side View",
+    title="Kite Line — Side View (Polygon Chain, BEM v2.1)",
     xlabel="Horizontal (m)", ylabel="Height (m)",
     aspect=DataAspect(), limits=(-5, 80, -3, 70))
 
 ax_tens = Axis(fig[1, 2],
     title="Tension Profile Along Line",
-    xlabel="Position from anchor (m)", ylabel="Tension (N)")
+    xlabel="Distance along line from anchor (m)", ylabel="Tension (N)")
 
-# HUD
+# HUD — more height to avoid overlap with controls
 hud = Label(fig[2, 1:2], "Loading...",
-    fontsize=11, halign=:left, justification=:left,
+    fontsize=10, halign=:left, justification=:left,
     tellwidth=false, tellheight=true)
-rowsize!(fig.layout, 2, Auto(200))
+rowsize!(fig.layout, 2, Auto(280))
 
-# Controls
+# Controls — no elevation slider, line angle is computed
 ctls = fig[3, 1:2] = GridLayout()
-rowsize!(fig.layout, 3, Relative(0.20))
+rowsize!(fig.layout, 3, Relative(0.25))
 
-sliders = SliderGrid(ctls[1, 1:7],
-    (label="Wind", range=3.0:0.5:20.0, startvalue=8.0),
-    (label="Elev", range=10.0:1.0:80.0, startvalue=55.0),
-    (label="N", range=1:6, startvalue=3),
-    (label="R (m)", range=0.5:0.1:3.0, startvalue=1.5),
-    (label="Pitch", range=-20.0:1.0:30.0, startvalue=5.0),
-    (label="Dia", range=2.0:1.0:12.0, startvalue=4.0),
-    (label="Sec", range=5.0:1.0:30.0, startvalue=10.0),
+sliders = SliderGrid(ctls[1, 1:6],
+    (label="Wind (m/s)", range=3.0:0.5:20.0, startvalue=8.0),
+    (label="N rotors",    range=1:6, startvalue=4),
+    (label="Radius (m)",  range=0.5:0.1:3.0, startvalue=3.0),
+    (label="Tilt (deg)",  range=-20.0:1.0:30.0, startvalue=15.0),
+    (label="Dia (mm)",    range=2.0:1.0:12.0, startvalue=4.0),
+    (label="Spacing (m)", range=5.0:1.0:30.0, startvalue=15.0),
 )
 
 connect!(wind_speed, sliders.sliders[1].value)
-connect!(elevation, sliders.sliders[2].value)
-connect!(n_rotors, sliders.sliders[3].value)
-connect!(rotor_radius, sliders.sliders[4].value)
-connect!(pitch_global, sliders.sliders[5].value)
-on(sliders.sliders[6].value) do v; line_diam[] = v / 1000.0; end
-connect!(section_len, sliders.sliders[7].value)
+connect!(n_rotors, sliders.sliders[2].value)
+connect!(rotor_radius, sliders.sliders[3].value)
+connect!(pitch_global, sliders.sliders[4].value)
+on(sliders.sliders[5].value) do v; line_diam[] = v / 1000.0; end
+connect!(section_len, sliders.sliders[6].value)
 
-toggle_turb = Makie.Toggle(ctls[2, 1], active=false)
-Label(ctls[2, 1, Top()], "Turbulence", fontsize=11)
+toggle_turb = Makie.Toggle(ctls[2, 2], active=false)
+Label(ctls[2, 1], "Turbulence", fontsize=11, halign=:right)
 connect!(turbulence, toggle_turb.active)
 
-toggle_spec = Makie.Toggle(ctls[2, 2], active=true)
-spec_lbl = Label(ctls[2, 2, Top()], KITE_SPECS[1].name, fontsize=10)
+toggle_spec = Makie.Toggle(ctls[2, 4], active=true)
+spec_lbl = Label(ctls[2, 3], KITE_SPECS[1].name, fontsize=10, halign=:right)
 on(toggle_spec.active) do a
     kite_spec_idx[] = a ? 1 : 2
     spec_lbl.text = KITE_SPECS[kite_spec_idx[]].name
@@ -117,108 +127,106 @@ end
 roff_sliders = Makie.Slider[]
 roff_labels  = Label[]
 for i in 1:6
-    lbl = Label(ctls[2, 2+i, Top()], "R$(i)", fontsize=9)
-    sl = Makie.Slider(ctls[2, 2+i], range=-15.0:0.5:15.0, value=0.0)
+    lbl = Label(ctls[3, i], "R$(i)", fontsize=9, halign=:right)
+    sl = Makie.Slider(ctls[3, i], range=-15.0:0.5:15.0, value=0.0, width=80)
     push!(roff_labels, lbl); push!(roff_sliders, sl)
-    lbl.visible = i <= 3
+    lbl.visible = i <= n_rotors[]
     on(sl.value) do v
         offs = deepcopy(pitch_offsets[])
         offs[i] = v; pitch_offsets[] = offs
     end
 end
 
-btn_launch = Makie.Button(ctls[3, 1], label="Launch", fontsize=12)
-btn_cruise = Makie.Button(ctls[3, 2], label="Cruise", fontsize=12)
-btn_land   = Makie.Button(ctls[3, 3], label="Land", fontsize=12)
-btn_opt    = Makie.Button(ctls[3, 4], label="Optimize", fontsize=12)
-btn_reset  = Makie.Button(ctls[3, 5], label="Reset", fontsize=12)
+btn_launch = Makie.Button(ctls[4, 1], label="Launch", fontsize=12)
+btn_cruise = Makie.Button(ctls[4, 2], label="Cruise", fontsize=12)
+btn_land   = Makie.Button(ctls[4, 3], label="Land", fontsize=12)
+btn_reset  = Makie.Button(ctls[4, 4], label="Reset", fontsize=12)
 
-function set_scenario(w, e, n, r, p, d, sl, spec)
+function set_scenario(w, n, r, p, d, sl, spec)
     sliders.sliders[1].value[] = w
-    sliders.sliders[2].value[] = e
-    sliders.sliders[3].value[] = n
-    sliders.sliders[4].value[] = r
-    sliders.sliders[5].value[] = p
-    sliders.sliders[6].value[] = d
-    sliders.sliders[7].value[] = sl
+    sliders.sliders[2].value[] = n
+    sliders.sliders[3].value[] = r
+    sliders.sliders[4].value[] = p
+    sliders.sliders[5].value[] = d
+    sliders.sliders[6].value[] = sl
     toggle_turb.active[] = false
     toggle_spec.active[] = spec
     for s in roff_sliders; s.value[] = 0.0; end
 end
 
-on(btn_launch.clicks) do _; set_scenario(6.0, 30.0, 2, 1.5, 15.0, 4.0, 10.0, true); end
-on(btn_cruise.clicks) do _; set_scenario(8.0, 55.0, 3, 1.5, 5.0, 4.0, 10.0, true); end
-on(btn_land.clicks)   do _; set_scenario(5.0, 75.0, 3, 1.5, -10.0, 4.0, 10.0, true); end
-on(btn_opt.clicks) do _
-    stk = build_stack(n_rotors[], rotor_radius[], line_diam[],
-                      section_len[], elevation[], pitch_global[], pitch_offsets[])
-    opts = optimal_rotor_tilts(stk, rho, wind_speed[])
-    if length(opts) >= 1; sliders.sliders[5].value[] = opts[1]; end
-    for s in roff_sliders; s.value[] = 0.0; end
-end
-on(btn_reset.clicks) do _; set_scenario(8.0, 55.0, 3, 1.5, 5.0, 4.0, 10.0, true); end
+on(btn_launch.clicks) do _; set_scenario(6.0, 4, 3.0, 20.0, 4.0, 15.0, true); end
+on(btn_cruise.clicks) do _; set_scenario(8.0, 4, 3.0, 15.0, 4.0, 15.0, true); end
+on(btn_land.clicks)   do _; set_scenario(5.0, 4, 3.0, 5.0, 4.0, 15.0, true); end
+on(btn_reset.clicks)  do _; set_scenario(8.0, 4, 3.0, 15.0, 4.0, 15.0, true); end
 
 on(n_rotors) do n
     for i in 1:6; roff_labels[i].visible = i <= n; end
 end
 
 # ═══════════════════════════════════════════════════════
-# Drawing — Side View (FIXED: rotors shifted up, no extension past top)
+# Drawing — Side View (polygon chain, per-segment angles)
 # ═══════════════════════════════════════════════════════
 
-function draw_side_view!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
+function draw_side_view!(ax, n, r, diam, slen, pg, offs, v_wind)
     empty!(ax)
     n = max(1, n)
-    sec_lens = fill(slen, n)
-    stk = build_stack(n, rad, diam, slen, elev, pg, offs)
-    profile = stack_tension_profile(stk, rho, v_wind)
-    max_t = max(maximum(abs, profile), 1.0)
-    total_len = sum(sec_lens)
-    er = deg2rad(elev)
+    stk, θ, T, F = solve_stack(n, r, diam, slen, pg, offs, v_wind)
+    max_t = max(maximum(abs, T), 1.0)
+
+    # Build (x,y) coordinates along the polygon chain from anchor upward.
+    # section_lengths[1]=R1→R2, section_lengths[n]=Rn→anchor.
+    # Walk from anchor upward: anchor → Rn → R(n-1) → ... → R1.
+    xs = [0.0]; ys = [0.0]
+    rotor_x = zeros(n); rotor_y = zeros(n)
+    for k in 1:n
+        i = n - k + 1  # bottom→top: n, n-1, ..., 1
+        seg_angle = θ[i]
+        seg_len = stk.section_lengths[i]
+        push!(xs, xs[end] + seg_len * cosd(seg_angle))
+        push!(ys, ys[end] + seg_len * sind(seg_angle))
+        rotor_x[i] = xs[end]
+        rotor_y[i] = ys[end]
+    end
+    # xs[1]=anchor, xs[end]=R1 (topmost)
 
     # Ground
-    lines!(ax, [Point2f(-3, 0), Point2f(total_len*cos(er)+3, 0)],
+    total_x = xs[end] + 5
+    lines!(ax, [Point2f(-3, 0), Point2f(total_x, 0)],
            color=:gray80, linewidth=1, linestyle=:dash)
 
-    # Rotor positions: rotor k is at distance cum from anchor, ABOVE its section
-    # R1=topmost (terminates line), Rn=bottom (nearest anchor)
-    cum = 0.0
+    # Draw line segments with tension colour.
+    # xs[1]=anchor, xs[k+1]=R(n-k+1). T[k+1] is tension below Rk.
+    # Segment anchor→Rn uses T[end], Rn→R(n-1) uses T[n], etc.
     for k in 1:n
-        cum += sec_lens[k]
-    end
-    # cum now = total_len. Top rotor is at total_len.
-    rotor_pos = [cum - (i-1)*slen for i in 1:n]  # top→bottom: total_len, total_len-slen, ...
-
-    # Draw line segments bottom-up, each from anchor/prev-rotor up to next rotor
-    prev = 0.0
-    for k in 1:n
-        rpos = rotor_pos[n-k+1]  # bottom rotor first (nearest anchor)
-        seg_start = Point2f(prev * cos(er), prev * sin(er))
-        seg_end   = Point2f(rpos * cos(er), rpos * sin(er))
-        # Tension at anchor side of rotor k (k from bottom=1): profile[n-k+2]
-        tn = clamp(abs(profile[n-k+2]) / max_t, 0, 1)
+        t_idx = n - k + 2  # k=1: T[n+1]=anchor, k=n: T[2]=below R1
+        tn = clamp(abs(T[t_idx]) / max_t, 0, 1)
         col = RGBf(tn, 0.15, 1 - tn)
-        lines!(ax, [seg_start, seg_end], color=col, linewidth=2.5 + 2*tn)
-        prev = rpos
+        lines!(ax, [Point2f(xs[k], ys[k]), Point2f(xs[k+1], ys[k+1])],
+               color=col, linewidth=2.5 + 2*tn)
     end
 
-    # Draw rotors at their positions (top→bottom: R1..Rn)
-    for k in 1:n
-        rpos = rotor_pos[k]
-        cx, cy = rpos*cos(er), rpos*sin(er)
-        rx, ry = rad, max(rad*sind(elev), 0.08)
-        theta = range(0, 2pi, length=80)
-        ex, ey = cx .+ rx*cos.(theta), cy .+ ry*sin.(theta)
-        F_line, _, _, _, _ = rotor_force_along_line(stk.rotors[k], rho, v_wind, elev)
-        tn = clamp(abs(F_line)/max_t, 0, 1)
+    # Draw rotors at their positions (R1=topmost, already in rotor_x/rotor_y)
+    for i in 1:n
+        seg_angle = θ[i]
+        rotor = stk.rotors[i]
+        cx, cy = rotor_x[i], rotor_y[i]
+
+        # Disk ellipse
+        rx, ry = r, max(r * sind(seg_angle), 0.08)
+        t_vals = range(0, 2pi, length=80)
+        ex, ey = cx .+ rx*cos.(t_vals), cy .+ ry*sin.(t_vals)
+
+        _, T_thrust, _ = rotor_force_bem(rotor, rho, v_wind, seg_angle)
+        F_line = T_thrust * cosd(rotor.tilt_deg)
+        tn = clamp(abs(F_line) / max_t, 0, 1)
         col = RGBf(tn, 0.2, 1-tn)
         poly!(ax, Point2f.(ex, ey), color=(col, 0.25), strokecolor=col, strokewidth=2.5)
         scatter!(ax, Point2f(cx, cy), color=col, markersize=10)
-        text!(ax, "R$(k)", position=Point2f(cx-1.5, cy+rad+1.0),
+        text!(ax, "R$(i)", position=Point2f(cx - 1.5, cy + r + 1.0),
               fontsize=12, color=:black, align=(:center, :bottom))
     end
 
-    # Color legend (tension scale)
+    # Colour legend
     for i in 0:3
         tn = i/3
         col = RGBf(tn, 0.2, 1-tn)
@@ -233,8 +241,9 @@ function draw_side_view!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
     scatter!(ax, Point2f(0, 0), color=:saddlebrown, markersize=15, marker=:rect)
     text!(ax, "[anchor]", position=Point2f(-4, -2), fontsize=11, color=:saddlebrown)
 
-    # Wind arrow
-    mx, my = total_len*cos(er)/2, total_len*sin(er)/2 + 5
+    # Wind arrow — horizontal, positioned above mid-stack
+    mx = xs[end] / 2
+    my = ys[end] / 2 + 5
     arrows2d!(ax, [Point2f(mx-6, my)], [Vec2f(10, 0)],
               color=:steelblue, shaftwidth=2.5, tipwidth=12, tiplength=12)
     text!(ax, "$(round(v_wind,digits=1)) m/s",
@@ -242,93 +251,109 @@ function draw_side_view!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
 end
 
 # ═══════════════════════════════════════════════════════
-# Drawing — Tension Profile (cumulative + per-rotor bars)
+# Drawing — Tension Profile
 # ═══════════════════════════════════════════════════════
 
-function draw_tension_profile!(ax, n, rad, diam, slen, elev, v_wind, pg, offs)
+function draw_tension_profile!(ax, n, r, diam, slen, pg, offs, v_wind)
     empty!(ax)
-    stk = build_stack(n, rad, diam, slen, elev, pg, offs)
-    profile = stack_tension_profile(stk, rho, v_wind)
-    # profile[1]=top (~0), profile[end]=anchor (max cumulative)
-    # Compute per-rotor contribution: delta between successive profile values
-    per_rotor = [profile[i+1] - profile[i] for i in 1:n]
-    cumulative = [profile[i+1] for i in 1:n]  # cumulative at each rotor position
+    stk, θ, T, F = solve_stack(n, r, diam, slen, pg, offs, v_wind)
 
-    # Positions from anchor: anchor=0, rotor n at slen, rotor n-1 at 2*slen, ..., rotor 1 at n*slen
-    pos_cum = [(n-i+1)*slen for i in 1:n]
-
-    # Cumulative tension (stepped line, purple)
-    # Proper step plot: horizontal then vertical drop at each rotor
-    cum_x = [0.0]; cum_y = [profile[end]]  # anchor
-    for i in 1:n
-        rpos = pos_cum[n-i+1]              # position of rotor (bottom→top)
-        t_above = profile[n-i+1]            # tension above this rotor
-        push!(cum_x, rpos); push!(cum_y, cum_y[end])  # horizontal step to rotor
-        push!(cum_x, rpos); push!(cum_y, t_above)     # vertical drop to tension above
+    # Cumulative distance from anchor upward: anchor→Rn→R(n-1)→...→R1
+    cum_dist = [0.0]
+    for k in 1:n
+        i = n - k + 1  # bottom→top
+        push!(cum_dist, cum_dist[end] + stk.section_lengths[i])
     end
-    lines!(ax, cum_x, cum_y, color=:purple, linewidth=3, label="Cumulative")
-    scatter!(ax, cum_x, cum_y, color=:purple, markersize=8)
+    # cum_dist[1]=anchor, cum_dist[k+1]=R(n-k+1), cum_dist[end]=R1(top)
 
-    # Per-rotor contribution (bars, blue)
-    barplot!(ax, pos_cum, per_rotor, color=:steelblue, width=slen*0.6,
+    # T[1]=0 at top (R1), T[end]=anchor. Map to anchor→top order.
+    T_anchor_top = reverse(T)  # T_anchor_top[1]=anchor tension, T_anchor_top[end]=0 at top
+
+    # Stepped cumulative tension
+    step_x = Float64[]; step_y = Float64[]
+    push!(step_x, cum_dist[1]); push!(step_y, T_anchor_top[1])
+    for i in 1:n
+        push!(step_x, cum_dist[i+1]); push!(step_y, step_y[end])  # horizontal to rotor
+        push!(step_x, cum_dist[i+1]); push!(step_y, T_anchor_top[i+1])  # drop to tension above
+    end
+    lines!(ax, step_x, step_y, color=:purple, linewidth=3, label="Cumulative")
+    scatter!(ax, step_x, step_y, color=:purple, markersize=8)
+
+    # Per-rotor contribution (bars)
+    per_rotor = [T[i+1] - T[i] for i in 1:n]  # T: top→anchor, delta = contribution below rotor i
+    bar_pos = [(cum_dist[n-i+1] + cum_dist[n-i+2]) / 2 for i in 1:n]  # anchor→top order
+    barplot!(ax, bar_pos, per_rotor, color=:steelblue, width=slen*0.6,
              strokewidth=1, strokecolor=:gray50, label="Per rotor")
 
-    # Rotor labels
+    # Rotor labels at their positions
     for i in 1:n
-        text!(ax, "R$(i)", position=Point2f(pos_cum[i], cumulative[i]),
-              fontsize=10, color=:black, align=(:center, :bottom), offset=(0,5))
+        pos = cum_dist[n-i+2]  # anchor→top: position of R(i)
+        text!(ax, "R$(i)", position=Point2f(pos, T[i+1]),
+              fontsize=10, color=:black, align=(:center, :bottom), offset=(0, 5))
     end
 
     hlines!(ax, [0.0], color=:gray50, linestyle=:dash, linewidth=1)
-
     axislegend(ax, position=:lt, fontsize=10)
+    xlims!(ax, 0, cum_dist[end] * 1.05)
 end
 
 # ═══════════════════════════════════════════════════════
 # HUD
 # ═══════════════════════════════════════════════════════
 
-function build_hud(n, rad, diam, slen, elev, v_wind, pg, offs, turbulence_on, spec_idx)
-    stk = build_stack(n, rad, diam, slen, elev, pg, offs)
-    profile = stack_tension_profile(stk, rho, v_wind)
-    fa = profile[end]
+function build_hud(n, r, diam, slen, pg, offs, v_wind, turbulence_on, spec_idx)
+    stk, θ, T, F = solve_stack(n, r, diam, slen, pg, offs, v_wind)
+    fa = T[end]
     lines = String[]
-    push!(lines, "=== COAXIAL AUTOGYRO STACK ===")
-    push!(lines, @sprintf("Wind: %.1f m/s %s  |  Elev: %.0f deg  |  Line: %.1f mm  |  Span: ~%.0f m",
-           v_wind, turbulence_on ? "(TURB)" : "steady", elev, diam*1000, n*slen))
-    tl, td = 0.0, 0.0
+    push!(lines, "=== COAXIAL AUTOGYRO STACK (Polygon + BEM v2.1) ===")
+    push!(lines, @sprintf("Wind: %.1f m/s %s  |  Line: %.1f mm  |  Span: ~%.0f m",
+           v_wind, turbulence_on ? "(TURB)" : "steady", diam*1000, n*slen))
+
+    # Per-rotor readout: segment angle, BEM force, RPM estimate
+    push!(lines, "  Rotor   Seg angle   F_line     RPM      Tilt")
+    push!(lines, "  ─────   ─────────   ──────    ─────    ────")
+    total_lift = 0.0; total_drag = 0.0
     for i in 1:n
-        rot = stk.rotors[i]
-        Fl, Flift, Fdrag, cl, cd = rotor_force_along_line(rot, rho, v_wind, elev)
-        tl += Flift; td += Fdrag
-        push!(lines, @sprintf("R%d  a=%.1f deg  CL=%.2f  CD=%.2f  F_line=%.0f N", i,
-               effective_alpha(rot, elev), cl, cd, Fl))
+        rotor = stk.rotors[i]
+        _, T_thrust, _ = rotor_force_bem(rotor, rho, v_wind, θ[i])
+        F_line = T_thrust * cosd(rotor.tilt_deg)
+        rpm = estimated_autorotation_rpm(rotor, v_wind, effective_alpha(rotor, θ[i]))
+        push!(lines, @sprintf("  R%d      %5.1f°      %6.0f N   %5.0f RPM  %5.1f°",
+               i, θ[i], F_line, rpm, rotor.tilt_deg))
+        # Accumulate lift/drag from PCA-2 for L/D estimate
+        _, fl, fd, _, _ = rotor_force_along_line(rotor, rho, v_wind, θ[i])
+        total_lift += fl; total_drag += fd
     end
+
     push!(lines, repeat("-", 50))
-    push!(lines, @sprintf("Anchor: %.0f N  |  L/D: %.2f  |  Lift: %.0f N  |  Drag: %.0f N",
-           fa, td>0 ? tl/td : Inf, tl, td))
+    push!(lines, @sprintf("Anchor tension: %.0f N  |  L/D: %.2f  |  Lift: %.0f N  |  Drag: %.0f N",
+           fa, total_drag > 0 ? total_lift/total_drag : Inf, total_lift, total_drag))
     p_trpt, p_yp, p_yn, sn = power_report(fa, v_wind, spec_idx)
     push!(lines, @sprintf("TRPT: %.1f kW  |  Yo-yo peak: %.1f kW  |  Yo-yo net: %.1f kW (77%%)",
            p_trpt, p_yp, p_yn))
-    push!(lines, @sprintf("Tension: %.0f-%.0f N  |  Spec: %s",
-           minimum(profile), maximum(profile), sn))
-    if count(<(0), profile) > 0
+    push!(lines, @sprintf("Segment angles (top→bottom): %s",
+           join([@sprintf("%.1f°", θ[i]) for i in 1:n], "  ")))
+    if any(<(0), T)
         push!(lines, "  !! segments in compression")
     end
     return join(lines, "\n")
 end
 
+# ═══════════════════════════════════════════════════════
+# Update loop
+# ═══════════════════════════════════════════════════════
+
 function update_plots(_...)
-    n, r, d, s, e, pg, ot, si, offs =
+    n, r, d, s, pg, si, offs =
         n_rotors[], rotor_radius[], line_diam[], section_len[],
-        elevation[], pitch_global[], turbulence[], kite_spec_idx[], pitch_offsets[]
-    v = turbulent_wind(wind_speed[], time_t[], ot)
-    draw_side_view!(ax_side, n, r, d, s, e, v, pg, offs)
-    draw_tension_profile!(ax_tens, n, r, d, s, e, v, pg, offs)
-    hud.text = build_hud(n, r, d, s, e, v, pg, offs, ot, si)
+        pitch_global[], kite_spec_idx[], pitch_offsets[]
+    v = turbulent_wind(wind_speed[], time_t[], turbulence[])
+    draw_side_view!(ax_side, n, r, d, s, pg, offs, v)
+    draw_tension_profile!(ax_tens, n, r, d, s, pg, offs, v)
+    hud.text = build_hud(n, r, d, s, pg, offs, v, turbulence[], si)
 end
 
-onany(wind_speed, elevation, n_rotors, rotor_radius, pitch_global,
+onany(wind_speed, n_rotors, rotor_radius, pitch_global,
       line_diam, section_len, turbulence, kite_spec_idx, pitch_offsets) do args...
     update_plots()
 end
@@ -351,7 +376,11 @@ display(fig)
 
 println("="^60)
 println("  Coaxial Autogyro Stacking — Interactive Dashboard")
-println("  GLMakie window should be open. Close window to exit.")
-println("="^60)
+println("  Polygon chain with BEM v2.1 aerodynamics.")
+println("  Segment angles are computed, not set by slider.")
+println("  Close the GLMakie window to exit.")
 
-while true; sleep(1); end
+# Block until window is closed — GLMakie scripts exit immediately otherwise
+while isopen(fig.scene)
+    sleep(0.1)
+end

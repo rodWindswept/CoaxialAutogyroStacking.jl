@@ -40,9 +40,10 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
     θ = fill(anchor_angle_deg, n)  # initial guess: straight line
     F_line = zeros(n)
 
-    for _ in 1:max_iter
+    for iter in 1:max_iter
         θ_old = copy(θ)
         T_above = 0.0
+        θ_above = anchor_angle_deg  # angle of the segment above the current rotor
 
         for i in 1:n
             # BEM force at current segment angle. Uses disk-normal thrust T.
@@ -52,14 +53,13 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
             # Thrust acts at disk-normal angle: α_eff = 90° − θ + δ
             α_eff = effective_alpha(rotors[i], θ[i])
 
-            # Force equilibrium: T_above at θ[i] + T_thrust at α_eff + weight down
-            T_x = T_above * cosd(θ[i]) + T_thrust * cosd(α_eff)
-            T_y = T_above * sind(θ[i]) + T_thrust * sind(α_eff) - W
+            # Force equilibrium: T_above comes in at θ_above, thrust at α_eff
+            T_x = T_above * cosd(θ_above) + T_thrust * cosd(α_eff)
+            T_y = T_above * sind(θ_above) + T_thrust * sind(α_eff) - W
 
             T_below = sqrt(T_x^2 + T_y^2)
 
-            # Under-relaxation damping (ω = 0.5) suppresses Jacobi oscillation
-            # from the thrust-angle feedback loop.
+            # Under-relaxation damping (ω = 0.5)
             θ_new = atand(T_y, T_x)
             θ[i] = θ[i] + 0.5 * (θ_new - θ[i])
 
@@ -70,6 +70,7 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
             F_line[i] = T_thrust * cosd(rotors[i].tilt_deg)
 
             T_above = T_below
+            θ_above = θ[i]  # this segment's angle becomes the incoming angle for the next rotor
         end
 
         if all(abs.(θ .- θ_old) .< tol)

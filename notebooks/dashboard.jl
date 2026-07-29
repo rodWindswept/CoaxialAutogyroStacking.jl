@@ -42,11 +42,8 @@ md"## 🎛️ Wind, Line & Flight Mode"
 # ╔═╡ 00000000-0000-0000-0000-000000000006
 @bind _wind_speed Slider(3.0:0.5:20.0, default=8.0, show_value=true)
 
-# ╔═╡ 00000000-0000-0000-0000-000000000007
-@bind _auto_elev CheckBox(default=true)
-
 # ╔═╡ 00000000-0000-0000-0000-000000000023
-@bind _elevation Slider(10.0:1.0:80.0, default=55.0, show_value=true)
+md"*Line angle is computed from force equilibrium — no elevation slider needed.*"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000008
 @bind _line_diam_mm Slider(2.0:0.5:12.0, default=4.0, show_value=true)
@@ -58,10 +55,10 @@ md"## 🎛️ Wind, Line & Flight Mode"
 md"## 🔧 Rotor Configuration"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000011
-@bind _n_rotors Slider(1:6, default=3, show_value=true)
+@bind _n_rotors Slider(1:6, default=4, show_value=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000012
-@bind _rotor_radius Slider(0.5:0.1:3.0, default=1.5, show_value=true)
+@bind _rotor_radius Slider(0.5:0.1:3.0, default=3.0, show_value=true)
 
 # ╔═╡ 11000000-0000-0000-0000-000000000001
 md"### Disk Tilt (δ)"
@@ -70,7 +67,7 @@ md"### Disk Tilt (δ)"
 md"*Tilt angle of the rotor disk away from perpendicular to the line. Leading edge forward-down into the wind. Sets the thrust direction — the primary control for shaping the polygon chain.*"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000013
-@bind _tilt_global Slider(0.0:1.0:30.0, default=10.0, show_value=true)
+@bind _tilt_global Slider(0.0:1.0:30.0, default=15.0, show_value=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000015
 md"#### Per-Rotor Tilt Offsets"
@@ -84,8 +81,17 @@ md"#### Per-Rotor Tilt Offsets"
 # ╔═╡ 00000000-0000-0000-0000-000000000018
 @bind _tilt_offset_3 Slider(-15.0:0.5:15.0, default=0.0, show_value=true)
 
+# ╔═╡ 00000000-0000-0000-0000-000000000025
+@bind _tilt_offset_4 Slider(-15.0:0.5:15.0, default=0.0, show_value=true)
+
+# ╔═╡ 00000000-0000-0000-0000-000000000026
+@bind _tilt_offset_5 Slider(-15.0:0.5:15.0, default=0.0, show_value=true)
+
+# ╔═╡ 00000000-0000-0000-0000-000000000027
+@bind _tilt_offset_6 Slider(-15.0:0.5:15.0, default=0.0, show_value=true)
+
 # ╔═╡ 00000000-0000-0000-0000-000000000019
-md"*(R4–R6 offsets hidden when n < 4 — adjust n_rotors slider to reveal)*"
+md"*Per-rotor tilt offsets from global δ. One slider per rotor — set n_rotors to reveal more.*"
 
 # ╔═╡ 22000000-0000-0000-0000-000000000001
 md"### Blade Pitch (collective)"
@@ -109,7 +115,7 @@ md"#### Per-Rotor Blade Pitch Offsets"
 @bind _bp_offset_3 Slider(-15.0:0.5:15.0, default=0.0, show_value=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000014
-@bind _section_len Slider(5.0:1.0:30.0, default=10.0, show_value=true)
+@bind _section_len Slider(5.0:1.0:30.0, default=15.0, show_value=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000020
 md"## 📐 Physics Computation"
@@ -126,7 +132,8 @@ begin
 	g_const = 9.81
 	
 	# Per-rotor offsets
-	_tilt_offsets = [_tilt_offset_1, _tilt_offset_2, _tilt_offset_3]
+	_tilt_offsets = [_tilt_offset_1, _tilt_offset_2, _tilt_offset_3,
+	                 _tilt_offset_4, _tilt_offset_5, _tilt_offset_6]
 	_bp_offsets   = [_bp_offset_1, _bp_offset_2, _bp_offset_3]
 	_n = max(1, _n_rotors)
 	
@@ -136,7 +143,7 @@ begin
 		bpoff = i <= length(_bp_offsets) ? _bp_offsets[i] : 0.0
 		tilt_i = clamp(_tilt + toff, 0.0, 45.0)
 		bp_i = _bp_global + bpoff
-		push!(_rotors, AutogyroRotor(_rotor_radius, 0.05, 4, 0.15, tilt_i, bp_i, 5.0))
+		push!(_rotors, AutogyroRotor(_rotor_radius, 0.05, 2, 0.15, tilt_i, bp_i, 5.0))
 	end
 	
 	_diam_m = _line_diam_mm / 1000.0
@@ -146,36 +153,18 @@ begin
 	_t_sim = 0.0
 	_v_wind = _turb ? _wind * (1.0 + 0.08*sin(2π*_t_sim/8.0) + 0.05*sin(2π*_t_sim/2.3)) : _wind
 
-	# Elevation: auto (L/D equilibrium) or manual — extracted into local
-	# function to avoid Julia 1.12 hard-scoping issues with _eq_elev capture.
-	function _solve_auto_elevation(rotors, rho, v_wind, diam_m, secs)
-		eq = 55.0
-		for _ in 1:8
-			test_forces = Vector{Any}(undef, length(rotors))
-			for (j, r) in enumerate(rotors)
-				test_forces[j] = rotor_force_along_line(r, rho, v_wind, eq)
-			end
-			flift = sum(f[2] for f in test_forces)
-			fdrag = sum(f[3] for f in test_forces) + bare_line_drag(rho, v_wind, diam_m, sum(secs), eq)
-			total_mass = sum(r.mass for r in rotors) + line_mass_per_m(diam_m, 970.0) * sum(secs)
-			fweight = total_mass * g_const
-			next = fdrag > 0 ? atand(max(0.0, flift - fweight), fdrag) : 10.0
-			next = clamp(next, 10.0, 85.0)
-			if abs(next - eq) < 0.05; break; end
-			eq = next
-		end
-		return eq
-	end
-	_elev = _auto_elev ? _solve_auto_elevation(_rotors, rho, _v_wind, _diam_m, _secs) : _elevation
+	# Anchor angle: 45° initial guess. The polygon solver converges to
+	# equilibrium segment angles regardless of the initial guess.
+	_elev = 45.0
 
 	if startswith(_scenario, "🚀")
-		_wind = 6.0;  _tilt = 15.0;  if !_auto_elev; _elev = 30.0; end
+		_wind = 6.0;  _tilt = 15.0
 	elseif startswith(_scenario, "✈️")
-		_wind = 8.0;  _tilt = 10.0;  if !_auto_elev; _elev = 55.0; end
+		_wind = 8.0;  _tilt = 10.0
 	elseif startswith(_scenario, "🛬")
-		_wind = 5.0;  _tilt = 0.0; if !_auto_elev; _elev = 75.0; end
+		_wind = 5.0;  _tilt = 0.0
 	elseif startswith(_scenario, "🌪️")
-		_wind = 16.0; _tilt = 5.0; _turb = true; if !_auto_elev; _elev = 45.0; end
+		_wind = 16.0; _tilt = 5.0; _turb = true
 	end
 	
 	# Polygon chain geometry — segment angles from force equilibrium at each rotor
@@ -269,10 +258,10 @@ let
 	scatter!(ax, verts[end], color=:saddlebrown, markersize=18, marker=:utriangle)
 	text!(ax, "anchor", position=verts[end] + Point2f(-2, -1.5), fontsize=11, color=:saddlebrown)
 	
-	# Wind arrow
+	# Wind arrow — horizontal, positioned above mid-stack
 	wx = total_x / 2
 	wy = total_y + 5
-	arrows!(ax, [Point2f(wx-5, wy)], [Point2f(wx+5, wy)],
+	arrows!(ax, [Point2f(wx-6, wy)], [Vec2f(10, 0)],
 		color=RGBf(0.3, 0.6, 0.9), linewidth=3, arrowsize=14)
 	text!(ax, "$(round(_v_wind,digits=1)) m/s", position=Point2f(wx, wy + 1.5),
 		fontsize=11, color=RGBf(0.3, 0.6, 0.9))
@@ -300,11 +289,11 @@ let
 	
 	fig_tens = Figure(size=(700, 400))
 	ax = Axis(fig_tens[1, 1],
-		title="Tension Profile Along Kite Line",
-		xlabel="Position along line (m)", ylabel="Tension (N)")
+		title="Tension Profile — Anchor (left) → Top Rotor (right)",
+		xlabel="Distance from anchor (m)", ylabel="Tension (N)")
 	
 	colors = [p >= 0 ? RGBf(0.2, 0.7, 0.3) : RGBf(0.9, 0.2, 0.2) for p in _profile]
-	barplot!(ax, positions, _profile, color=colors, width=_section_len*0.8,
+	barplot!(ax, positions, reverse(_profile), color=reverse(colors), width=_section_len*0.8,
 		strokewidth=1, strokecolor=:gray50)
 	
 	hlines!(ax, [0.0], color=:gray50, linestyle=:dash, linewidth=1.5)
@@ -335,7 +324,7 @@ let
 	push!(lines, "| Parameter        | Value |")
 	push!(lines, "|:-----------------|:------|")
 	push!(lines, "| Wind speed       | $(round(_v_wind,digits=1)) m/s $(_turb ? "🌊 TURB" : "💨") |")
-	push!(lines, "| Anchor elevation | $(round(_elev,digits=1))° |")
+	push!(lines, "| Anchor elevation | $(round(_poly_θ[_n],digits=1))° |")
 	push!(lines, "| **Chain spread** | **$(_seg_spread)°** |")
 	push!(lines, "| **Anchor tension** | **$(round(_profile[end],digits=0)) N** |")
 	push!(lines, "| **System L/D**   | **$(round(sys_ld,digits=2))** |")
@@ -381,7 +370,6 @@ md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAu
 # ╠═00000000-0000-0000-0000-000000000004
 # ╠═00000000-0000-0000-0000-000000000005
 # ╠═00000000-0000-0000-0000-000000000006
-# ╠═00000000-0000-0000-0000-000000000007
 # ╠═00000000-0000-0000-0000-000000000023
 # ╠═00000000-0000-0000-0000-000000000008
 # ╠═00000000-0000-0000-0000-000000000009
@@ -395,6 +383,9 @@ md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAu
 # ╠═00000000-0000-0000-0000-000000000016
 # ╠═00000000-0000-0000-0000-000000000017
 # ╠═00000000-0000-0000-0000-000000000018
+# ╠═00000000-0000-0000-0000-000000000025
+# ╠═00000000-0000-0000-0000-000000000026
+# ╠═00000000-0000-0000-0000-000000000027
 # ╠═00000000-0000-0000-0000-000000000019
 # ╠═22000000-0000-0000-0000-000000000001
 # ╠═22000000-0000-0000-0000-000000000002
