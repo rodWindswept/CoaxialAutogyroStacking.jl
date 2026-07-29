@@ -101,12 +101,12 @@ caption = (
     "IMPLICATIONS: Radar chart comparing 4 tilt profiles at the best "
     f"(R={best_r}m, N={best_n}) configuration. Values normalized 0–1 "
     "across profiles. Graded tilt edges ahead on tension and N/kg, but "
-    "the absolute spread is small — only 3.5% between best and worst "
-    "(809–838 N). All profiles overlap heavily. Stability (1/CV) shows "
-    "negligible spread (CV=0.467–0.472). Tilt profile is a fine-tuning "
-    "parameter, not a primary design driver. Build uniform tilt for "
-    "manufacturing simplicity; the performance penalty is under 4%. "
-    "Data: BEM v2.0, corrected polygon solver. See SPEC.md §6.6."
+    "the absolute spread is 10.4% between best and worst "
+    "(769–858 N mean across elevations). All profiles overlap heavily on "
+    "Stability. Tilt profile has a moderate effect — not negligible. "
+    "Build uniform tilt for manufacturing simplicity — graded tilt adds "
+    "complexity for a 10% gain. "
+    "Data: BEM v2.1, corrected polygon solver. See SPEC.md §6.6."
 )
 caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          ha="left", va="bottom", style="italic", family="serif",

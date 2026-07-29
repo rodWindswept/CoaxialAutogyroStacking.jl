@@ -162,13 +162,12 @@ ax.set_ylim(bottom=-2, top=47)
 # ── Implications caption in dedicated bottom area ──────────────────────────
 caption = (
     "IMPLICATIONS: Tension and mass efficiency are co-linear — no Pareto "
-    "trade-off exists. A single configuration (R=3.0m, N=4, graded, 839 N, "
-    "42.0 N/kg) dominates all others on both objectives. Tilt profile effect "
-    "is <2% at R=3.0m: uniform tilt is nearly optimal. For design: maximise "
+    "trade-off exists. A single configuration (R=3.0m, N=4, graded, 859 N, "
+    "42.9 N/kg) dominates all others on both objectives. Tilt profile effect "
+    "is 10.4% at R=3.0m: uniform tilt is a pragmatic choice. For design: maximise "
     "rotor radius within mechanical limits, stack as many rotors as line "
     "tension allows, do not over-invest in tilt profile differentiation. "
-    "Data: 384 BEM v2.0 configurations (corrected polygon solver), 4 wind "
-    "speeds 6–12 m/s, 2 elevations. See SPEC.md §6.6."
+    "Data: BEM v2.1, corrected polygon solver. See SPEC.md §6.6."
 )
 # Add caption as a text element inside the figure, anchored to bottom-left
 caption_text = fig.text(0.13, 0.03, caption, fontsize=7.5, color="#444444",
