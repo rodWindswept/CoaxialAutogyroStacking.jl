@@ -59,15 +59,17 @@ scripts/                       runnable entrypoints (bem_full_sweep.jl, dashboar
 
 ## Conventions
 
-- Mirror `KiteTurbineDynamics.jl` naming, dispatch, and unit conventions — this
-  code is meant to drop into it.
-- SI units throughout. Angles in **degrees** at the API boundary (functions take
-  `_deg` args; use `sind`/`cosd`).
-- Rotors in a stack are ordered **top → bottom** (index 1 = topmost, terminates the line).
-- `section_lengths` has `n_rotors` entries: between each rotor pair and below bottom rotor to anchor.
-- Tension profiles have `n_rotors + 1` entries; `profile[1]` = 0 at topmost rotor,
-  `profile[end]` = anchor (max).
-- Pure functions where possible; structs are immutable.
+- Mirror `KiteTurbineDynamics.jl` naming, dispatch, and unit conventions.
+  This code must drop into it.
+- Use SI units. Angles in degrees at the API boundary. Functions take
+  `_deg` arguments. Use `sind` and `cosd`.
+- Rotors in a stack are ordered top to bottom. Index 1 is the topmost rotor.
+  It terminates the line.
+- `section_lengths` has `n_rotors` entries. One per rotor pair plus the
+  section below the bottom rotor to the anchor.
+- Tension profiles have `n_rotors + 1` entries. `profile[1]` is zero at the
+  topmost rotor. `profile[end]` is the anchor tension (maximum).
+- Use pure functions. Structs are immutable.
 
 ## Writing discipline for diagrams and technical outputs
 
@@ -78,7 +80,8 @@ English standard) and are machine-checkable.
 
 ### Rules
 
-- Active voice. "The rotor adds 1,250 N" not "1,250 N is added by the rotor."
+- Active voice. Write "The rotor adds 1,250 N." Do not write
+  "1,250 N is added by the rotor."
 - One name for one thing. Don't call the same quantity "tension" then "force"
   then "load" in the same block of text.
 - No hedges. Not "it is important to note that..." or "this may help to..."
@@ -86,7 +89,7 @@ English standard) and are machine-checkable.
 - Short sentences. Max 25 words for descriptive text, 20 for instructions.
   Shorter is better. Two short sentences beat one long sentence.
 - No semicolons. Write two sentences.
-- No nominalizations. "We analyzed" not "we performed an analysis."
+- No nominalizations. Write "We analyzed." Do not write "We performed an analysis."
 - No marketing words. "Works" not "seamless." "Fast" not "blazing."
 - No phrasal verbs. "Remove" not "take off."
 

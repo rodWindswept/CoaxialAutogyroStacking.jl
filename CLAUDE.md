@@ -1,38 +1,41 @@
 # CLAUDE.md
 
-Conventions for this package live in [`AGENTS.md`](AGENTS.md) — read it first.
-The implementation roadmap and scope are in [`PLAN.md`](PLAN.md).
+Read [`AGENTS.md`](AGENTS.md) for all conventions. Read [`PLAN.md`](PLAN.md) for the
+implementation roadmap and scope.
 
-Quick reminders:
-- Strict TDD: failing test first, then minimal implementation, then refactor.
-- Run the suite before committing: `julia --project=. test/runtests.jl`.
-- New `src/` file → add `include` + `export` in `src/CoaxialAutogyroStacking.jl`
-  and an `include` in `test/runtests.jl`.
-- Mirror `KiteTurbineDynamics.jl` conventions; SI units; angles in degrees at
-  the API boundary; rotors ordered top → bottom.
-- v1 scope: no wake interaction.
+## Quick start
 
-## Agent skills
+Run the test suite before committing:
+```
+julia --project=. test/runtests.jl
+```
 
-### Writing discipline
+Use strict TDD. Write the failing test first. Implement the minimum to pass.
+Then refactor.
 
-Follow the clarity rules in `AGENTS.md` for all captions, specs, implications,
-and code comments: active voice, short sentences, one name per thing, no hedges.
-Lint diagram captions with `python3 ste-lint.py <file>` before Round 2 approval
-(score must be < 2.0 violations per 100 words).
+## Conventions
 
-### Domain docs
+All conventions live in [`AGENTS.md`](AGENTS.md). Key points:
 
-Start here: `docs/agents/domain.md` — quick start, repo map, physics TL;DR, current state.
+- Mirror KiteTurbineDynamics.jl naming, dispatch, and unit conventions.
+- Use SI units. Angles are in degrees at the API boundary.
+- Rotors in a stack are ordered top to bottom. Index 1 is the topmost.
+- Scope limit: no wake interaction. This is a single-rotor BEM model.
 
-### Source inventory
+## Writing discipline
 
-`SOURCE_INVENTORY.md` — every file in the repo with a one-line purpose.
+Follow the clarity rules in [`AGENTS.md`](AGENTS.md) for all captions, specs,
+implications, and code comments. Use active voice. Use short sentences.
+Use one name per thing. Do not hedge.
 
-### Issue tracker
+Lint diagram captions with `python3 ste-lint.py <file>` before Round 2 approval.
+The score must be below 2.0 violations per 100 words.
 
-Issues are tracked on GitHub. See `docs/agents/issue-tracker.md`.
+## Agent reference docs
 
-### Triage labels
-
-Standard triage labels are used. See `docs/agents/triage-labels.md`.
+| File | Purpose |
+|------|---------|
+| [`docs/agents/domain.md`](docs/agents/domain.md) | Quick start, repo map, physics summary |
+| [`SOURCE_INVENTORY.md`](SOURCE_INVENTORY.md) | Every file with a one-line purpose |
+| [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md) | How to create and manage issues |
+| [`docs/agents/triage-labels.md`](docs/agents/triage-labels.md) | Standard triage label set |
