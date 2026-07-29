@@ -1,4 +1,4 @@
-# src/stack.jl — Multi-rotor stack and tension profile computation
+# src/stack.jl - Multi-rotor stack and tension profile computation
 
 """
     AutogyroStack(rotors, section_lengths, line_diameter, line_angle_deg; line_density=970.0)
@@ -6,7 +6,7 @@
 Multiple autogyro rotors stacked coaxially on a single kite line, each with
 independent pitch. Immutable.
 
-The topmost rotor (index 1) is a lifting autogyro kite — it **terminates**
+The topmost rotor (index 1) is a lifting autogyro kite. It **terminates**
 the line. There is no section above it; `section_lengths` has exactly
 `length(rotors)` entries for the sections between rotors and below the
 bottom rotor to the anchor.
@@ -61,8 +61,8 @@ terminates the line) downward to the anchor.
 
 # Returns
 - `Vector{Float64}` with `n_rotors + 1` entries (N). `profile[1]` is at the
-  topmost rotor (≈ 0 — nothing pulls from above); `profile[end]` is the
-  anchor tension (maximum).  Monotonically non-decreasing downward whenever
+  topmost rotor (approximately zero, nothing pulls from above). `profile[end]`
+  is the anchor tension (maximum). Monotonically non-decreasing downward when
   each rotor's net force is positive.
 
 # Physics
@@ -100,14 +100,14 @@ function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
         F_line, _, _, _, _ = rotor_force_along_line(rotor, rho, v_wind, stack.line_angle_deg)
         W_cos = rotor.mass * 9.81 * cosd(stack.line_angle_deg)
 
-        # Rope cannot push — tension cannot go negative.  When a rotor's net
-        # along-line force is downward (F_line < W_cos), the segment above it
-        # goes slack and tension at this position is zero.  The rotor hangs (or
-        # sits on the ground) and does not add to the tension below.
+        # Rope cannot push. Tension cannot go negative. When a rotor's net
+        # along-line force points downward (F_line < W_cos), the section
+        # above it goes slack. Tension at this position is zero. The rotor
+        # hangs (or sits on the ground). It does not add to the tension below.
         #
-        # Line self-weight (from line_mass_per_m + line_weight_along_line)
-        # always adds to tension when the section is taut — the stack must
-        # lift not just the rotors but the Dyneema line itself.
+        # Line self-weight (from line_mass_per_m plus line_weight_along_line)
+        # always adds to tension when the section is taut. The stack must
+        # lift the rotors and the Dyneema line.
         mass_per_m = line_mass_per_m(stack.line_diameter, stack.line_density)
         F_line_weight = line_weight_along_line(
             mass_per_m, section_len, 9.81, stack.line_angle_deg)
@@ -119,14 +119,14 @@ function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
     return profile
 end
 
-# ── Phase 10c Task 8-9: Polygon-line tension profile ──────────────────────
+# --- Phase 10c Task 8-9: Polygon-line tension profile ---
 
 """
     stack_tension_profile_polygon(stack::AutogyroStack, rho, v_wind) -> Vector{Float64}
 
 Tension profile using polygon line geometry. Unlike the v1 straight-line model,
-each rotor sees its own segment angle determined by force equilibrium
-([`solve_polygon_angles`](@ref)). This enables graded stacking where top-rotor
+each rotor sees its own segment angle. Force equilibrium determines the angle
+([`solve_polygon_angles`](@ref)). This enables graded stacking. A top-rotor
 tilt reshapes the line for rotors below.
 
 Accumulates tension top→bottom using polygon segment angles, including

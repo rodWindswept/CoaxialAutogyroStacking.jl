@@ -1,7 +1,7 @@
-# src/polygon_line.jl — Polygon line geometry for stacked rotors
+# src/polygon_line.jl - Polygon line geometry for stacked rotors
 #
-# Phase 10c: Each rotor's tilt bends the line, changing effective AoA
-# for rotors below. This is what makes graded stacking meaningful.
+# Phase 10c: Each rotor's tilt bends the line. This changes effective AoA
+# for rotors below. Graded stacking depends on this coupling.
 
 """
     solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10, tol=0.1)
@@ -45,7 +45,7 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
         T_above = 0.0
 
         for i in 1:n
-            # BEM force at current segment angle — use disk-normal thrust T
+            # BEM force at current segment angle. Uses disk-normal thrust T.
             _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
             W = rotors[i].mass * 9.81
 
@@ -58,8 +58,8 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
 
             T_below = sqrt(T_x^2 + T_y^2)
 
-            # Compute new segment angle with under-relaxation damping (ω = 0.5)
-            # to suppress Jacobi oscillation from the thrust↔angle feedback loop.
+            # Under-relaxation damping (ω = 0.5) suppresses Jacobi oscillation
+            # from the thrust-angle feedback loop.
             θ_new = atand(T_y, T_x)
             θ[i] = θ[i] + 0.5 * (θ_new - θ[i])
 

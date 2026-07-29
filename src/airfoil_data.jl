@@ -1,4 +1,4 @@
-# src/airfoil_data.jl — NACA 0012 CL/CD lookup tables
+# src/airfoil_data.jl - NACA 0012 CL/CD lookup tables
 #
 # Data sources:
 #   Re = 100,000: XFoil 6.96 prediction (airfoiltools.com, Ncrit=9)

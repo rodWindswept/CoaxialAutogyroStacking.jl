@@ -1,4 +1,4 @@
-# src/line_section.jl — Bare line drag model
+# src/line_section.jl - Bare line drag model
 
 """
     bare_line_drag(rho, v_wind, diameter, length, line_angle_deg) -> Float64

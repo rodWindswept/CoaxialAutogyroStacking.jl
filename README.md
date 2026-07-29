@@ -8,7 +8,7 @@
 
 <p align="center">
   <b>v2.1</b> &nbsp;·&nbsp;
-  <b>345 tests</b> &nbsp;·&nbsp;
+  <b>348 tests</b> &nbsp;·&nbsp;
   <b>Julia 1.12</b> &nbsp;·&nbsp;
   <b>Phases 1–10 complete</b>
 </p>
@@ -53,14 +53,14 @@ small ones.
 
 ```
   Wind →              ┌─────────────────────┐
-                       │  ROTOR 4 (top)      │  T = 0 N
+                       │  ROTOR 1 (top)      │  T = 0 N
                        │  Disk tilted 10°    │  ↓
                        │  15 m spacing       │
-                       │  ROTOR 3            │  ↓
-                       │  15 m               │
                        │  ROTOR 2            │  ↓
                        │  15 m               │
-                       │  ROTOR 1 (bottom)   │  ↓
+                       │  ROTOR 3            │  ↓
+                       │  15 m               │
+                       │  ROTOR 4 (bottom)   │  ↓
                        │  5 m to anchor      │
   Anchor ──────────────┴─────────────────────┘  T ≈ 5 kN
         to kite turbine hub
@@ -80,7 +80,7 @@ V-fin) provides passive weathervane alignment.
 git clone git@github.com:rodWindswept/CoaxialAutogyroStacking.jl.git
 cd CoaxialAutogyroStacking.jl
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
-julia --project=. test/runtests.jl     # 345 tests, ~7 seconds
+julia --project=. test/runtests.jl     # 348 tests, ~7 seconds
 ```
 
 **Basic usage:**
@@ -106,6 +106,32 @@ rep = viability_report(stack, 1.225, 8.0)
 # → (reynolds_ok, noise_ok, line_weight_fraction, warnings)
 ```
 
+## Dashboards
+
+Two interactive dashboards for exploring the parameter space.
+
+### GLMakie (native window)
+
+```bash
+julia --project=. scripts/dashboard.jl
+```
+
+Opens a native OpenGL window with sliders for wind speed, elevation, rotor
+count, radius, tilt, line diameter, and spacing. Side view, tension profile
+bar chart, and HUD readout update live. No browser needed.
+
+### Pluto (browser)
+
+```bash
+julia --project=. -e 'using Pluto; Pluto.run()'
+```
+
+Then open `notebooks/dashboard.jl` in the Pluto browser window. Same
+interactive controls, rendered inline.
+
+> **First run:** if GLMakie or Pluto are not installed, add them first:
+> `julia --project=. -e 'using Pkg; Pkg.add(["GLMakie", "Pluto"])'`
+
 ---
 
 ## Project structure
@@ -113,13 +139,12 @@ rep = viability_report(stack, 1.225, 8.0)
 | Directory | What's inside |
 |---|---|
 | `src/` | 11 modules — PCA-2 data, BEM solver, polygon line, stall delay, sweep, viability |
-| `test/` | 12 test files, 345 tests (7.4s suite) |
+| `test/` | 12 test files, 348 tests (7.4s suite) |
 | `schematics/` | OpenSCAD 3D models, LaTeX cross-sections, dimensioned drawings, renders |
 | `notebooks/` | GLMakie dashboard, sweep plots, viability charts |
 | `scripts/` | Dashboard launcher, BEM sweep runner |
 
-Key docs: [`SPEC.md`](SPEC.md) (source of truth), [`PLAN.md`](PLAN.md) (roadmap),
-[`PHASE9_PLAN.md`](PHASE9_PLAN.md) (mechanical design), [`CONTEXT.md`](CONTEXT.md) (glossary).
+Key docs: [`SPEC.md`](SPEC.md) (source of truth), [`PLAN.md`](PLAN.md) (roadmap),\n[`CONTEXT.md`](CONTEXT.md) (glossary), [`HANDOVER.md`](HANDOVER.md) (post-pull agent guide).
 
 ---
 

@@ -35,4 +35,9 @@ KiteTurbineDynamics.jl as a modulated lift source.
 | **BEM** | Blade Element Momentum. The v2.1 aerodynamic model. Replaces the PCA-2 disk model. Resolves blade geometry and induction at each radial station. |
 | **Polygon line** | The line geometry model. Each segment between rotors forms a different angle. The solver finds equilibrium angles from force balance at each rotor. |
 | **Snel stall delay** | A 3-D correction for rotational augmentation. Boosts root thrust where solidity is highest. Negligible at the blade tip. |
-| **Viability gate** | A physical constraint check. V1 gates: Re > 5×10⁴ (transitional flow) and tip speed < 100 m/s (noise). |
+| **Viability gate** | A physical constraint check. BEM v2.1 gates: Re > 5×10⁴ (transitional flow, NACA 0012), tip speed < 120 m/s (Mach 0.3 noise limit). Checked per configuration in `src/viability.jl`. |
+| **BEM induction** | The velocity reduction factors a and a′. Axial induction a slows the freestream through the disk. Tangential induction a′ accounts for rotor swirl. Solved iteratively at each radial station. |
+| **BEM station** | A single radial blade element at radius r. Defined by local chord, twist, inflow angle, and relative velocity. The BEM solver integrates forces across stations to get rotor-wide thrust and torque. |
+| **NACA 0012** | The symmetric 12% thickness airfoil used in the BEM model. CL/CD tables at Re = 10⁵, 2×10⁵, 5×10⁵, 10⁶ from XFoil. Stored in `src/airfoil_data.jl`. |
+| **Solidity** | Rotor solidity: σ = n_blades × blade_chord / (π × radius). Controls blade loading. PCA-2 σ ≈ 0.098. Typical lifting-autogyro σ ≈ 0.03–0.05. |
+| **Tip-speed ratio (λ)** | λ = ΩR / v_through. The ratio of blade tip speed to through-disk velocity. Autogyro rotors operate at λ ≈ 2–3. Wind turbines operate at λ ≈ 6–8. |

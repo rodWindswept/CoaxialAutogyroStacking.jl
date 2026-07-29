@@ -1,0 +1,42 @@
+#!/bin/bash
+# pre-commit — STE lint gate for Julia source files
+#
+# Runs ste-lint.jl on staged .jl files. Blocks the commit if any file
+# scores >= 2.0 violations per 100 words.
+#
+# Activate: cp .githooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# Bypass:   git commit --no-verify
+
+set -euo pipefail
+
+THRESHOLD=2.0
+ROOT="$(git rev-parse --show-toplevel)"
+LINT_SCRIPT="$ROOT/ste-lint.jl"
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.jl$' || true)
+[ -z "$STAGED" ] && exit 0
+
+FAILED=0
+while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    output=$(julia "$LINT_SCRIPT" "$ROOT/$file" 2>/dev/null)
+    # Parse: "filename  words=NNNN total=NNN per100w=NN.NN em_dash=NN"
+    per100w=$(echo "$output" | sed -n 's/.*per100w=\s*\([0-9.]*\).*/\1/p')
+    if [ -n "$per100w" ]; then
+        passes=$(awk -v score="$per100w" -v thresh="$THRESHOLD" 'BEGIN { if (score < thresh) print "pass"; else print "fail" }')
+        if [ "$passes" = "fail" ]; then
+            echo "BLOCKED $file — score $per100w/100w (threshold: $THRESHOLD)"
+            FAILED=1
+        else
+            echo "OK      $file — $per100w/100w"
+        fi
+    else
+        echo "OK      $file (no prose)"
+    fi
+done <<< "$STAGED"
+
+if [ "$FAILED" -eq 1 ]; then
+    echo ""
+    echo "Commit blocked. Fix STE violations or use --no-verify to bypass."
+    exit 1
+fi

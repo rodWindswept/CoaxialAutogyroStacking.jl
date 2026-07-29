@@ -1,4 +1,4 @@
-# src/sweep.jl — Parameter sweep for stacked autogyro configurations
+# src/sweep.jl - Parameter sweep for stacked autogyro configurations
 #
 # Sweeps rotor radius, stack count, spacing, tilt profile, wind speed, and
 # line elevation to discover Pareto-optimal configurations.

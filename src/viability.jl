@@ -1,4 +1,4 @@
-# src/viability.jl — Physical viability checks for a rotor stack (Phase 8.5)
+# src/viability.jl - Physical viability checks for a rotor stack (Phase 8.5)
 
 """
     viability_report(stack::AutogyroStack, rho, v_wind;
@@ -8,10 +8,10 @@
 Single entry point for physical viability checks on a rotor stack at a given
 flow state.
 
-Applies the worst-case-across-stack rule: hazards are judged by the worst
-offender (**maximum** tip speed — the loudest rotor sets the noise verdict),
-validity by the weakest link (**minimum** tip Reynolds — the least trustworthy
-rotor invalidates the whole prediction). On graded-tilt stacks these can be
+Applies the worst-case-across-stack rule. Hazards use the worst offender:
+maximum tip speed (the loudest rotor sets the noise verdict). Validity uses
+the weakest link: minimum tip Reynolds (the least trustworthy rotor
+invalidates the whole prediction). On graded-tilt stacks these can be
 different rotors.
 
 # Arguments
@@ -26,8 +26,8 @@ A named tuple:
 - `reynolds_ok::Bool`: minimum tip Re across the stack ≥ `reynolds_min`.
 - `noise_ok::Bool`: maximum tip speed across the stack ≤ `tip_speed_limit`.
 - `line_weight_fraction::Float64`: total line self-weight force along the line
-  ÷ total rotor lift along the line — the share of what the rotors generate
-  that is spent just lifting the rope. `Inf` at zero wind (zero lift).
+  divided by total rotor lift along the line. This is the share of rotor lift
+  that goes to lifting the rope. `Inf` at zero wind (zero lift).
 - `warnings::Vector{String}`: one message per failed gate, with the offending
   numbers; empty when fully viable.
 
@@ -45,24 +45,23 @@ julia> (rep.reynolds_ok, rep.noise_ok)
 """
 function viability_report(stack::AutogyroStack, rho, v_wind;
                           reynolds_min=5.0e5, tip_speed_limit=120.0)
-    # Worst-case-across-stack rule: the LEAST trustworthy rotor (minimum tip
-    # Reynolds) decides whether the PCA-2 prediction can be trusted at all.
+    # Worst-case-across-stack rule: the least trustworthy rotor (minimum tip
+    # Reynolds) decides whether the PCA-2 prediction is valid.
     re_min = minimum(
         rotor_reynolds_number(r, rho, v_wind, effective_alpha(r, stack.line_angle_deg))
         for r in stack.rotors)
 
-    # Worst-case-across-stack rule: the LOUDEST rotor (maximum tip speed)
-    # sets the noise verdict. On graded-tilt stacks this can be a different
-    # rotor from the min-Reynolds one.
+    # Worst-case-across-stack rule: the loudest rotor (maximum tip speed)
+    # sets the noise verdict. On graded-tilt stacks this can differ from
+    # the min-Reynolds rotor.
     v_tip_max = maximum(
         rotor_tip_speed(r, v_wind, effective_alpha(r, stack.line_angle_deg))
         for r in stack.rotors)
 
-    # Cameron's definition (2026-07-18): line self-weight force along the line
-    # as a fraction of the total rotor lift along the line — "how much of what
-    # the rotors generate is spent just lifting the rope". At zero wind the
-    # rotors produce nothing and the fraction is Inf (honest: line weight
-    # infinitely dominates zero lift).
+    # Line self-weight force along the line as a fraction of total rotor
+    # lift along the line. This measures how much rotor effort goes to
+    # lifting the rope. At zero wind the rotors produce nothing. The
+    # fraction is Inf (line weight dominates zero lift).
     mass_per_m = line_mass_per_m(stack.line_diameter, stack.line_density)
     total_line_weight = sum(
         line_weight_along_line(mass_per_m, L, 9.81, stack.line_angle_deg)
@@ -75,7 +74,7 @@ function viability_report(stack::AutogyroStack, rho, v_wind;
     warnings = String[]
     if re_min < reynolds_min
         push!(warnings, "min tip Reynolds $(round(re_min, sigdigits=3)) below " *
-                        "$(round(reynolds_min, sigdigits=3)) — PCA-2 data " *
+                        "$(round(reynolds_min, sigdigits=3)). PCA-2 data " *
                         "untrustworthy at this scale")
     end
     if v_tip_max > tip_speed_limit

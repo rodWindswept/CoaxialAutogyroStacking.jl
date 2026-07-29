@@ -94,9 +94,9 @@ components are on the tube.
 
 10. Repeat steps 5-9 at Z=780 (upper pair of holes).
 11. The top tie captures the Dyneema above this rotor — it carries
-    the weight of all rotors above this one. On the topmost rotor
-    (rotor 4), the top tie carries no load (line terminates here).
-    On rotor 1 (bottom), the top tie carries 3 rotors' worth of
+    the weight of all rotors above this one. On the topmost rotor,
+    the top tie carries no load (line terminates here).
+    On the bottom rotor, the top tie carries 3 rotors' worth of
     tension.
 12. Bed the knots as above.
 
@@ -309,17 +309,17 @@ If building all 4 rotors on one continuous Dyneema line:
 1. Thread all 4 tubes onto the 60 m Dyneema line BEFORE assembling
    any of them. You cannot add a tube to a line that already has
    knots tied.
-2. Starting from the BOTTOM (rotor 1, closest to anchor):
-   - Tie bottom knot at Z=20 on rotor 1
-   - Assemble bearing stack on rotor 1
-   - Mount blades on rotor 1
-   - Measure 15 m up the line from rotor 1's top tie
-   - Tie bottom knot of rotor 2 at that point
-   - Repeat for rotors 3 and 4
-3. Rotor 4 (topmost): tie off the line above the top molding.
-   No line extends above rotor 4 — this is where the stack terminates.
-4. Anchor tension accumulates: T=0 at top of rotor 4, increasing
-   through each rotor to ~5 kN at the anchor below rotor 1.
+2. Starting from the BOTTOM (closest to anchor):
+    - Tie bottom knot at Z=20 on the first rotor
+    - Assemble bearing stack on the first rotor
+    - Mount blades on the first rotor
+    - Measure 15 m up the line from the first rotor's top tie
+    - Tie bottom knot of the second rotor at that point
+    - Repeat for rotors 3 and 4
+3. The topmost rotor: tie off the line above the top molding.
+    No line extends above the topmost rotor. The stack terminates here.
+4. Anchor tension accumulates: T=0 at the topmost rotor, increasing
+    through each rotor to ~5 kN at the anchor below the bottom rotor.
 
 > **Test one rotor first.** Fly rotor 1 solo before committing to
 > the full 4-rotor build. If the design has a fundamental problem

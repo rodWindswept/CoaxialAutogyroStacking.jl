@@ -1,4 +1,4 @@
-# src/optimisation.jl — Optimal pitch search for rotors and stacks
+# src/optimisation.jl - Optimal pitch search for rotors and stacks
 
 """
     optimal_rotor_tilt(rotor::AutogyroRotor, rho, v_wind, elev_deg) -> (tilt_opt, F_max)
@@ -7,21 +7,21 @@ Grid-search the disk tilt (−30° to 30° in 0.5° steps) for the tilt that
 maximises the along-line force component at a fixed line elevation.
 
 **Design-time, not control-time.** Disk tilt δ is the angle of the bearing
-face machined into the moldings — it is set at manufacture and fixed for the
-life of the rotor unit. This function answers the design question: "what
-bearing angle should I machine for this rotor, given the expected operating
-elevation and wind speed?" It is NOT a per-flight control parameter; that
-role belongs to blade pitch (`blade_pitch_deg`), which is adjustable via the
-swashplate but not yet modelled (the PCA-2 lookup is 1-D on AoA only).
+face machined into the moldings. You set it at manufacture. It stays fixed for
+the life of the rotor unit. This function answers the design question: what
+bearing angle should you machine for this rotor, given the expected operating
+elevation and wind speed? It is NOT a per-flight control parameter. That role
+belongs to blade pitch (`blade_pitch_deg`). Blade pitch adjusts via the
+swashplate but the PCA-2 lookup does not model it yet (1-D on AoA only).
 
-The caller should check whether the returned `F_max` exceeds `W·cos(elev)` —
-i.e. whether the rotor can overcome its own weight at this condition. If not,
-no tilt will make this rotor useful at this elevation.
+Check that the returned `F_max` exceeds `W·cos(elev)`. If not, the rotor
+cannot overcome its own weight at this condition. No tilt will make this
+rotor useful at this elevation.
 
-Note: this optimises `tilt_deg` (disk angle), NOT `blade_pitch_deg` (collective
-blade pitch). The two are distinct — disk tilt pivots the entire rotor plane;
-blade pitch changes individual blade incidence. Only disk tilt affects the
-current PCA-2 1-D lookup model.
+This function optimises `tilt_deg` (disk angle), NOT `blade_pitch_deg`
+(collective blade pitch). The two are distinct. Disk tilt pivots the entire
+rotor plane. Blade pitch changes individual blade incidence. Only disk tilt
+affects the current PCA-2 1-D lookup model.
 
 # Arguments
 - `rotor::AutogyroRotor`: template rotor; only its geometry/mass are reused, the
@@ -66,8 +66,8 @@ end
     optimal_rotor_tilts(stack::AutogyroStack, rho, v_wind) -> Vector{Float64}
 
 Optimise disk tilt independently for each rotor in the stack, at the stack's
-base line elevation. Because v1 has no wake interaction, each rotor sees
-freestream and is optimised in isolation via [`optimal_rotor_tilt`](@ref).
+base line elevation. v1 has no wake interaction. Each rotor sees freestream.
+The function optimises each rotor in isolation via [`optimal_rotor_tilt`](@ref).
 
 # Arguments
 - `stack::AutogyroStack`: the rotor stack.
@@ -142,15 +142,15 @@ function lift_force_steady(stack::AutogyroStack, rho, v_wind)
     return total_F_line, profile[end], stack.line_angle_deg
 end
 
-# ── Phase 10d Task 12: BEM-aware multivariate tilt optimisation ────────────
+# --- Phase 10d Task 12: BEM-aware multivariate tilt optimisation ---
 
 """
     optimal_rotor_tilts_bem(stack::AutogyroStack, rho, v_wind; tilt_candidates=0:5:30)
 
-Coordinate-descent optimisation of disk tilts for all rotors, using polygon
-line geometry and BEM aerodynamics. Unlike v1's per-rotor independent
-optimisation, this accounts for rotor-to-rotor coupling: changing a top rotor's
-tilt reshapes the line, altering effective AoA for every rotor below.
+Coordinate-descent optimisation of disk tilts for all rotors. Uses polygon
+line geometry and BEM aerodynamics. Unlike v1, this accounts for rotor-to-rotor
+coupling. Changing a top rotor's tilt reshapes the line. This alters the
+effective AoA for every rotor below.
 
 # Algorithm
 1. Start with current tilts from the stack's rotors.

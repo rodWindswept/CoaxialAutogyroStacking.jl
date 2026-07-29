@@ -101,3 +101,23 @@ deferred — damping is simpler and sufficient for current profiles.
 δ, trig swap) serendipitously produced angles near 5°, which the clamp then
 held at 5°. The solver appeared to "converge" because the clamp suppressed
 the oscillation that the correct physics exposes.
+
+---
+
+## D5: Q3 — HANDOVER framing of BEM→PCA-2 gap (2026-07-29)
+
+**Context:** HANDOVER.md and README.md framed the BEM→PCA-2 force gap (~8×)
+as justification for v3 wake modelling. This is scientifically wrong: wake
+deficits reduce downstream rotor inflow, making BEM forces *lower*, not higher.
+Wake modelling would widen the gap, not close it.
+
+**Decision:** v3's primary goal is rotor-to-rotor interaction fidelity.
+Wake modelling addresses a real problem (non-uniform inflow, downstream
+sheltering) but does not close the PCA-2 gap. The gap is a fidelity choice
+not a physics deficiency: BEM measures 2-D airfoil forces, PCA-2 measures
+an empirical high-solidity disk. Both are "right" in their own reference
+frames (D1, (C)).
+
+**Action:** HANDOVER.md and README.md must stop citing the BEM→PCA-2 gap as
+justification for wake modelling. v3 scope should be motivated by
+rotor-to-rotor interaction fidelity, not gap-closing.

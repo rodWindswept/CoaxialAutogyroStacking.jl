@@ -1,4 +1,4 @@
-# src/rotor.jl — Single autogyro rotor struct and force calculations
+# src/rotor.jl - Single autogyro rotor struct and force calculations
 
 """
     AutogyroRotor(radius, hub_radius, n_blades, blade_chord, tilt_deg, blade_pitch_deg, mass)
@@ -11,14 +11,14 @@ thrust bearing, and tailplane frame. Immutable.
 - `hub_radius::Float64`: inner / hub radius (m).
 - `n_blades::Int`: number of blades.
 - `blade_chord::Float64`: mean blade chord (m).
-- `tilt_deg::Float64`: disk tilt angle (degrees) — the angle the rotor plane is
-  pitched away from perpendicular to the kite line (leading edge forward-down
-  into the wind, like a kite pitching). This is the primary control variable
-  captured by the current PCA-2 disk model.
-- `blade_pitch_deg::Float64`: rotor blade pitch angle (degrees) — collective
-  pitch of individual blades on the hub. Adjustable independently of disk tilt.
-  Not yet used in force calculations; the current PCA-2 lookup is 1-D (AoA
-  only) and does not parameterise blade pitch.
+- `tilt_deg::Float64`: disk tilt angle (degrees). The angle the rotor plane
+  pitches away from perpendicular to the kite line (leading edge forward-down
+  into the wind). This is the primary control variable for the PCA-2 disk
+  model.
+- `blade_pitch_deg::Float64`: rotor blade pitch angle (degrees). Collective
+  pitch of individual blades on the hub. You can adjust it independently of
+  disk tilt. Not yet used in force calculations. The current PCA-2 lookup
+  is 1-D (AoA only) and does not parameterise blade pitch.
 - `mass::Float64`: rotor mass (kg).
 
 # Examples
@@ -61,11 +61,11 @@ Rotor solidity: ratio of total blade planform area to swept disk area.
 
     σ = n_blades × blade_chord / (π × radius)
 
-Solidity is a first-order parameter for rotor aerodynamics — it determines
-the blade loading distribution and the fraction of the disk that is "solid"
-vs. open. The PCA-2 (σ ≈ 0.098, 3 blades, R=6.86 m, c=0.56 m) is a
-high-solidity rotor; our typical lifting-autogyro rotors are lower solidity
-(σ ≈ 0.03–0.05 for 2 blades at R=2–3 m with 0.15 m chord).
+Solidity controls the blade loading distribution. It determines the fraction
+of the disk that is "solid" vs. open. The PCA-2 (σ ≈ 0.098, 3 blades,
+R=6.86 m, c=0.56 m) is a high-solidity rotor. Our typical lifting-autogyro
+rotors have lower solidity (σ ≈ 0.03–0.05 for 2 blades at R=2–3 m with
+0.15 m chord).
 
 **Important:** The PCA-2 CL/CD data in `pca2_interp` is valid for σ ≈ 0.098.
 Applying it to rotors with substantially different solidity introduces
@@ -95,11 +95,12 @@ tip-speed ratio λ = ΩR / v_through relates this to rotor speed:
 
 The default λ = 2.5 is typical for autogyro rotors in axial/autorotating flow
 (PCA-2 tip speed ~340 fps at ~130 fps axial inflow → λ ≈ 2.6). Wind turbines
-operate at higher λ (6–8); autorotating rotors are slower.
+operate at higher λ (6–8). Autorotating rotors are slower.
 
 **Caveat:** This is a first-order estimate. Actual RPM depends on blade
-geometry, airfoil, solidity, and Reynolds number — none of which the PCA-2
-disk model resolves. BEM (v2) will compute RPM from torque equilibrium.
+geometry, airfoil, solidity, and Reynolds number. The PCA-2 disk model
+does not resolve these factors. BEM (v2) computes RPM from torque
+equilibrium.
 
 # Arguments
 - `rotor::AutogyroRotor`: the rotor.
@@ -132,7 +133,7 @@ With zero disk tilt (`tilt_deg = 0`), the rotor plane is perpendicular to the
 line and `α_eff = 90° − elevation`. Tilting the disk (leading edge forward-down)
 increases α_eff, shifting the operating point along the PCA-2 CL/CD curve.
 
-The returned value is *not* clamped here — clamping to [0°, 90°] happens
+The returned value is *not* clamped here. Clamping to [0°, 90°] happens
 downstream in [`pca2_interp`](@ref).
 
 # Arguments
@@ -164,7 +165,8 @@ coefficients.
 
 # Returns
 A 5-tuple `(F_line, F_lift, F_drag, cl_used, cd_used)`:
-- `F_line`: force projected onto the line axis (N) — the tension-relevant term.
+- `F_line`: force projected onto the line axis (N). This is the
+  tension-relevant term.
 - `F_lift`: lift, perpendicular to the wind (N).
 - `F_drag`: drag, parallel to the wind (N).
 - `cl_used`, `cd_used`: the PCA-2 coefficients actually used.
@@ -209,9 +211,8 @@ radius:
     ω = RPM × 2π / 60
     v_tip = ω × radius
 
-Tip speed is important for noise constraints — the KTD.jl design limit is
-120 m/s to stay well below Mach 0.3, above which tip noise becomes
-significant.
+Tip speed matters for noise. The KTD.jl design limit is 120 m/s. This
+stays well below Mach 0.3. Above Mach 0.3, tip noise becomes significant.
 
 # Arguments
 - `rotor::AutogyroRotor`: the rotor.
@@ -243,9 +244,9 @@ where `v_tip` comes from [`rotor_tip_speed`](@ref) and `μ` is the dynamic
 viscosity of air (default 1.81×10⁻⁵ Pa·s at 15°C).
 
 Reynolds number determines the flow regime at the blade tip:
-- Re < 5×10⁴: laminar separation — poor lift, high drag
-- Re ≈ 10⁵: transitional — marginal, scale-effects dominate
-- Re > 5×10⁵: fully turbulent — predictable, design-safe
+- Re < 5×10⁴: laminar separation. Poor lift, high drag.
+- Re ≈ 10⁵: transitional. Marginal, scale effects dominate.
+- Re > 5×10⁵: fully turbulent. Predictable and safe for design.
 
 Small model autogyro rotors (R < 1 m, chord < 0.1 m) can operate in the
 transitional regime, where performance degrades significantly.

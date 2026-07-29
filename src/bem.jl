@@ -1,4 +1,4 @@
-# src/bem.jl — Blade-element momentum theory for autorotating rotors
+# src/bem.jl - Blade-element momentum theory for autorotating rotors
 #
 # Phase 10b: BEM core functions.
 # Task 3: bem_station — single blade-element station geometry and forces.

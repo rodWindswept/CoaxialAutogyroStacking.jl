@@ -16,7 +16,7 @@ calls the full polygon chain solver for each wind speed. Output: CSV.
 - **X-axis:** Distance from anchor (m). 0 = anchor (ground), 60m = topmost rotor.
 - **Y-axis:** Cumulative line tension (N). 0 at top, increasing downward.
 - **Color:** Wind speed (4–16 m/s), viridis gradient.
-- **Vertical markers:** Rotor positions (R1 nearest anchor, R4 at top).
+- **Vertical markers:** Rotor positions (R4 nearest anchor, R1 at top).
 
 ## Plain-language explanation
 

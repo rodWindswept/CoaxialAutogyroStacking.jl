@@ -1,4 +1,4 @@
-# src/stall_delay.jl — 3-D stall-delay corrections for BEM
+# src/stall_delay.jl - 3-D stall-delay corrections for BEM
 #
 # Phase 10f (v2.1): Snel/Himmelskamp correction — centrifugal pumping delays
 # separation on rotating blades, increasing CL in the post-stall regime.

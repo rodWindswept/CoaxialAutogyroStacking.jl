@@ -1,6 +1,6 @@
-# src/pca2_data.jl — PCA-2 empirical autogyro rotor disk data
-# Data from NASA TM 20080022367: PCA-2 autogyro wind tunnel tests
-# CL and CD normalised to disk area and freestream dynamic pressure
+# src/pca2_data.jl - PCA-2 empirical autogyro rotor disk data
+# Data from NASA TM 20080022367: PCA-2 autogyro wind tunnel tests.
+# CL and CD normalised to disk area and freestream dynamic pressure.
 
 const PCA2_ALPHA = [0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0,
                     45.0, 50.0, 60.0, 70.0, 80.0, 90.0]
@@ -15,9 +15,9 @@ const PCA2_CD    = [0.01, 0.03, 0.06, 0.10, 0.16, 0.24, 0.35, 0.48, 0.62,
 Linearly interpolate the PCA-2 empirical lift and drag coefficients for a rotor
 disk at angle of attack `alpha_deg`.
 
-The PCA-2 table (NASA TM 20080022367) is defined on α ∈ [0°, 90°]; inputs
-outside that range are clamped to the nearest endpoint (so the function never
-extrapolates).
+The PCA-2 table (NASA TM 20080022367) covers α ∈ [0°, 90°].
+Inputs outside that range clamp to the nearest endpoint. The function
+never extrapolates.
 
 # Arguments
 - `alpha_deg`: disk angle of attack in degrees.

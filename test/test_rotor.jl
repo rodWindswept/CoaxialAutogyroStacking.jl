@@ -1,4 +1,4 @@
-# test/test_rotor.jl — AutogyroRotor struct and single-rotor force calculations
+# test/test_rotor.jl - AutogyroRotor struct and single-rotor force calculations
 
 @testset "AutogyroRotor" begin
 
@@ -57,7 +57,7 @@
         rotor = CoaxialAutogyroStacking.AutogyroRotor(3.0, 0.1, 2, 0.15, 10.0, 0.0, 5.0)
         rpm = CoaxialAutogyroStacking.estimated_autorotation_rpm(rotor, 8.0, 50.0)
         @test rpm ≈ 48.8 atol=1.0
-        # Tip speed = Ω × R = 5.11 × 3 = 15.3 m/s — well below 120 m/s noise limit
+        # Tip speed = Ω × R = 5.11 × 3 = 15.3 m/s. Well below 120 m/s noise limit
         tip_speed = (rpm * 2π / 60) * 3.0
         @test tip_speed < 120.0  # noise constraint from KTD.jl
     end

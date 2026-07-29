@@ -201,11 +201,11 @@ don't collide, tangle, or interfere aerodynamically.
 
 ```
                     ┌───┐
-                    │R2 │  Top rotor (terminates line)
+                    │R1 │  Top rotor (terminates line)
                     └─┬─┘
                       │  15 m spacing
                     ┌─┴─┐
-                    │R1 │  Bottom rotor
+                    │R2 │  Bottom rotor
                     └─┬─┘
                       │  10 m to anchor
                  ┌────┴────┐
@@ -217,20 +217,20 @@ don't collide, tangle, or interfere aerodynamically.
 
 1. Both rotors on one continuous Dyneema line, 15 m apart.
    (If following ASSEMBLY.md, you should have built them this way.)
-2. Lay out the stack on the ground downwind of the anchor: R1 closest
-   to anchor, R2 15 m beyond.
+2. Lay out the stack on the ground downwind of the anchor: R2 closest
+   to anchor, R1 15 m beyond.
 3. Check both rotors spin freely. Check all knots, bolts, tail surfaces
    on both units.
 
 ### Launch (harder with two)
 
-4. Launch R2 (top rotor) first. It's the furthest downwind. Get it
+4. Launch R1 (top rotor) first. It's the furthest downwind. Get it
    airborne and spinning.
-5. Walk backward, letting out line. As R2 climbs, R1 will lift off
+5. Walk backward, letting out line. As R1 climbs, R2 will lift off
    the ground. The line between them should tension.
-6. Guide R1's disk into the wind. It should start spinning as it
+6. Guide R2's disk into the wind. It should start spinning as it
    leaves the ground.
-7. Target altitude: R2 at ~25 m, R1 at ~10 m. The stack should form
+7. Target altitude: R1 at ~25 m, R2 at ~10 m. The stack should form
    a roughly straight line at the elevation angle.
 
 ### What can go wrong (that couldn't with one)
@@ -242,12 +242,12 @@ don't collide, tangle, or interfere aerodynamically.
 - **Mid-line collision**: in a gust or lull, the line between rotors
   can slack momentarily and the rotors can drift together. They
   shouldn't collide (15 m spacing is generous) but watch for it.
-- **Wake interaction**: R2's wake may reduce the wind seen by R1.
-  You'll see this as R1 spinning slower than R2 at the same wind
+- **Wake interaction**: R1's wake may reduce the wind seen by R2.
+  You'll see this as R2 spinning slower than R1 at the same wind
   speed. Expected — the model assumes no wake in v1/v2. Measure the
   RPM difference.
 - **Tension step**: the load cell should show a clear increase when
-  R2 is added vs R1 alone. Compare to Session 1 data.
+  R1 is added vs R2 alone. Compare to Session 1 data.
 
 ### Data collection
 
@@ -278,16 +278,16 @@ and flies stably as a complete system.
 
 ```
                     ┌───┐
-                    │R4 │  Top
-                    └─┬─┘  15 m
-                    ┌─┴─┐
-                    │R3 │
+                    │R1 │  Top
                     └─┬─┘  15 m
                     ┌─┴─┐
                     │R2 │
                     └─┬─┘  15 m
                     ┌─┴─┐
-                    │R1 │  Bottom
+                    │R3 │
+                    └─┬─┘  15 m
+                    ┌─┴─┐
+                    │R4 │  Bottom
                     └─┬─┘  10 m
                  ┌────┴────┐
                  │  LOAD   │
@@ -298,14 +298,14 @@ and flies stably as a complete system.
 
 ### Launch (this takes practice)
 
-Launch sequence: R4 → R3 → R2 → R1, from top to bottom.
+Launch sequence: R1 → R2 → R3 → R4, from top to bottom.
 
 1. With 60 m of line and 4 rotors laid out on the ground, launch
    is a two-person job. One person manages the line, the other
    guides each rotor into the wind as it lifts off.
-2. Start with R4 (furthest downwind). Get it up and stable.
-3. Walk back. As the line tensions, R3 will lift. Guide its disk.
-4. Repeat for R2, then R1.
+2. Start with R1 (furthest downwind). Get it up and stable.
+3. Walk back. As the line tensions, R2 will lift. Guide its disk.
+4. Repeat for R3, then R4.
 5. The stack should form a near-straight line. If the wind is steady,
    all 4 rotors should align like beads on a string.
 
@@ -325,8 +325,8 @@ Launch sequence: R4 → R3 → R2 → R1, from top to bottom.
 |------|------|---------|--------|--------|--------|--------|-------------|-------|
 
 Measuring 4 RPMs simultaneously is hard without telemetry. Prioritise:
-- R1 (bottom — highest tension, most interesting structurally)
-- R4 (top — free-stream wind, baseline RPM)
+- R4 (bottom — highest tension, most interesting structurally)
+- R1 (top — free-stream wind, baseline RPM)
 
 If you can only measure one, measure R1.
 

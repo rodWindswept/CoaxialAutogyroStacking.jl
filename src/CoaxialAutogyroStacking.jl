@@ -1,6 +1,6 @@
 module CoaxialAutogyroStacking
 
-# CoaxialAutogyroStacking.jl — Multiple independently-pitched autogyro rotors
+# CoaxialAutogyroStacking.jl - Multiple independently-pitched autogyro rotors
 # stacked inline on a kite line, computing forces and tension profiles.
 #
 # Phase 1–8:   PCA-2 empirical data, rotor model, line drag, stack, optimisation, sweep
