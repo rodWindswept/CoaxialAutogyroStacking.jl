@@ -74,14 +74,14 @@ ax.annotate("TRPT exceeds yo-yo\nby 10–14× at all wind speeds",
 
 # ── Implications caption ───────────────────────────────────────────────────
 caption = (
-    "IMPLICATIONS: The stacked autogyro strongly favors fly-gen TRPT power "
-    "over yo-yo cycling. At 12 m/s, TRPT delivers 64 kW (v5 Octagon) or "
-    "42 kW (Canonical). Yo-yo net delivers only 4.5 kW. The gap is 10–14× "
-    "across all wind speeds. The autogyro produces steady lift. TRPT "
-    "converts it directly to shaft power. Yo-yo wastes energy on the "
-    "reel-in phase. For AWES deployment, pair the autogyro stack with a "
-    "fly-gen kite turbine. Do not use it in yo-yo mode. "
-    "Data: BEM v2.1, corrected polygon solver. See SPEC.md §6.6."
+    "IMPLICATIONS: The stacked autogyro strongly favors Kite Turbine TRPT "
+    "(mechanical power transmission) over yo-yo cycling. At 12 m/s, TRPT "
+    "delivers 64 kW (v5 Octagon) or 42 kW (Canonical). Yo-yo net delivers "
+    "only 4.5 kW. The gap is 10–14× across all wind speeds. The autogyro "
+    "produces steady lift. TRPT converts it to shaft power through a kite "
+    "turbine. Yo-yo wastes energy on the reel-in phase. For AWES deployment, "
+    "pair the autogyro stack with a kite turbine. Do not use it in yo-yo "
+    "mode. Data: BEM v2.1, corrected polygon solver. See SPEC.md §6.6."
 )
 caption_text = fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
                          ha="left", va="bottom", style="italic", family="serif",
