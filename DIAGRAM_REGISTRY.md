@@ -6,13 +6,19 @@
 
 ## Current Diagrams
 
-### Approved (1)
+### Approved (7)
 
 | Slug | Title | Status | Round | Source | Last Check |
 |------|-------|--------|-------|--------|------------|
-| bem-pareto | No Pareto Trade-off: Tension vs Efficiency | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
+| bem-pareto | No Pareto Trade-off: Tension vs Efficiency | approved | 3/3 | bem_full_sweep.tsv | 2026-07-29 |
+| bem-feasibility-radius | Re Viability Heatmap | approved | 3/3 | bem_full_sweep.tsv | 2026-07-29 |
+| bem-feasibility-heatmap | Tip Speed Noise Gate | approved | 3/3 | bem_full_sweep.tsv | 2026-07-29 |
+| bem-tension-accum | Tension Accumulation Along Line | approved | 3/3 | bem_full_sweep.tsv | 2026-07-29 |
+| bem-tension-accum-v2 | Tension w/ Wind Gradient (α=0.14) | approved | 3/3 | bem_full_sweep.tsv | 2026-07-29 |
+| bem-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | approved | 3/3 | bem_induction | 2026-07-29 |
+| bem-trpt-power | TRPT vs Yo-yo Power Generation | approved | 1/3 | bem_full_sweep.tsv | 2026-07-29 |
 
-### Prototypes — BEM Charts (9, from notebooks/bem_charts.jl)
+### Prototypes — BEM Charts (3 remaining, from notebooks/bem_charts.jl)
 
 | Slug | Title | Source PNG | Subplot |
 |------|-------|-----------|---------|
@@ -20,12 +26,6 @@
 | bem-pareto-radius | Pareto: Tension vs N/kg by Radius | bem_chart_1_pareto.png | ax1b |
 | bem-pareto-count | Pareto: Tension vs N/kg by Stack Count | bem_chart_1_pareto.png | ax1c |
 | bem-pareto-elevation | Pareto: Tension vs N/kg by Elevation | bem_chart_1_pareto.png | ax1d |
-| bem-feasibility-radius | Feasibility: Re Viability Heatmap | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
-| bem-feasibility-heatmap | Tip Speed Noise Gate | approved | 3/3 | bem_full_sweep.tsv | 2026-07-27 |
-| bem-tension-accum | Tension Accumulation Along Line | approved | 3/3 | stack_tension_profile | 2026-07-27 |
-| bem-tension-accum-v2 | Tension w/ Wind Gradient (α=0.14) | approved | 3/3 | stack_tension_profile | 2026-07-27 |
-| bem-radial-loading | Radial BEM Loading: CL 2-D vs 3-D Snel | approved | 3/3 | bem_induction | 2026-07-27 |
-| bem-radar | Radar: 5 Metrics by Tilt Profile | bem_chart_5_radar.png | — |
 
 ### Prototypes — Viability Charts (4, from notebooks/viability_charts.jl)
 
@@ -64,7 +64,40 @@ simplification, instrumentation, and funding priorities.
 | pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling | Which (radius, stack_count) grid points cover the Pareto front? Minimum viable product line. |
 | pca-efficiency | Mass Efficiency Mapped onto PC Space | Pitch Deck | "Every design on this curve gives best bang-for-buck." The efficient frontier in reduced dimensions. |
 
-**Total: 6 approved + 14 legacy + 7 PCA = 27 diagrams registered**
+### New — Aero/Engineering (5, from bem_full_sweep.tsv)
+
+| Slug | Title | Stakeholder | Question Answered |
+|------|-------|------------|-------------------|
+| bem-rpm-envelope | RPM Operating Envelope vs Wind Speed by Radius | Design | Where does autorotation work? |
+| bem-force-breakdown | Rotor Force Components: Lift, Drag, Weight | Engineering | What % of force is useful lift? |
+| bem-stack-efficiency | Stack Efficiency: Tension vs Stack Count | Design | Diminishing returns from N>4? |
+| bem-radius-sensitivity | Radius Sensitivity: Tension vs Rotor Radius | Engineering | Nonlinear scaling of lift with R |
+| bem-ld-sweep | L/D Ratio by Tilt Profile and Wind Speed | Aero | Optimal tilt across operating range |
+
+### New — AWES-specific (3, from bem_full_sweep.tsv)
+
+| Slug | Title | Stakeholder | Question Answered |
+|------|-------|------------|-------------------|
+| bem-operating-envelope | Operating Wind Envelope by (R,N) | Operations | Which combos fly in 4 m/s? 16 m/s? |
+| bem-power-density | Power Density: TRPT per Swept Area | AWES | W/m² comparison across configs |
+| bem-capacity-factor | Tension Above Threshold vs Wind Speed | Investor | How often does it deliver useful lift? |
+
+### New — Financial/Business (3, from bem_full_sweep.tsv)
+
+| Slug | Title | Stakeholder | Question Answered |
+|------|-------|------------|-------------------|
+| bem-cost-per-newton | Cost per Newton: Economics of Scale | Investor | What's the cheapest way to get 1 kN? |
+| bem-trpt-per-rotor | TRPT kW per Rotor Unit | Manufacturing | Power contribution per device |
+| bem-cost-tradeoff | Cost vs Tension Trade-off | Funding | Where's the budget sweet spot? |
+
+### New — Academic (4, from bem_full_sweep.tsv)
+
+| Slug | Title | Stakeholder | Question Answered |
+|------|-------|------------|-------------------|
+| bem-pca2-vs-bem | PCA-2 Disk Model vs BEM v2.1 Comparison | Academic | What did we gain from BEM? |
+| bem-solver-convergence | Polygon Solver Convergence by Config | Research | Is the solver robust? |
+| bem-parameter-sensitivity | Parameter Sensitivity: Input to Output | Research | Which knob matters most? |
+| bem-stall-delay-impact | Snel Stall Delay: Net Effect on Thrust | Aero | Does 3-D correction matter at system level? |
 
 ## Status Legend
 
