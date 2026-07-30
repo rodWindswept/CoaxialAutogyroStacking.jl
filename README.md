@@ -113,24 +113,28 @@ Two interactive dashboards for exploring the parameter space.
 ### GLMakie (native window)
 
 ```bash
-julia --project=. scripts/dashboard.jl
+julia --project=scripts scripts/dashboard.jl
 ```
 
-Opens a native OpenGL window with sliders for wind speed, elevation, rotor
-count, radius, tilt, line diameter, and spacing. Side view, tension profile
-bar chart, and HUD readout update live. No browser needed.
+Opens a native OpenGL window with sliders for wind speed, rotor count,
+radius, tilt, line diameter, and spacing. Side view, tension profile
+bar chart, and HUD readout update live. No browser needed. Line angles
+are computed from force equilibrium — no elevation slider.
 
 ### Pluto (browser)
 
 ```bash
-julia --project=. -e 'using Pluto; Pluto.run()'
+julia --project=notebooks -e 'using Pluto; Pluto.run()'
 ```
 
 Then open `notebooks/dashboard.jl` in the Pluto browser window. Same
 interactive controls, rendered inline.
 
-> **First run:** if GLMakie or Pluto are not installed, add them first:
-> `julia --project=. -e 'using Pkg; Pkg.add(["GLMakie", "Pluto"])'`
+> **First run:** instantiate each environment first:
+> ```
+> julia --project=scripts -e 'using Pkg; Pkg.instantiate()'
+> julia --project=notebooks -e 'using Pkg; Pkg.instantiate()'
+> ```
 
 ---
 

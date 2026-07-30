@@ -7,7 +7,8 @@
 # Usage:
 #   julia --project=. scripts/dashboard.jl
 
-using Pkg; Pkg.activate(dirname(@__DIR__))
+using Pkg; Pkg.activate(@__DIR__)
+Pkg.develop(path=joinpath(@__DIR__, ".."))
 using CoaxialAutogyroStacking
 using GLMakie
 using Observables

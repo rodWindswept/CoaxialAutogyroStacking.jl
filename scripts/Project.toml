@@ -1,0 +1,13 @@
+[deps]
+Bonito = "824d6782-a2ef-11e9-3a09-e5662e0c26f8"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+CoaxialAutogyroStacking = "cb2a5e45-b910-4a0e-9959-8ee2b2784885"
+GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
+Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
+
+[compat]
+Bonito = "4.2.0"
+CairoMakie = "0.15.10"
+GLMakie = "0.13.10"
+Observables = "0.5.5"
+julia = "1.12"

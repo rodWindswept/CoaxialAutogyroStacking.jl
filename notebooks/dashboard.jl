@@ -19,7 +19,8 @@ end
 # ╔═╡ bbbbbbbb-0000-0000-0000-000000000001
 begin
 	import Pkg
-	Pkg.activate(joinpath(@__DIR__, ".."))
+	Pkg.activate(@__DIR__)
+	Pkg.develop(path=joinpath(@__DIR__, ".."))
 	
 	using CoaxialAutogyroStacking
 	using WGLMakie
