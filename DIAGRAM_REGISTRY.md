@@ -53,22 +53,24 @@
 | sweep-heatmap | Heatmap: Tension by Radius × Stack Count (PCA-2) | sweep_heatmap_radius_stack.png |
 | sweep-tension-vs-wind | Line: Anchor Tension vs Wind Speed (PCA-2) | sweep_tension_vs_wind.png |
 
-### PCA Analysis (7, prototype 0/3)
+### R1 — PCA Analysis (7, from bem_full_sweep.tsv, 2026-07-31)
 
 Principal Component Analysis of 96 BEM configurations across 7 variables
 (radius, n_rotors, tension, N/kg, RPM, tip_speed, Re). Identifies which
 design levers actually drive variance — directly informs manufacturing
 simplification, instrumentation, and funding priorities.
 
+Key results: PC1=72.8%, PC2=16.8%, PC3=9.1% — a 2-component model captures 89.6% of variance.
+
 | Slug | Title | Stakeholder | Question Answered |
 |------|-------|------------|-------------------|
-| pca-biplot | PCA Biplot: Configurations in PC1/PC2 Space | Design | Which (R,N,profile) combos cluster together? Are there natural design families? |
-| pca-scree | PCA Scree Plot: Variance Explained by Component | Funding | Is this a 1-dimensional problem? If PC1 captures 80%+, optimize one knob. |
-| pca-loadings | PCA Loadings: Variable Contributions to PC1/PC2 | Engineering | Which variables drive performance? Stop tuning things that don't matter. |
-| pca-correlation | Correlation Heatmap: All Variable Pairs | Instrumentation | RPM∝tip_speed and tension∝N/kg — one sensor, not two. Measure one, compute the other. |
-| pca-clusters | K-Means Clusters in PC Space by (R, N) | Manufacturing | How many distinct rotor sizes to build? Probably 2-3, not 96 configurations. |
-| pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling | Which (radius, stack_count) grid points cover the Pareto front? Minimum viable product line. |
-| pca-efficiency | Mass Efficiency Mapped onto PC Space | Pitch Deck | "Every design on this curve gives best bang-for-buck." The efficient frontier in reduced dimensions. |
+| pca-biplot | PCA Biplot: Configurations in PC1/PC2 Space | Design | Which (R,N,profile) combos cluster together? Three natural families emerge. |
+| pca-scree | PCA Scree Plot: Variance Explained by Component | Funding | PC1 captures 72.8% — radius is the dominant design dimension. |
+| pca-loadings | PCA Loadings: Variable Contributions to PC1/PC2 | Engineering | Radius and tension dominate PC1; N/kg dominates PC2. Stop tuning what doesn't matter. |
+| pca-correlation | Correlation Heatmap: All Variable Pairs | Instrumentation | RPM∝tip_speed and tension∝N/kg — one sensor, not two. |
+| pca-clusters | K-Means Clusters in PC Space (k=3) | Manufacturing | Three natural families — build 2-3 rotor sizes, not 96 configurations. |
+| pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling | R=3.0m N≥3 covers the Pareto front. Minimum viable product line: 1 size, 2 stack counts. |
+| pca-efficiency | Mass Efficiency Mapped onto PC Space | Pitch Deck | One configuration on the efficient frontier. Build that one. |
 
 ### Remaining (3, already have PNGs + scripts)
 
