@@ -4,30 +4,43 @@
 Run after any change to the physics solvers (polygon_line.jl, bem.jl, stack.jl).
 Re-runs the sweep, then re-runs every diagram script, then reports which
 diagrams changed significantly and need HITL re-review.
+
+Usage:
+    .venv-charts/bin/python3 regenerate_all.py
 """
-import subprocess, sys, os, json, csv
+import subprocess, sys, os, csv, shutil, statistics
 from pathlib import Path
+from collections import defaultdict
 
 REPO = Path(__file__).resolve().parent
+VENV_PYTHON = str(REPO / ".venv-charts" / "bin" / "python3")
 SWEEP_SCRIPT = REPO / "scripts" / "bem_full_sweep.jl"
 SWEEP_OUTPUT = REPO / "bem_full_sweep.tsv"
 
-# ── Step 1: Sweep ──────────────────────────────────────────────────────────
-print("=" * 60)
-print("Step 1: Regenerating BEM sweep...")
-result = subprocess.run(
-    ["julia", "--project=.", str(SWEEP_SCRIPT)],
-    capture_output=True, text=True, cwd=str(REPO), timeout=120
-)
-print(result.stdout.strip())
-if result.returncode != 0:
-    print("ERROR:", result.stderr)
-    sys.exit(1)
+# ── Helpers ─────────────────────────────────────────────────────────────────
 
-# ── Step 2: Snapshot old tension values for comparison ─────────────────────
+def run_cmd(cmd, cwd, timeout=120, label=""):
+    """Run a command, print result, return success bool."""
+    result = subprocess.run(cmd, capture_output=True, text=True,
+                           cwd=str(cwd), timeout=timeout)
+    status = "\u2713" if result.returncode == 0 else "\u2717"
+    out = result.stdout.strip().split("\n")[0] if result.stdout else ""
+    print(f"  {status} {label}: {out}" if label else f"  {status} {out}")
+    if result.returncode != 0:
+        print(f"    ERROR: {result.stderr[:300]}")
+    return result.returncode == 0
+
+def run_python(script, cwd, label=""):
+    """Run a Python diagram script."""
+    return run_cmd([VENV_PYTHON, script], cwd, timeout=60, label=label)
+
+def run_julia(script, cwd, label=""):
+    """Run a Julia script."""
+    return run_cmd(["julia", f"--project={REPO}", script], cwd,
+                   timeout=120, label=label)
+
 def load_tension_summary(tsv_path):
     """Load mean anchor tension per (radius, n_rotors, profile)."""
-    from collections import defaultdict
     cells = defaultdict(list)
     with open(tsv_path) as f:
         for row in csv.DictReader(f, delimiter="\t"):
@@ -35,20 +48,22 @@ def load_tension_summary(tsv_path):
             if t > 0:
                 cells[(float(row["radius"]), int(row["n_rotors"]),
                        row["profile"])].append(t)
-    import statistics
     return {k: statistics.mean(v) for k, v in cells.items() if v}
 
+# ── Step 1: BEM Sweep ──────────────────────────────────────────────────────
+print("=" * 60)
+print("Step 1: Regenerating BEM sweep...")
+if not run_julia(str(SWEEP_SCRIPT.name), str(SWEEP_SCRIPT.parent),
+                 "BEM sweep"):
+    print("FATAL: Sweep failed")
+    sys.exit(1)
+
+# ── Step 2: Compare with previous ──────────────────────────────────────────
 prev_path = REPO / "bem_full_sweep_prev.tsv"
-if prev_path.exists():
-    prev_tensions = load_tension_summary(str(prev_path))
-else:
-    prev_tensions = {}
-
+prev_tensions = load_tension_summary(str(prev_path)) if prev_path.exists() else {}
 new_tensions = load_tension_summary(str(SWEEP_OUTPUT))
-
-# Compare
+diffs = []
 if prev_tensions:
-    diffs = []
     for k, new_t in new_tensions.items():
         old_t = prev_tensions.get(k)
         if old_t and old_t > 0:
@@ -56,86 +71,84 @@ if prev_tensions:
             if abs(pct) > 2:
                 diffs.append((k, old_t, new_t, pct))
     if diffs:
-        print(f"\n{len(diffs)} configurations changed >2%:")
-        for k, old, new, pct in sorted(diffs, key=lambda x: abs(x[3]), reverse=True)[:10]:
-            print(f"  R={k[0]} N={k[1]} {k[2]}: {old:.0f} → {new:.0f} N ({pct:+.1f}%)")
+        print(f"\n  {len(diffs)} configurations changed >2%:")
+        for k, old, new, pct in sorted(diffs, key=lambda x: abs(x[3]),
+                                       reverse=True)[:10]:
+            print(f"    R={k[0]} N={k[1]} {k[2]}: {old:.0f} \u2192 {new:.0f} N ({pct:+.1f}%)")
 
-# Save current as previous for next time
-import shutil
 shutil.copy(str(SWEEP_OUTPUT), str(prev_path))
 
-# ── Step 3: Diagram scripts ────────────────────────────────────────────────
-DIAGRAMS = [
-    ("diagrams/bem-pareto", "python3", "bem-pareto.py"),
-    ("diagrams/bem-feasibility-radius", "python3", "bem-feasibility-radius.py"),
-    ("diagrams/bem-feasibility-heatmap", "python3", "bem-feasibility-heatmap.py"),
-    ("diagrams/bem-radar", "python3", "bem-radar.py"),
-    ("diagrams/pca-biplot", "python3", "pca-biplot.py"),
+# ── Step 3: Julia-dependent data generation ────────────────────────────────
+print(f"\n{'='*60}")
+print("Step 3: Julia data generation...")
+
+julia_diagrams = [
+    ("diagrams/bem-tension-accum", ["compute_tension_profile.jl",
+                                     "compute_tension_profile_v2.jl"]),
+    ("diagrams/bem-radial-loading", ["compute_radial_loading.jl"]),
+    ("diagrams/bem-force-breakdown", ["compute_force_breakdown.jl"]),
 ]
 
-# Tension accumulation needs Julia first
-TENSION_DIR = "diagrams/bem-tension-accum"
-print(f"\n{'='*60}")
-print("Step 2: Julia data generation (tension profiles)...")
-for script in ["compute_tension_profile.jl", "compute_tension_profile_v2.jl"]:
-    result = subprocess.run(
-        ["julia", f"--project={REPO}", script],
-        capture_output=True, text=True, cwd=str(REPO / TENSION_DIR), timeout=120
-    )
-    print(f"  {script}: {result.stdout.strip()}")
-    if result.returncode != 0:
-        print(f"  ERROR: {result.stderr}")
+for d, scripts in julia_diagrams:
+    for s in scripts:
+        run_julia(s, str(REPO / d), f"{d}/{s}")
 
-print(f"\n{'='*60}")
-print("Step 3: Diagram scripts...")
-results = {}
-for directory, runner, script in DIAGRAMS:
-    d = REPO / directory
-    if not (d / script).exists():
-        print(f"  SKIP {directory}/{script} — not found")
-        continue
-    result = subprocess.run(
-        [runner, script],
-        capture_output=True, text=True, cwd=str(d), timeout=60
-    )
-    results[directory] = result
-    status = "✓" if result.returncode == 0 else "✗"
-    output = result.stdout.strip().split("\n")[0] if result.stdout else ""
-    print(f"  {status} {directory}: {output}")
-    if result.returncode != 0:
-        print(f"    ERROR: {result.stderr[:200]}")
+# Also regenerate comparison sweep data
+run_julia("gen_comparison_sweep.jl", str(REPO / "scripts"),
+          "Snel + solver comparison sweep")
 
-# Tension accum plot
-for script in ["bem-tension-accum.py", "bem-tension-accum-v2.py"]:
-    result = subprocess.run(
-        ["python3", script],
-        capture_output=True, text=True, cwd=str(REPO / TENSION_DIR), timeout=60
-    )
-    status = "✓" if result.returncode == 0 else "✗"
-    print(f"  {status} {TENSION_DIR}/{script}")
-
-# Radial loading needs Julia
-RADIAL_DIR = "diagrams/bem-radial-loading"
+# ── Step 4: All Python diagram scripts ─────────────────────────────────────
 print(f"\n{'='*60}")
-print("Step 4: Radial loading (Julia + Python)...")
-result = subprocess.run(
-    ["julia", f"--project={REPO}", "compute_radial_loading.jl"],
-    capture_output=True, text=True, cwd=str(REPO / RADIAL_DIR), timeout=60
+print("Step 4: Regenerating all diagram PNGs...")
+
+# All diagram directories with .py scripts
+diagram_dirs = sorted(
+    d for d in (REPO / "diagrams").iterdir()
+    if d.is_dir() and (d / f"{d.name}.py").exists()
 )
-print(f"  {result.stdout.strip()}")
-result = subprocess.run(
-    ["python3", "bem-radial-loading.py"],
-    capture_output=True, text=True, cwd=str(REPO / RADIAL_DIR), timeout=30
-)
-print(f"  ✓ bem-radial-loading.py")
 
+ok = fail = 0
+for d in diagram_dirs:
+    script = f"{d.name}.py"
+    success = run_python(script, str(d), f"{d.name}")
+    if success:
+        ok += 1
+    else:
+        fail += 1
+
+# Handle sweep-profile-cv (generated by sweep-profile-nkg)
+cv_d = REPO / "diagrams" / "sweep-profile-cv"
+cv_png = REPO / "diagrams" / "sweep-profile-nkg" / "sweep-profile-cv.png"
+if cv_png.exists() and cv_d.exists():
+    shutil.copy(str(cv_png), str(cv_d / "sweep-profile-cv.png"))
+
+# Handle sweep-profile-nkg dual output copy to sweep-profile-cv
+nkg_cv_png = REPO / "diagrams" / "sweep-profile-nkg" / "sweep-profile-cv.png"
+cv_target = REPO / "diagrams" / "sweep-profile-cv" / "sweep-profile-cv.png"
+if nkg_cv_png.exists():
+    cv_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(str(nkg_cv_png), str(cv_target))
+
+# ── Step 5: PCA-2 sweep (for comparison charts) ────────────────────────────
 print(f"\n{'='*60}")
-print("Regeneration complete.")
+print("Step 5: PCA-2 comparison sweep...")
+run_julia("gen_pca2_sweep.jl", str(REPO / "scripts"), "PCA-2 sweep")
+
+# Regenerate PCA-2-dependent charts
+for d_name in ["bem-pca2-vs-bem", "sweep-pareto-mass", "sweep-pareto-cv",
+               "sweep-tension-vs-wind", "sweep-heatmap"]:
+    d = REPO / "diagrams" / d_name
+    if (d / f"{d_name}.py").exists():
+        run_python(f"{d_name}.py", str(d), d_name)
+
+# ── Summary ────────────────────────────────────────────────────────────────
+print(f"\n{'='*60}")
+print(f"Regeneration complete.")
+print(f"Python diagrams: {ok} OK, {fail} failed")
 print(f"Sweep: {SWEEP_OUTPUT} ({SWEEP_OUTPUT.stat().st_size} bytes)")
 
-# Summary of changes
 if prev_tensions and diffs:
-    print(f"\n⚠ {len(diffs)} configurations shifted >2%. Diagrams need re-review.")
+    print(f"\n\u26a0 {len(diffs)} configurations shifted >2%. Diagrams need re-review.")
     print("Run ste-lint.py on updated captions before HITL rounds.")
 else:
     print("No significant changes — diagrams should be current.")
