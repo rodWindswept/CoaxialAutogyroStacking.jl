@@ -288,14 +288,14 @@ julia> F_line > 0.0 && rpm > 0.0
 true
 ```
 """
-function rotor_force_bem(rotor::AutogyroRotor, rho, v_wind, elev_deg)
+function rotor_force_bem(rotor::AutogyroRotor, rho, v_wind, elev_deg; stall_delay=true)
     α_eff = effective_alpha(rotor, elev_deg)
     v_through = v_wind * sind(α_eff)
 
     rpm = bem_autorotation_rpm(rotor, rho, v_through)
     omega = rpm * 2π / 60.0
 
-    T, _ = bem_induction(rotor, rho, v_through, omega, 20)
+    T, _ = bem_induction(rotor, rho, v_through, omega, 20; stall_delay=stall_delay)
 
     # First-order: along-line component of thrust
     F_line = T * cosd(rotor.tilt_deg)

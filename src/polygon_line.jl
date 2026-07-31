@@ -34,11 +34,13 @@ Jacobi iteration until all θ converge within `tol` degrees.
 - `θ::Vector{Float64}`: segment angles, one per rotor (degrees).
 - `T::Vector{Float64}`: tension profile, n_rotors+1 entries (N).
 - `F::Vector{Float64}`: along-line force per rotor (N).
+- `iters::Int`: number of iterations to convergence.
 """
-function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10, tol=0.1)
+function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10, tol=0.1, stall_delay=true)
     n = length(rotors)
     θ = fill(anchor_angle_deg, n)  # initial guess: straight line
     F_line = zeros(n)
+    iters_used = 0
 
     for iter in 1:max_iter
         θ_old = copy(θ)
@@ -47,7 +49,7 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
 
         for i in 1:n
             # BEM force at current segment angle. Uses disk-normal thrust T.
-            _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
+            _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i]; stall_delay=stall_delay)
             W = rotors[i].mass * 9.81
 
             # Thrust acts at disk-normal angle: α_eff = 90° − θ + δ
@@ -74,8 +76,10 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
         end
 
         if all(abs.(θ .- θ_old) .< tol)
+            iters_used = iter
             break
         end
+        iters_used = iter
     end
 
     # Build tension profile using converged polygon segment angles
@@ -88,7 +92,7 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
         T[i+1] = max(0.0, T[i] + F_line_i - W)
     end
 
-    return θ, T, F_line
+    return θ, T, F_line, iters_used
 end
 
 export solve_polygon_angles

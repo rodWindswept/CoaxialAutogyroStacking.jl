@@ -242,7 +242,11 @@ CoaxialAutogyroStacking.jl/
 │   └── sweep_plots.jl               ← Pluto Pareto-front notebook (Phase 8)
 ├── scripts/
 │   ├── dashboard.jl                 ← standalone dashboard launcher
-│   └── bem_full_sweep.jl            ← BEM parameter sweep runner (v2.1)
+│   ├── bem_full_sweep.jl            ← BEM parameter sweep runner (v2.1)
+│   ├── gen_pca2_sweep.jl            ← PCA-2 sweep generator
+│   ├── gen_comparison_sweep.jl      ← Snel on/off + solver iterations
+│   ├── pca_analysis.py              ← PCA statistical analysis
+│   └── pca_charts.py                ← PCA chart generator
 ├── schematics/
 │   ├── parameters.scad              ← auto-generated from generate_params.jl
 │   ├── single_unit.scad             ← full 3D assembly (344 lines)
@@ -254,7 +258,14 @@ CoaxialAutogyroStacking.jl/
 │   └── renders/                     ← isometric, front, side renders
 └── docs/
     ├── make.jl                      ← Documentation builder
-    └── agents/                      ← agent domain docs
+    ├── agents/                      ← agent domain docs
+    ├── archive/                     ← historical handovers
+    ├── ACADEMIC_REPORT.md           ← thesis/investor framing
+    ├── ASSEMBLY.md                  ← assembly instructions
+    ├── FLIGHT_TESTING.md            ← flight test procedures
+    ├── GROUND_TESTING.md            ← ground test procedures
+    ├── MANUFACTURING.md             ← manufacturing notes
+    └── MATERIAL_SOURCING.md         ← materials and suppliers
 ```
 
 ---

@@ -51,7 +51,7 @@ src/
   sweep.jl                     parameter_sweep (PCA-2 and BEM)
   viability.jl                 rotor_tip_speed, rotor_reynolds_number, viability_report
 
-test/                          12 test_<module>.jl files (one per src/ module)
+test/                          11 test_<module>.jl files (one per tested src/ module)
 notebooks/                     Pluto dashboards (dashboard.jl, sweep_plots.jl)
 schematics/                    OpenSCAD 3D models and SVG/PDF cross-sections
 scripts/                       runnable entrypoints (bem_full_sweep.jl, dashboard.jl)
