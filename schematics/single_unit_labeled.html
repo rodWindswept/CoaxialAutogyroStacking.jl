@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Single Autogyro Rotor Unit — Fully Annotated</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e; color: #e0e0e0;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; font-family: 'DejaVu Sans', sans-serif;
+  }
+  .container {
+    position: relative; width: 1200px; height: 800px;
+    background: #16213e; border-radius: 8px; overflow: hidden;
+  }
+  .container img.main {
+    width: 100%; height: 100%; object-fit: contain;
+  }
+  .title {
+    position: absolute; top: 18px; left: 28px;
+    color: #3898EC; font-size: 24px; font-weight: bold;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  .specs {
+    position: absolute; top: 50px; left: 28px;
+    color: #d4a514; font-size: 14px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  }
+
+  /* Info panel (forces + operating point) */
+  .info-panel {
+    position: absolute; top: 18px; right: 18px;
+    width: 280px; background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+    padding: 12px 14px; font-size: 12px; line-height: 1.6;
+  }
+  .info-panel .force-row {
+    display: flex; align-items: center; gap: 8px; margin: 3px 0;
+  }
+  .info-panel .force-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .info-panel h3 {
+    color: #d4a514; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;
+  }
+
+  /* Callouts */
+  .callout {
+    position: absolute; display: flex; align-items: center;
+  }
+  .callout .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.7); flex-shrink: 0;
+  }
+  .callout .line {
+    width: 45px; height: 1px; background: rgba(255,255,255,0.25);
+  }
+  .callout .label {
+    background: rgba(0,0,0,0.85); color: #f0f0f0;
+    padding: 4px 10px; border-radius: 4px; font-size: 12px;
+    font-weight: bold; white-space: nowrap;
+    border-left: 3px solid;
+  }
+  .callout .sub {
+    font-weight: normal; font-size: 10px; color: #aaa; display: block;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <img class="main" src="renders/single_unit_full.png?v=1" alt="">
+
+  <div class="title">SINGLE AUTOGYRO ROTOR UNIT</div>
+  <div class="specs">R=3.0 m &middot; 2 blades &middot; 150 mm chord &middot; Dyneema SK99 &middot; &delta;=10&deg; tilt</div>
+
+  <!-- Info panel — forces & operating point -->
+  <div class="info-panel">
+    <h3>FORCES (per rotor, v=8 m/s)</h3>
+    <div class="force-row"><span class="force-dot" style="background:#4CAF50"></span> F<sub>lift</sub> = 997 N &perp; wind</div>
+    <div class="force-row"><span class="force-dot" style="background:#FF9800"></span> F<sub>drag</sub> = 831 N &parallel; wind</div>
+    <div class="force-row"><span class="force-dot" style="background:#9C27B0"></span> F<sub>line</sub> = 1,294 N (along Dyneema)</div>
+    <h3 style="margin-top:8px;">OPERATING POINT</h3>
+    <div style="color:#ccc;">RPM: 45 &middot; Tip: 14.1 m/s</div>
+    <div style="color:#ccc;">Re: ~3&times;10<sup>6</sup> &middot; Tilt: 10&deg;</div>
+    <div style="color:#ccc;">Elevation: 55&deg; &middot; Solidity: 0.032</div>
+    <div style="color:#ccc; margin-top:4px;">4-stack anchor: 5,065 N</div>
+  </div>
+
+  <!-- CALL OUTS — positioned by geometry knowledge -->
+  <!-- The render is 3/4 isometric, tilted 55° elevation. Disk center is roughly image center. -->
+
+  <!-- Dyneema line — runs vertical-center through everything -->
+  <div class="callout" style="left:640px; top:110px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#4A90D9">Dyneema line (Ø4 mm SK99)</span>
+  </div>
+
+  <!-- Top tie -->
+  <div class="callout" style="left:680px; top:125px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#E8A87C">Top tie &rarr; Dyneema splice</span>
+  </div>
+
+  <!-- Tube -->
+  <div class="callout" style="left:530px; top:310px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#696969">Tube &mdash; carbon fibre tension tie-rod<span class="sub">25&times;15 mm, 5 mm wall, 800 mm long</span></span>
+  </div>
+
+  <!-- Top molding -->
+  <div class="callout" style="left:680px; top:170px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#B8860B">Top molding<span class="sub">Al 6061-T6, angled face for &delta;=10&deg;</span></span>
+  </div>
+
+  <!-- Top bearing -->
+  <div class="callout" style="left:690px; top:205px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#C0C0C0">Top bearing &mdash; SKF 51105<span class="sub">Thrust ball, 16&times; load margin</span></span>
+  </div>
+
+  <!-- Rotor hub -->
+  <div class="callout" style="left:700px; top:280px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#808080">Rotor hub<span class="sub">Al 6061-T6, 80 mm OD, autorotates</span></span>
+  </div>
+
+  <!-- Rotor disk -->
+  <div class="callout" style="left:850px; top:240px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#B22222">Rotor disk (R=3.0 m)<span class="sub">&delta;=10&deg; forward tilt, &sigma;=0.032</span></span>
+  </div>
+
+  <!-- Blade -->
+  <div class="callout" style="left:920px; top:180px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#556B2F">Blade (2&times;, 180&deg; apart)<span class="sub">NACA 0012, 150 mm chord, 2.95 m span</span></span>
+  </div>
+
+  <!-- Bottom bearing -->
+  <div class="callout" style="left:690px; top:340px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#C0C0C0">Bottom bearing &mdash; SKF 51105</span>
+  </div>
+
+  <!-- Bottom molding -->
+  <div class="callout" style="left:680px; top:380px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#B8860B">Bottom molding<span class="sub">Angled bearing face, clamped to tube</span></span>
+  </div>
+
+  <!-- Generator -->
+  <div class="callout" style="left:710px; top:430px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#A9A9A9">Generator (3&times; coils)<span class="sub">5 W at 45 RPM, hub-driven</span></span>
+  </div>
+
+  <!-- Swashplate -->
+  <div class="callout" style="left:560px; top:480px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#008080">Swashplate<span class="sub">Rotating (teal) + stationary (cyan) rings</span></span>
+  </div>
+
+  <!-- Scissor links -->
+  <div class="callout" style="left:570px; top:420px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#A0A0A0">Scissor links<span class="sub">Hub &rarr; swashplate, 2&times;</span></span>
+  </div>
+
+  <!-- Actuators -->
+  <div class="callout" style="left:560px; top:530px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#808080">Actuators (3&times;, 120&deg; apart)<span class="sub">Micro servos, 10 mm stroke</span></span>
+  </div>
+
+  <!-- Bottom tie -->
+  <div class="callout" style="left:640px; top:640px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#E8A87C">Bottom tie &rarr; Dyneema<span class="sub">Primary load path &mdash; 1,294 N</span></span>
+  </div>
+
+  <!-- Empennage — tail boom -->
+  <div class="callout" style="left:870px; top:570px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#696969">Tail boom<span class="sub">Carbon tube, 16 mm OD, 1,800 mm</span></span>
+  </div>
+
+  <!-- H-stab -->
+  <div class="callout" style="left:1000px; top:520px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#2F4F4F">H-stab<span class="sub">600 mm span &times; 150 mm chord</span></span>
+  </div>
+
+  <!-- V-fin -->
+  <div class="callout" style="left:1000px; top:600px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#2F4F4F">V-fin<span class="sub">400 mm &times; 150 mm, weathervane</span></span>
+  </div>
+
+  <!-- Force arrows — description callouts -->
+  <div class="callout" style="left:200px; top:220px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#4CAF50">F<sub>lift</sub> = 997 N<span class="sub">&perp; wind, green arrow</span></span>
+  </div>
+
+  <div class="callout" style="left:160px; top:310px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#FF9800">F<sub>drag</sub> = 831 N<span class="sub">&parallel; wind, orange arrow</span></span>
+  </div>
+
+  <div class="callout" style="left:190px; top:500px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#9C27B0">T<sub>above</sub> &amp; T<sub>below</sub><span class="sub">Line tension, purple arrows</span></span>
+  </div>
+
+  <!-- Wind indicator -->
+  <div class="callout" style="left:80px; top:140px">
+    <span class="dot"></span><span class="line"></span>
+    <span class="label" style="border-color:#87CEEB">Wind &rarr; 8 m/s<span class="sub">From left, &phi;=55&deg; elevation</span></span>
+  </div>
+
+  <!-- Force summary equation at bottom -->
+  <div style="position:absolute; bottom:14px; left:28px;
+    background:rgba(0,0,0,0.75); color:#9C27B0; font-size:12px;
+    padding:6px 14px; border-radius:4px; font-family:monospace;
+    border-left:3px solid #9C27B0;">
+    T<sub>below</sub> = T<sub>above</sub> + F<sub>line</sub> &minus; W&middot;cos &phi; + drag &rarr; tension accumulates downward
+  </div>
+
+</div>
+</body>
+</html>
