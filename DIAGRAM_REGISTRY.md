@@ -72,15 +72,15 @@ Key results: PC1=72.8%, PC2=16.8%, PC3=9.1% — a 2-component model captures 89.
 | pca-manufacturing | Manufacturing Map: (R, N) Grid in PC Space | Tooling | R=3.0m N≥3 covers the Pareto front. Minimum viable product line: 1 size, 2 stack counts. |
 | pca-efficiency | Mass Efficiency Mapped onto PC Space | Pitch Deck | One configuration on the efficient frontier. Build that one. |
 
-### Remaining (3, already have PNGs + scripts)
+### R1 — Standalone Scripts (5, already have PNGs + scripts, 2026-07-31)
 
-| Slug | Title | Source |
-|------|-------|--------|
-| bem-radar | BEM Radar: Multi-variable Design Comparison | bem_full_sweep.tsv |
-| bem-force-breakdown | Rotor Force Components: Lift, Drag, Weight | bem_full_sweep.tsv |
-| bem-radius-sensitivity | Radius Sensitivity: Tension vs Rotor Radius | bem_full_sweep.tsv |
-| bem-rpm-envelope | RPM Operating Envelope vs Wind Speed by Radius | bem_full_sweep.tsv |
-| bem-stack-efficiency | Stack Efficiency: Tension vs Stack Count | bem_full_sweep.tsv |
+| Slug | Title | Stakeholder | Source |
+|------|-------|------------|--------|
+| bem-radar | BEM Radar: Multi-variable Design Comparison | Design | bem_full_sweep.tsv |
+| bem-force-breakdown | Rotor Force Components: Lift, Drag, Weight | Aero | bem_full_sweep.tsv |
+| bem-radius-sensitivity | Radius Sensitivity: Tension vs Rotor Radius | Design | bem_full_sweep.tsv |
+| bem-rpm-envelope | RPM Operating Envelope vs Wind Speed by Radius | Operations | bem_full_sweep.tsv |
+| bem-stack-efficiency | Stack Efficiency: Tension vs Stack Count | Manufacturing | bem_full_sweep.tsv |
 
 ## Status Legend
 

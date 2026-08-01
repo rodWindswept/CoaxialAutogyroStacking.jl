@@ -6,6 +6,7 @@ using Pkg; Pkg.activate(joinpath(@__DIR__, ".."))
 using CoaxialAutogyroStacking
 using DataFrames
 using CSV
+using Statistics
 
 # Match the BEM sweep grid
 radii = [1.5, 2.0, 3.0]
