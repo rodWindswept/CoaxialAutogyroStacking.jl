@@ -35,3 +35,4 @@ schematics/*.bak
 * backup*
 notebooks/explorer.jl
 notebooks/learn.jl
+.venv-charts/
