@@ -363,7 +363,7 @@ function parameter_sweep_bem(;
                             anchor_t = profile[end]
 
                             # Get polygon segment angles for per-rotor viability metrics
-                            θ_poly, _, _ = solve_polygon_angles(stack.rotors, elev, rho, v)
+                            θ_poly, _, _ = solve_polygon_angles(stack.rotors, stack.section_lengths, elev, rho, v)
 
                             # BEM per-rotor data using polygon segment angles
                             rpms = Float64[]

@@ -28,7 +28,7 @@ open("tension_profile_v2.csv", "w") do io
     for v_ref in v_refs
         # Compute per-rotor forces with local wind speeds.
         # Solve polygon angles at the reference wind speed (approximation).
-        θ, _, _ = solve_polygon_angles(rotors, 45.0, RHO, v_ref)
+        θ, _, _ = solve_polygon_angles(rotors, fill(section_len, n_rotors), 45.0, RHO, v_ref)
 
         T_cum = 0.0
         # Free end above topmost rotor

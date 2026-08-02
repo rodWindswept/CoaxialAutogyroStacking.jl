@@ -59,7 +59,7 @@ function solve_stack(n, r, diam, slen, pg, offs, v_wind)
     # Polygon solver computes per-segment angles from force equilibrium.
     # The anchor_angle_deg (45°) is just an initial guess — the solver
     # refines all segment angles including the bottom one.
-    θ, T, F = solve_polygon_angles(stk.rotors, 45.0, rho, v_wind)
+    θ, T, F = solve_polygon_angles(stk.rotors, stk.section_lengths, 45.0, rho, v_wind)
     return stk, θ, T, F
 end
 

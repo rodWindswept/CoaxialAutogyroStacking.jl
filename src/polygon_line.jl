@@ -36,7 +36,7 @@ Jacobi iteration until all θ converge within `tol` degrees.
 - `F::Vector{Float64}`: along-line force per rotor (N).
 - `iters::Int`: number of iterations to convergence.
 """
-function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10, tol=0.1, stall_delay=true)
+function solve_polygon_angles(rotors, section_lengths, anchor_angle_deg, rho, v_wind; max_iter=10, tol=0.1, stall_delay=true)
     n = length(rotors)
     θ = fill(anchor_angle_deg, n)  # initial guess: straight line
     F_line = zeros(n)
@@ -45,11 +45,14 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
     for iter in 1:max_iter
         θ_old = copy(θ)
         T_above = 0.0
-        θ_above = anchor_angle_deg  # angle of the segment above the current rotor
+        θ_above = anchor_angle_deg
+
+        # Compute effective wind per rotor from upstream wakes (one-pass freestream CT)
+        v_eff = stack_effective_wind(rotors, section_lengths, rho, v_wind, anchor_angle_deg)
 
         for i in 1:n
-            # BEM force at current segment angle. Uses disk-normal thrust T.
-            _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i]; stall_delay=stall_delay)
+            # BEM force at current segment angle, using effective wind (wake model)
+            _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_eff[i], θ[i]; stall_delay=stall_delay)
             W = rotors[i].mass * 9.81
 
             # Thrust acts at disk-normal angle: α_eff = 90° − θ + δ
@@ -85,8 +88,9 @@ function solve_polygon_angles(rotors, anchor_angle_deg, rho, v_wind; max_iter=10
     # Build tension profile using converged polygon segment angles
     T = zeros(n + 1)
     T[1] = 0.0
+    v_eff_final = stack_effective_wind(rotors, section_lengths, rho, v_wind, anchor_angle_deg)
     for i in 1:n
-        _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_wind, θ[i])
+        _, T_thrust, _ = rotor_force_bem(rotors[i], rho, v_eff_final[i], θ[i])
         F_line_i = T_thrust * cosd(rotors[i].tilt_deg)
         W = rotors[i].mass * 9.81 * cosd(θ[i])
         T[i+1] = max(0.0, T[i] + F_line_i - W)

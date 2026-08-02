@@ -35,7 +35,7 @@ for R in radii, N in n_vals, prof in profiles_list, elev in elevations, v in win
     stack = AutogyroStack(rotors, section_lens, line_dia, elev)
 
     try
-        θ, T, F, iters = solve_polygon_angles(stack.rotors, elev, rho, v;
+        θ, T, F, iters = solve_polygon_angles(stack.rotors, stack.section_lengths, elev, rho, v;
                                                stall_delay=true, max_iter=20)
         anchor_t = T[end]
         push!(iters_rows, (radius=R, n_rotors=N, profile=prof, elevation=elev,
@@ -66,7 +66,7 @@ for R in radii, N in n_vals, prof in profiles_list, elev in elevations, v in win
 
     # With Snel
     try
-        θ, T_snel, F, _ = solve_polygon_angles(stack.rotors, elev, rho, v;
+        θ, T_snel, F, _ = solve_polygon_angles(stack.rotors, stack.section_lengths, elev, rho, v;
                                                  stall_delay=true, max_iter=20)
         tension_snel = T_snel[end]
     catch e
@@ -74,7 +74,7 @@ for R in radii, N in n_vals, prof in profiles_list, elev in elevations, v in win
 
     # Without Snel
     try
-        θ, T_nosnel, F, _ = solve_polygon_angles(stack.rotors, elev, rho, v;
+        θ, T_nosnel, F, _ = solve_polygon_angles(stack.rotors, stack.section_lengths, elev, rho, v;
                                                    stall_delay=false, max_iter=20)
         tension_nosnel = T_nosnel[end]
     catch e

@@ -138,7 +138,7 @@ bare-line drag and line self-weight along each segment.
 function stack_tension_profile_polygon(stack::AutogyroStack, rho, v_wind)
     # Solve segment angles from force equilibrium
     θ, _, _ = solve_polygon_angles(
-        stack.rotors, stack.line_angle_deg, rho, v_wind)
+        stack.rotors, stack.section_lengths, stack.line_angle_deg, rho, v_wind)
 
     n = length(stack.rotors)
     profile = zeros(Float64, n + 1)

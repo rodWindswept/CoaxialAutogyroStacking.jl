@@ -169,7 +169,7 @@ begin
 	end
 	
 	# Polygon chain geometry — segment angles from force equilibrium at each rotor
-	_poly_θ, _poly_T, _poly_F = solve_polygon_angles(_rotors, _elev, rho, _v_wind; max_iter=30)
+	_poly_θ, _poly_T, _poly_F = solve_polygon_angles(_rotors, _secs, _elev, rho, _v_wind; max_iter=30)
 	
 	# Full tension profile with line drag + weight (uses polygon angles internally)
 	_profile = stack_tension_profile_polygon(AutogyroStack(_rotors, _secs, _diam_m, _elev), rho, _v_wind)

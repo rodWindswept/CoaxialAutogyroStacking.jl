@@ -7,7 +7,7 @@
 
     # Single rotor: segment angle should be near anchor angle
     rotor = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
-    θ, T, F = solve_polygon_angles([rotor], anchor_angle, rho, v_wind)
+    θ, T, F = solve_polygon_angles([rotor], [10.0], anchor_angle, rho, v_wind)
 
     @test length(θ) == 1
     @test length(T) == 2  # tension profile: top + bottom
@@ -32,7 +32,7 @@ end
 
     # Two identical rotors — segments should be similar
     r = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
-    θ, T, F = solve_polygon_angles([r, r], anchor_angle, rho, v_wind)
+    θ, T, F = solve_polygon_angles([r, r], fill(20.0, 2), anchor_angle, rho, v_wind)
 
     @test length(θ) == 2
     @test all(θ .> 0.0)
@@ -57,7 +57,7 @@ end
     # cause weight-dominated behaviour. Just verify both are physical.
     r_top = AutogyroRotor(3.0, 0.05, 2, 0.15, 20.0, 0.0, 5.0)
     r_bot = AutogyroRotor(3.0, 0.05, 2, 0.15, 5.0, 0.0, 5.0)
-    θ, T, F = solve_polygon_angles([r_top, r_bot], anchor_angle, rho, v_wind)
+    θ, T, F = solve_polygon_angles([r_top, r_bot], fill(20.0, 2), anchor_angle, rho, v_wind)
     @test all(θ .> 0.0)
     @test all(θ .< 85.0)
     @test all(F .> 0.0)
@@ -70,17 +70,17 @@ end
 
     # Zero tilt rotors: weight-dominated → top segment goes steep
     r_flat = AutogyroRotor(3.0, 0.05, 2, 0.15, 0.0, 0.0, 5.0)
-    θ, _, _ = solve_polygon_angles([r_flat, r_flat], 55.0, rho, v_wind)
+    θ, _, _ = solve_polygon_angles([r_flat, r_flat], fill(20.0, 2), 55.0, rho, v_wind)
     @test all(θ .> 0.0)
     @test all(θ .< 90.0)  # all physical, but may deviate significantly
 
     # Steep anchor: segment angle should be physical regardless of anchor
-    θ_steep, _, _ = solve_polygon_angles([r], 65.0, rho, v_wind)
+    θ_steep, _, _ = solve_polygon_angles([r], [10.0], 65.0, rho, v_wind)
     @test θ_steep[1] > 0.0
     @test θ_steep[1] < 90.0  # physical, equilibrium converges independent of anchor
 
     # Three rotors
-    θ3, T3, F3 = solve_polygon_angles([r, r, r], 55.0, rho, v_wind)
+    θ3, T3, F3 = solve_polygon_angles([r, r, r], fill(20.0, 3), 55.0, rho, v_wind)
     @test length(θ3) == 3
     @test T3[4] > T3[3] > T3[2] > T3[1]  # monotonic tension
 end

@@ -17,7 +17,7 @@ rotors = [AutogyroRotor(radius, radius * 0.05, 2, 0.15, tilt_values[i], 0.0, 5.0
 open("force_breakdown.csv", "w") do io
     write(io, "wind_speed,rotor_position,distance,along_line,thrust,drag_force,weight,wind_at_rotor\n")
     for v_ref in [6.0, 8.0, 10.0, 12.0]
-        θ, _, _ = solve_polygon_angles(rotors, 45.0, RHO, v_ref)
+        θ, _, _ = solve_polygon_angles(rotors, fill(section_len, n_rotors), 45.0, RHO, v_ref)
         for i in 1:n_rotors
             d = (n_rotors - i + 1) * section_len
 
