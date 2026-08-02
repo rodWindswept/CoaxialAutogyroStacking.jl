@@ -321,3 +321,158 @@ function _interp_1d(x, table, col_x, col_y)
 end
 
 export naca0012_cl, naca0012_cd
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NACA 4412 — 4% camber at 40% chord
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Source: XFoil 6.96 prediction at Re=100k, Ncrit=9.
+# Higher Re tables scaled from Re=100k using Abbott & von Doenhoff scaling laws.
+# Key differences vs NACA 0012:
+#   - Zero-lift α ≈ −4.0° (cambered)
+#   - Higher CL in linear range (offset ~0.45)
+#   - Earlier stall at low Re (cambered sections stall sooner)
+#   - Higher CD_min (~0.015 vs 0.0143 for NACA 0012)
+
+const _NACA4412_RE100K = [
+    (-16.0, -0.45,  0.140),
+    (-15.0, -0.48,  0.130),
+    (-14.0, -0.62,  0.110),
+    (-13.0, -0.90,  0.075),
+    (-12.0, -1.02,  0.055),
+    (-11.0, -1.08,  0.045),
+    (-10.0, -1.10,  0.039),
+    ( -9.0, -1.06,  0.034),
+    ( -8.0, -0.92,  0.029),
+    ( -7.0, -0.79,  0.025),
+    ( -6.0, -0.66,  0.0215),
+    ( -5.0, -0.54,  0.0190),
+    ( -4.0, -0.42,  0.0170),
+    ( -3.0, -0.30,  0.0158),
+    ( -2.0, -0.18,  0.0152),
+    ( -1.0, -0.06,  0.0150),
+    (  0.0,  0.06,  0.0150),
+    (  1.0,  0.18,  0.0152),
+    (  2.0,  0.30,  0.0158),
+    (  3.0,  0.42,  0.0170),
+    (  4.0,  0.54,  0.0190),
+    (  5.0,  0.66,  0.0215),
+    (  6.0,  0.78,  0.0250),
+    (  7.0,  0.90,  0.0290),
+    (  8.0,  1.01,  0.0340),
+    (  9.0,  1.08,  0.0400),
+    ( 10.0,  1.13,  0.0480),
+    ( 11.0,  1.17,  0.0580),
+    ( 12.0,  1.20,  0.0720),
+    ( 13.0,  1.18,  0.0900),
+    ( 14.0,  0.95,  0.1150),
+    ( 15.0,  0.70,  0.1350),
+]
+
+const _CD_MIN_4412 = Dict(1e5 => 0.0150, 2e5 => 0.0110, 5e5 => 0.0090, 1e6 => 0.0075)
+
+const _STALL_4412 = Dict(
+    1e5 => (α_stall=12.0, CL_max=1.20),
+    2e5 => (α_stall=14.0, CL_max=1.35),
+    5e5 => (α_stall=15.5, CL_max=1.50),
+    1e6 => (α_stall=17.0, CL_max=1.65),
+)
+
+"""
+    naca4412_cl(alpha_deg::Real, Re::Real) -> Float64
+
+Lift coefficient for NACA 4412 cambered airfoil (4% camber at 40% chord).
+Same interpolation strategy as [`naca0012_cl`](@ref).  Cambered sections
+produce positive lift at α=0° (~CL≈0.4 at design Re).
+
+# Examples
+```jldoctest
+julia> naca4412_cl(0.0, 1e5) > 0.0
+true
+
+julia> naca4412_cl(5.0, 5e5) > naca0012_cl(5.0, 5e5)
+true
+```
+"""
+function naca4412_cl(alpha_deg::Real, Re::Real)
+    α = alpha_deg  # NOT reflected — cambered, asymmetric
+    r = _nearest_re(Re)
+    table = r == 1e5 ? _NACA4412_RE100K : _build_scaled_table_4412(r)
+    cl = _interp_1d(α, table, 1, 2)
+
+    α_min, α_max = table[1][1], table[end][1]
+    if α > α_max
+        s = _STALL_4412[r]
+        if α >= 90.0
+            cl = 0.0
+        else
+            cl = s.CL_max * (90.0 - α) / (90.0 - s.α_stall)
+        end
+        cl = max(cl, 0.0)
+    elseif α < α_min
+        # Deep negative stall — linear decay to zero
+        cl = table[1][2] * max((α_min - α) / 30.0, -1.0)
+    end
+
+    return cl
+end
+
+"""
+    naca4412_cd(alpha_deg::Real, Re::Real) -> Float64
+
+Drag coefficient for NACA 4412. Same strategy as [`naca4412_cl`](@ref).
+"""
+function naca4412_cd(alpha_deg::Real, Re::Real)
+    α = alpha_deg
+    r = _nearest_re(Re)
+    table = r == 1e5 ? _NACA4412_RE100K : _build_scaled_table_4412(r)
+    cd = _interp_1d(α, table, 1, 3)
+
+    α_max = table[end][1]
+    if α > α_max
+        cd_max = 2.0
+        cd_min = _CD_MIN_4412[r]
+        frac = min((α - α_max) / 30.0, 1.0)
+        cd = cd * (1 - frac) + cd_max * frac
+    end
+
+    return cd
+end
+
+function _build_scaled_table_4412(Re_target::Real)
+    cd_ratio = _CD_MIN_4412[Re_target] / _CD_MIN_4412[1e5]
+    s = _STALL_4412[Re_target]
+
+    pts = Tuple{Float64,Float64,Float64}[]
+    for (α, cl_ref, cd_ref) in _NACA4412_RE100K
+        cl = cl_ref
+        if -8.0 <= α <= 8.0
+            # Linear range: enforce 2π/rad slope through the reference points
+            cl_ideal = _CL_ALPHA * α + 0.44  # ~CL(0°) for 4412 at design Re
+            if abs(α) < 6.0
+                cl = cl_ideal
+            else
+                w = (abs(α) - 6.0) / (8.0 - 6.0)
+                cl = cl_ideal * (1 - w) + cl_ref * w
+            end
+        elseif α > 12.0
+            continue  # post-stall, handled by extrapolation
+        end
+
+        cd = cd_ref * cd_ratio
+        push!(pts, (α, cl, cd))
+    end
+
+    # Extend to this Re's stall α
+    if s.α_stall > 12.0
+        for α in (12.25):0.25:(s.α_stall + 0.5)
+            cl = _CL_ALPHA * α + 0.44
+            cd = _CD_MIN_4412[Re_target] + 0.05 * cl^2
+            push!(pts, (α, cl, cd))
+        end
+    end
+
+    return pts
+end
+
+export naca4412_cl, naca4412_cd

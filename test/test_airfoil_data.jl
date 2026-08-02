@@ -87,3 +87,46 @@ end
         @test cd > 0.0
     end
 end
+
+@testset "naca4412_cl — cambered airfoil" begin
+    # Cambered: CL(0°) > 0 (positive lift at zero AoA)
+    @test naca4412_cl(0.0, 1e5) > 0.0
+
+    # Cambered CL > symmetric CL at same α (linear range)
+    for α in [2.0, 5.0, 8.0]
+        @test naca4412_cl(α, 5e5) > naca0012_cl(α, 5e5)
+    end
+
+    # CL increases monotonically in linear range (-2° to 8°)
+    cls = [naca4412_cl(α, 1e5) for α in -2.0:2.0:8.0]
+    @test all(diff(cls) .> 0)
+
+    # CL at α=5° should be meaningfully positive
+    @test naca4412_cl(5.0, 5e5) > 0.5
+
+    # Higher Re → higher CL_max (test at α above Re=100k stall but below Re=1M stall)
+    @test naca4412_cl(14.0, 1e6) > naca4412_cl(14.0, 1e5)
+
+    # Deep stall: CL decays at high α
+    @test naca4412_cl(30.0, 1e5) < 1.0
+
+    # Extreme α doesn't crash
+    for α in [-45.0, 0.0, 45.0, 90.0]
+        cl = naca4412_cl(α, 1e5)
+        @test isfinite(cl)
+    end
+end
+
+@testset "naca4412_cd — cambered airfoil drag" begin
+    # CD at α=0° near CD_min
+    @test naca4412_cd(0.0, 1e6) < 0.015
+
+    # CD increases with |α|
+    @test naca4412_cd(8.0, 1e5) > naca4412_cd(4.0, 1e5)
+
+    # Higher Re → lower CD
+    @test naca4412_cd(0.0, 1e6) < naca4412_cd(0.0, 1e5)
+
+    # Post-stall CD rises
+    @test naca4412_cd(30.0, 1e5) > naca4412_cd(10.0, 1e5)
+end
