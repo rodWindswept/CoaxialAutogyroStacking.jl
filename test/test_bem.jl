@@ -175,3 +175,32 @@ end
 
     @test T_3d >= T_no  # 3-D correction never reduces thrust
 end
+
+@testset "prandtl_tip_loss_factor" begin
+    R = 3.0
+    B = 2
+    phi = deg2rad(15.0)  # typical inflow angle at mid-span
+
+    # At the tip (r → R): factor → 0 (complete loss)
+    F_tip = prandtl_tip_loss_factor(R - 1e-6, R, B, phi)
+    @test F_tip < 0.1  # near-zero at tip
+
+    # Near hub (r → 0): factor → 1 (no loss)
+    F_hub = prandtl_tip_loss_factor(0.5, R, B, phi)
+    @test F_hub > 0.9
+
+    # Mid-span: factor between 0 and 1
+    F_mid = prandtl_tip_loss_factor(2.0, R, B, phi)
+    @test 0.1 < F_mid < 0.99
+
+    # More blades → higher F (less loss per blade, more solid disk)
+    F_2b = prandtl_tip_loss_factor(2.5, R, 2, phi)
+    F_3b = prandtl_tip_loss_factor(2.5, R, 3, phi)
+    @test F_3b > F_2b
+
+    # F always in (0, 1]
+    for r_test in [0.1, 1.0, 2.0, 2.9]
+        F = prandtl_tip_loss_factor(r_test, R, B, phi)
+        @test 0.0 < F <= 1.0
+    end
+end

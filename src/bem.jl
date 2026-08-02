@@ -158,8 +158,11 @@ function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20; 
             CT = sigma_local * cn / sin_phi^2
 
             # Momentum theory with Glauert correction
+            # Prandtl tip-loss factor F reduces effective disk area near the tip
+            F_loss = prandtl_tip_loss_factor(r_i, rotor.radius, rotor.n_blades, phi)
             if CT <= 0.96
-                a_new = 1.0 / (1.0 + 4.0 * sin_phi^2 / (sigma_local * cn))
+                denom = 1.0 + 4.0 * F_loss * sin_phi^2 / (sigma_local * cn)
+                a_new = 1.0 / denom
             else
                 # Buhl's modification of Glauert correction
                 a_new = 0.143 + sqrt(0.0203 - 0.6427 * (0.889 - CT))
@@ -304,3 +307,49 @@ function rotor_force_bem(rotor::AutogyroRotor, rho, v_wind, elev_deg; stall_dela
 end
 
 export rotor_force_bem
+
+# ── Prandtl tip-loss correction ───────────────────────────────────────────
+
+"""
+    prandtl_tip_loss_factor(r, R_tip, B, phi) -> Float64
+
+Prandtl tip-loss factor F ∈ (0, 1] that accounts for finite-blade effects.
+The pressure difference between upper and lower blade surfaces bleeds around
+the tip, reducing lift near the blade tip.  This is a loss of effective disk
+area — the momentum theory overestimates induction without it.
+
+# Physics
+
+    f = (B/2) × (R_tip − r) / (r × sin(φ))
+    F = (2/π) × arccos(exp(−f))
+
+- At tip (r → R_tip): f → 0, F → 0 (complete tip loss)
+- At hub (r → 0):     f → ∞, F → 1 (no tip loss)
+- More blades → larger f → higher F (less loss per blade)
+
+Used in the BEM induction equation:  a = 1 / (1 + 4F·sin²(φ) / (σ'·cn))
+
+# Arguments
+- `r::Real`: radial position of the blade station (m).
+- `R_tip::Real`: blade tip radius (m).
+- `B::Int`: number of blades.
+- `phi::Real`: inflow angle (radians).
+
+# Examples
+```jldoctest
+julia> prandtl_tip_loss_factor(2.0, 3.0, 2, deg2rad(15.0)) > 0.5
+true
+```
+"""
+function prandtl_tip_loss_factor(r, R_tip, B, phi)
+    if r >= R_tip || phi <= 0.0
+        return 0.0
+    end
+    f = (B / 2.0) * (R_tip - r) / (r * sin(phi))
+    # Guard: exp(-f) → 0 for large f, arccos of values > 1
+    exp_f = exp(-f)
+    exp_f = clamp(exp_f, -1.0, 1.0)  # arccos domain safety
+    return (2.0 / π) * acos(exp_f)
+end
+
+export prandtl_tip_loss_factor
