@@ -353,3 +353,60 @@ function prandtl_tip_loss_factor(r, R_tip, B, phi)
 end
 
 export prandtl_tip_loss_factor
+
+# ── Øye dynamic inflow model ──────────────────────────────────────────────
+
+"""
+    dynamic_inflow_filter(a_qs, a_prev, R, v_wind, dt) -> Float64
+
+Øye dynamic inflow filter.  Models the time lag between changes in rotor
+loading and the induced velocity response.  The wake has inertia — the
+induction factor does not change instantly.
+
+# Physics
+
+    τ    = 1.1 × R / ((1 − 1.3 × a_qs) × v_wind)   (Øye time constant)
+    a_new = a_prev + (a_qs − a_prev) × dt / τ       (first-order lag)
+
+- At steady state (dt → ∞):  a_new → a_qs
+- For small dt:              a_new changes slowly (wake inertia)
+- Time constant τ grows with radius and shrinks with wind speed
+
+Guards: τ clamped to [0.01, 10.0] s to prevent division blowup near
+a_qs → 1/1.3 and to avoid instant response.
+
+# Arguments
+- `a_qs::Real`: quasi-steady induction factor (from BEM iteration).
+- `a_prev::Real`: previous time-step induction factor.
+- `R::Real`: rotor radius (m).
+- `v_wind::Real`: freestream wind speed (m/s).
+- `dt::Real`: time step (s).
+
+# Returns
+- `Float64`: filtered induction factor for the current time step.
+
+# Examples
+```jldoctest
+julia> dynamic_inflow_filter(0.3, 0.3, 3.0, 8.0, 0.01) ≈ 0.3
+true
+
+julia> dynamic_inflow_filter(0.5, 0.3, 3.0, 8.0, 0.5) > 0.3
+true
+```
+"""
+function dynamic_inflow_filter(a_qs, a_prev, R, v_wind, dt)
+    # Time constant from Øye model
+    denom = (1.0 - 1.3 * a_qs) * v_wind
+    if abs(denom) < 1e-6
+        return a_qs  # degenerate: instant response
+    end
+    tau = 1.1 * R / denom
+    tau = clamp(tau, 0.01, 10.0)  # guard against blowup
+
+    # First-order lag
+    alpha = dt / tau
+    alpha = clamp(alpha, 0.0, 1.0)  # dt > tau → full response
+    return a_prev + alpha * (a_qs - a_prev)
+end
+
+export dynamic_inflow_filter

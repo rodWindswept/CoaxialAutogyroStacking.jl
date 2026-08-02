@@ -204,3 +204,42 @@ end
         @test 0.0 < F <= 1.0
     end
 end
+
+@testset "dynamic_inflow_filter — Øye model" begin
+    # Steady state: no change when a_qs == a_prev
+    @test dynamic_inflow_filter(0.3, 0.3, 3.0, 8.0, 0.01) ≈ 0.3
+
+    # Response moves toward a_qs (increasing)
+    a_new = dynamic_inflow_filter(0.5, 0.3, 3.0, 8.0, 0.1)
+    @test a_new > 0.3
+    @test a_new < 0.5
+
+    # Response moves toward a_qs (decreasing)
+    a_new = dynamic_inflow_filter(0.2, 0.4, 3.0, 8.0, 0.1)
+    @test a_new < 0.4
+    @test a_new > 0.2
+
+    # Large dt → near-instant response (approaches a_qs)
+    a_instant = dynamic_inflow_filter(0.5, 0.3, 3.0, 8.0, 100.0)
+    @test a_instant ≈ 0.5 atol=1e-4
+
+    # Small dt → slow response (barely moves)
+    a_slow = dynamic_inflow_filter(0.5, 0.3, 3.0, 8.0, 1e-6)
+    @test a_slow ≈ 0.3 atol=1e-6
+
+    # Larger radius → larger τ → slower response
+    a_small_R = dynamic_inflow_filter(0.5, 0.3, 1.0, 8.0, 0.05)
+    a_large_R = dynamic_inflow_filter(0.5, 0.3, 10.0, 8.0, 0.05)
+    @test abs(a_large_R - 0.3) < abs(a_small_R - 0.3)  # larger R = slower
+
+    # Higher wind → smaller τ → faster response
+    a_low_wind = dynamic_inflow_filter(0.5, 0.3, 3.0, 4.0, 0.05)
+    a_high_wind = dynamic_inflow_filter(0.5, 0.3, 3.0, 16.0, 0.05)
+    @test abs(a_high_wind - 0.5) < abs(a_low_wind - 0.5)  # higher wind = faster
+
+    # Result always in [0, 1] (physical induction range)
+    for (qs, prev) in [(0.8, 0.2), (0.2, 0.9), (0.0, 0.5), (1.0, 0.0)]
+        a = dynamic_inflow_filter(qs, prev, 3.0, 8.0, 0.01)
+        @test 0.0 <= a <= 1.0
+    end
+end
