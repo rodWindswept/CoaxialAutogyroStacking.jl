@@ -89,17 +89,17 @@ ax.legend(handles=legend_n, fontsize=9, title="Stack Count",
 ax.grid(True, alpha=0.3)
 
 # Annotate best value
-ax.annotate("Best $/N", xy=(2.0, ax.get_ylim()[0] * 1.1 if ax.get_ylim()[0] > 0 else 1),
-            fontsize=8, ha="center", color="#4575b4", fontweight="bold",
+ax.annotate("Best $/N\nN=4, $9.44/N", xy=(3.0, ax.get_ylim()[0] * 1.1 if ax.get_ylim()[0] > 0 else 1),
+            fontsize=8, ha="center", color="#d73027", fontweight="bold",
             bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
 
 caption = (
-    "IMPLICATIONS: Larger rotors (R=3.0m) have lower cost per newton despite higher "
-    "unit cost because tension scales with R\u00b2 while cost scales with R (material). "
-    "N=1 has the best $/N ratio but delivers too little absolute tension. "
-    "N=3-4 provides the best balance of cost efficiency and absolute performance. "
+    "IMPLICATIONS: Cost per newton improves with both rotor radius and stack count — "
+    "N=4 at R=3.0m achieves $9.44/N, the best in this sweep. "
+    "Single rotors (N=1) have the worst cost efficiency at every radius. "
+    "N=2 is the threshold where larger rotors become cheaper per newton. "
     "The cost model is simplified — real costs depend on manufacturing volume, "
-    "material choices, and labour. Data: BEM v2.1, graded profile."
+    "material choices, and labour. Data: BEM v2.1, graded profile, 4-12 m/s."
 )
 fig.text(0.10, 0.02, caption, fontsize=8, color="#444444",
          ha="left", va="bottom", style="italic", wrap=True)

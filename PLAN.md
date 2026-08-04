@@ -198,7 +198,7 @@ polygon line geometry and 3-D stall-delay correction.
 - [x] Snel 3-D stall-delay correction
 - [x] BEM-aware parameter sweep and tilt optimisation
 - [x] SPEC.md §6.6 populated with BEM sweep findings
-- [x] All 345 tests green
+- [x] All 348 tests green
 
 ---
 

@@ -171,12 +171,16 @@ begin
 	# Polygon chain geometry — segment angles from force equilibrium at each rotor
 	_poly_θ, _poly_T, _poly_F = solve_polygon_angles(_rotors, _secs, _elev, rho, _v_wind; max_iter=30)
 	
+	# Phase 11: per-rotor effective wind after wake momentum deficits.
+	# Rotor 1 (topmost) always sees freestream; downstream rotors see reduced wind.
+	_v_eff = stack_effective_wind(_rotors, _secs, rho, _v_wind, _elev)
+	
 	# Full tension profile with line drag + weight (uses polygon angles internally)
 	_profile = stack_tension_profile_polygon(AutogyroStack(_rotors, _secs, _diam_m, _elev), rho, _v_wind)
 	
-	# Per-rotor forces at polygon segment angles
+	# Per-rotor forces at polygon segment angles, using wake-aware effective wind
 	_rotor_forces = [(begin
-		_, T, rpm = rotor_force_bem(rot, rho, _v_wind, _poly_θ[i])
+		_, T, rpm = rotor_force_bem(rot, rho, _v_eff[i], _poly_θ[i])
 		α_eff = effective_alpha(rot, _poly_θ[i])
 		F_line = T * cosd(rot.tilt_deg)
 		(F_line, T, 0.0, 0.0, 0.0, α_eff, rpm)
@@ -185,7 +189,12 @@ begin
 	# Segment spread for display
 	_seg_spread = length(_poly_θ) > 1 ? round(maximum(_poly_θ) - minimum(_poly_θ), digits=1) : 0.0
 	
-	md"**Active preset:** $(_scenario) | Wind: $(round(_v_wind,digits=1)) m/s | **Elev: $(round(_elev,digits=1))°** | Tilt δ: $(round(_tilt,digits=0))° | BP: $(round(_bp_global,digits=0))° | **Chain spread: $(_seg_spread)°**"
+	# Effective wind per rotor for display
+	_v_eff_str = join([@sprintf("R%d:%.1f", i, _v_eff[i]) for i in 1:_n], " ")
+	
+	md"""**Active preset:** $(_scenario) | Wind: $(round(_v_wind,digits=1)) m/s | **Elev: $(round(_elev,digits=1))°** | Tilt δ: $(round(_tilt,digits=0))° | BP: $(round(_bp_global,digits=0))° | **Chain spread: $(_seg_spread)°**
+	
+	**v_eff (top→bot):** $(_v_eff_str) m/s"""
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000030
@@ -338,10 +347,10 @@ let
 		push!(lines, "")
 	end
 	
-	push!(lines, "| # | δ tilt | θ seg | α_eff | F_line | RPM |")
-	push!(lines, "|:--|:------:|:-----:|:-----:|:------:|:---:|")
+	push!(lines, "| # | δ tilt | θ seg | α_eff | v_eff | F_line | RPM |")
+	push!(lines, "|:--|:------:|:-----:|:-----:|:-----:|:------:|:---:|")
 	for (i, f) in enumerate(_rotor_forces)
-		push!(lines, "| R$i | $(round(_rotors[i].tilt_deg,digits=1))° | $(round(_poly_θ[i],digits=1))° | $(round(f[6],digits=1))° | $(round(f[1],digits=0)) N | $(round(f[7],digits=0)) |")
+		push!(lines, "| R$i | $(round(_rotors[i].tilt_deg,digits=1))° | $(round(_poly_θ[i],digits=1))° | $(round(f[6],digits=1))° | $(round(_v_eff[i],digits=1)) m/s | $(round(f[1],digits=0)) N | $(round(f[7],digits=0)) |")
 	end
 	
 	Markdown.parse(join(lines, "\n"))
@@ -363,7 +372,7 @@ md"""
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000061
-md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAutogyroStacking.jl) — 348 tests green | BEM v2 + polygon line geometry*"
+md"*Powered by [CoaxialAutogyroStacking.jl](https://github.com/rodread/CoaxialAutogyroStacking.jl) — 407 tests green | BEM v2 + polygon line geometry + wake + tip-loss*"
 
 # ╔═╡ Cell order:
 # ╟─bbbbbbbb-0000-0000-0000-000000000001

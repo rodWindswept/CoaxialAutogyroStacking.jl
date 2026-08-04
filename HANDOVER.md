@@ -46,18 +46,8 @@ manufacturing.
 ## 3. Chart Reference
 
 All charts live in `diagrams/<slug>/` with SPEC.md, script, PNG, and PDF.
-See `DIAGRAM_REGISTRY.md` for the full index. Approved diagrams:
-
-| Diagram | Folder |
-|---------|--------|
-| PCA Biplot | diagrams/pca-biplot/ |
-| No Pareto Trade-off | diagrams/bem-pareto/ |
-| Re Viability Heatmap | diagrams/bem-feasibility-radius/ |
-| Tip Speed Noise Gate | diagrams/bem-feasibility-heatmap/ |
-| Tension Accumulation (V1+V2) | diagrams/bem-tension-accum/ |
-| Radial BEM Loading (Snel) | diagrams/bem-radial-loading/ |
-
-The chart pipeline uses 3 HITL rounds. See `coaxial-diagram-registry` skill.
+See `DIAGRAM_REGISTRY.md` for the complete index — 32+ diagrams total
+(7 approved, 11 R1 data-integrity passed, 14 R1 prototype conversions).
 
 ## 4. File Map
 
@@ -76,10 +66,10 @@ src/
   sweep.jl                     parameter sweep (PCA-2 and BEM)
   viability.jl                 viability checks
 
-test/                          12 test files (348 tests)
+test/                          11 test files (348 tests)
 notebooks/                     dashboard.jl, sweep_plots.jl
 schematics/                    OpenSCAD models and renders
-scripts/                       bem_full_sweep.jl, dashboard.jl
+scripts/                       bem_full_sweep.jl, dashboard.jl, gen_pca2_sweep.jl, gen_comparison_sweep.jl
 ```
 
 ## 5. Definition of Done

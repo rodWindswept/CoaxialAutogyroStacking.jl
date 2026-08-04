@@ -60,7 +60,12 @@ function solve_stack(n, r, diam, slen, pg, offs, v_wind)
     # The anchor_angle_deg (45°) is just an initial guess — the solver
     # refines all segment angles including the bottom one.
     θ, T, F = solve_polygon_angles(stk.rotors, stk.section_lengths, 45.0, rho, v_wind)
-    return stk, θ, T, F
+    # Phase 11: compute per-rotor effective wind after wake momentum deficits.
+    # Uses mid-stack segment angle as nominal elevation for the wake model.
+    # Rotor 1 (topmost) always sees freestream; rotors below see reduced wind.
+    elev_nominal = length(θ) > 0 ? θ[div(length(θ)+1, 2)] : 45.0
+    v_eff = stack_effective_wind(stk.rotors, stk.section_lengths, rho, v_wind, elev_nominal)
+    return stk, θ, T, F, v_eff
 end
 
 turbulent_wind(v, t, on) = on ? v * (1.0 + 0.08*sin(2pi*t/8.0) + 0.05*sin(2pi*t/2.3) + 0.03*sin(2pi*t/0.7)) : v
@@ -80,7 +85,7 @@ end
 fig = Figure(size=(1400, 1100), fontsize=12)
 
 ax_side = Axis(fig[1, 1],
-    title="Kite Line — Side View (Polygon Chain, BEM v2.1)",
+    title="Kite Line — Side View (Polygon Chain, BEM v2.1 + Wake)",
     xlabel="Horizontal (m)", ylabel="Height (m)",
     aspect=DataAspect(), limits=(-5, 80, -3, 70))
 
@@ -171,7 +176,7 @@ end
 function draw_side_view!(ax, n, r, diam, slen, pg, offs, v_wind)
     empty!(ax)
     n = max(1, n)
-    stk, θ, T, F = solve_stack(n, r, diam, slen, pg, offs, v_wind)
+    stk, θ, T, F, v_eff = solve_stack(n, r, diam, slen, pg, offs, v_wind)
     max_t = max(maximum(abs, T), 1.0)
 
     # Build (x,y) coordinates along the polygon chain from anchor upward.
@@ -217,7 +222,7 @@ function draw_side_view!(ax, n, r, diam, slen, pg, offs, v_wind)
         t_vals = range(0, 2pi, length=80)
         ex, ey = cx .+ rx*cos.(t_vals), cy .+ ry*sin.(t_vals)
 
-        _, T_thrust, _ = rotor_force_bem(rotor, rho, v_wind, seg_angle)
+        _, T_thrust, _ = rotor_force_bem(rotor, rho, v_eff[i], seg_angle)
         F_line = T_thrust * cosd(rotor.tilt_deg)
         tn = clamp(abs(F_line) / max_t, 0, 1)
         col = RGBf(tn, 0.2, 1-tn)
@@ -257,7 +262,7 @@ end
 
 function draw_tension_profile!(ax, n, r, diam, slen, pg, offs, v_wind)
     empty!(ax)
-    stk, θ, T, F = solve_stack(n, r, diam, slen, pg, offs, v_wind)
+    stk, θ, T, F, _ = solve_stack(n, r, diam, slen, pg, offs, v_wind)
 
     # Cumulative distance from anchor upward: anchor→Rn→R(n-1)→...→R1
     cum_dist = [0.0]
@@ -303,26 +308,26 @@ end
 # ═══════════════════════════════════════════════════════
 
 function build_hud(n, r, diam, slen, pg, offs, v_wind, turbulence_on, spec_idx)
-    stk, θ, T, F = solve_stack(n, r, diam, slen, pg, offs, v_wind)
+    stk, θ, T, F, v_eff = solve_stack(n, r, diam, slen, pg, offs, v_wind)
     fa = T[end]
     lines = String[]
-    push!(lines, "=== COAXIAL AUTOGYRO STACK (Polygon + BEM v2.1) ===")
+    push!(lines, "=== COAXIAL AUTOGYRO STACK (Polygon + BEM v2.1 + Wake) ===")
     push!(lines, @sprintf("Wind: %.1f m/s %s  |  Line: %.1f mm  |  Span: ~%.0f m",
            v_wind, turbulence_on ? "(TURB)" : "steady", diam*1000, n*slen))
 
     # Per-rotor readout: segment angle, BEM force, RPM estimate
-    push!(lines, "  Rotor   Seg angle   F_line     RPM      Tilt")
-    push!(lines, "  ─────   ─────────   ──────    ─────    ────")
+    push!(lines, "  Rotor   Seg angle   F_line     RPM      Tilt    v_eff")
+    push!(lines, "  ─────   ─────────   ──────    ─────    ────    ─────")
     total_lift = 0.0; total_drag = 0.0
     for i in 1:n
         rotor = stk.rotors[i]
-        _, T_thrust, _ = rotor_force_bem(rotor, rho, v_wind, θ[i])
+        _, T_thrust, _ = rotor_force_bem(rotor, rho, v_eff[i], θ[i])
         F_line = T_thrust * cosd(rotor.tilt_deg)
-        rpm = estimated_autorotation_rpm(rotor, v_wind, effective_alpha(rotor, θ[i]))
-        push!(lines, @sprintf("  R%d      %5.1f°      %6.0f N   %5.0f RPM  %5.1f°",
-               i, θ[i], F_line, rpm, rotor.tilt_deg))
+        rpm = estimated_autorotation_rpm(rotor, v_eff[i], effective_alpha(rotor, θ[i]))
+        push!(lines, @sprintf("  R%d      %5.1f°      %6.0f N   %5.0f RPM  %5.1f°   %4.1f m/s",
+               i, θ[i], F_line, rpm, rotor.tilt_deg, v_eff[i]))
         # Accumulate lift/drag from PCA-2 for L/D estimate
-        _, fl, fd, _, _ = rotor_force_along_line(rotor, rho, v_wind, θ[i])
+        _, fl, fd, _, _ = rotor_force_along_line(rotor, rho, v_eff[i], θ[i])
         total_lift += fl; total_drag += fd
     end
 

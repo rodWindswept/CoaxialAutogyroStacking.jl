@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "e36453f2407d13e44112461f342d6f5172b17348"
 
@@ -181,9 +181,9 @@ weakdeps = ["SparseArrays"]
 
 [[deps.CoaxialAutogyroStacking]]
 deps = ["CSV", "DataFrames", "Statistics"]
-path = "/home/cameron-read/Documents/GitHub/CoaxialAutogyroStacking.jl/scripts/.."
+path = "/home/rod/Documents/GitHub/CoaxialAutogyroStacking.jl/scripts/.."
 uuid = "cb2a5e45-b910-4a0e-9959-8ee2b2784885"
-version = "0.1.1"
+version = "1.0.0"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
