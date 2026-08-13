@@ -1,5 +1,6 @@
 # test/test_wake.jl — Wake interaction model for stacked rotors
 # Phase 11: Jensen/PARK wake deficit propagation between coaxial rotors.
+# Phase 12: Bastankhah 2026 generalised actuator disk theory.
 
 @testset "wake_deficit — Jensen/PARK model" begin
     # Jensen model: v/v∞ = 1 − (1−√(1−CT)) × (R/(R + k·x))²
@@ -28,42 +29,72 @@
 end
 
 @testset "stack_effective_wind — multi-rotor cumulative deficit" begin
-    # stack_effective_wind(rotors, section_lengths, rho, v_wind, elev_deg; k=0.075)
-    # Returns per-rotor effective wind after upstream wake deficits.
-    # Uses one-pass freestream CT for each rotor (first-order approximation).
-
     r = AutogyroRotor(3.0, 0.05, 2, 0.15, 10.0, 0.0, 5.0)
     rho, v_wind, elev = 1.225, 8.0, 55.0
 
-    # Single rotor — always sees freestream
     v_eff = stack_effective_wind([r], [10.0], rho, v_wind, elev)
     @test length(v_eff) == 1
     @test v_eff[1] ≈ v_wind
 
-    # Two identical rotors, 20 m spacing — rotor 2 sees deficit
     v_eff2 = stack_effective_wind([r, r], [20.0, 20.0], rho, v_wind, elev)
     @test length(v_eff2) == 2
-    @test v_eff2[1] ≈ v_wind                   # top rotor: freestream
-    @test v_eff2[2] < v_wind                    # bottom rotor: deficit
-    @test v_eff2[2] > 0.0                       # but still positive
+    @test v_eff2[1] ≈ v_wind
+    @test v_eff2[2] < v_wind
+    @test v_eff2[2] > 0.0
 
-    # First rotor always sees freestream, regardless of stack size
     v_eff3 = stack_effective_wind([r, r, r], fill(15.0, 3), rho, v_wind, elev)
     @test length(v_eff3) == 3
     @test v_eff3[1] ≈ v_wind
-    # With identical rotors and uniform spacing, rotor 1 dominates the wake.
-    # Rotors 2 and 3 see the same deficit from rotor 1's wake.
     @test v_eff3[2] < v_wind
-    @test v_eff3[3] ≤ v_eff3[2]  # at worst equal, never more wind than rotor above
+    @test v_eff3[3] ≤ v_eff3[2]
 
-    # Wider spacing → more recovery → less deficit at bottom
     v_close = stack_effective_wind([r, r], [5.0, 5.0], rho, v_wind, elev)
     v_far   = stack_effective_wind([r, r], [50.0, 50.0], rho, v_wind, elev)
-    @test v_far[2] > v_close[2]   # more spacing → more recovery
+    @test v_far[2] > v_close[2]
 
-    # Zero thrust rotor (tilt=90° → disk edge-on to wind) — minimal wake deficit
     r_dead = AutogyroRotor(0.5, 0.05, 2, 0.05, 90.0, 0.0, 1.0)
     v_eff_dead = stack_effective_wind([r_dead, r], [20.0, 20.0], rho, v_wind, elev)
     @test v_eff_dead[1] ≈ v_wind
-    @test v_eff_dead[2] > 0.95 * v_wind   # tiny rotor edge-on → negligible deficit
+    @test v_eff_dead[2] > 0.95 * v_wind
+end
+
+@testset "wake_deficit_bastankhah — Bastankhah 2026 entrainment model" begin
+    # Phase 12: Bastankhah et al. (2026) J. Fluid Mech.
+    # Validation from companion code: AtWIND-lab/Generalised-Actuator-Disk-theory
+    # Parameters: E1=0.1, E2=0.3, I=0.05
+
+    # --- Upstream (analytical, Eq 2.18) ---
+    @test wake_deficit_bastankhah_upstream(0.2, -2.0) ≈ 0.994621 atol=1e-4
+    @test wake_deficit_bastankhah_upstream(0.2, -1.0) ≈ 0.980846 atol=1e-4
+    @test wake_deficit_bastankhah_upstream(0.3, 0.0) ≈ 0.7 atol=1e-8
+    @test wake_deficit_bastankhah_upstream(0.4, 0.0) ≈ 0.6 atol=1e-8
+
+    # --- Downstream ODE (Eqs 2.17a,b) with spatial shielding (Eq 2.6) ---
+    # a=0.2, converged CT=0.6016
+    @test wake_deficit_bastankhah_downstream(0.2, 0.6016, 1.0; E2=0.3) ≈ 0.694674 atol=2e-3
+    @test wake_deficit_bastankhah_downstream(0.2, 0.6016, 2.0; E2=0.3) ≈ 0.722966 atol=2e-3
+
+    # a=0.3, converged CT=0.8267
+    @test wake_deficit_bastankhah_downstream(0.3, 0.8267, 1.0; E2=0.3) ≈ 0.568275 atol=3e-3
+    @test wake_deficit_bastankhah_downstream(0.3, 0.8267, 0.0; E2=0.3) ≈ 0.7 atol=1e-8
+
+    # --- CT-a iteration (Eqs 2.23-2.24) ---
+    ct_iter = bastankhah_ct_from_a(0.2; I=0.05, E2=0.3)
+    @test ct_iter ≈ 0.6016 atol=0.005
+    @test bastankhah_ct_from_a(0.3; I=0.05, E2=0.3) ≈ 0.8267 atol=0.01
+    @test bastankhah_ct_from_a(0.2; I=0.05, E2=0.3) < bastankhah_ct_from_a(0.3; I=0.05, E2=0.3)
+    @test bastankhah_ct_from_a(0.3; I=0.05, E2=0.3) < bastankhah_ct_from_a(0.4; I=0.05, E2=0.3)
+
+    # --- a-from-CT inverse iteration ---
+    a_from_ct = bastankhah_a_from_ct(0.6016; I=0.05, E2=0.3)
+    @test a_from_ct ≈ 0.2 atol=0.008
+
+    # --- Unified wake_deficit with :bastankhah ---
+    v_ratio = wake_deficit(0.6016, 3.0, 3.0; model=:bastankhah, I=0.05, E2=0.3)
+    @test v_ratio < 0.8
+    @test v_ratio > 0.7
+
+    # Default model is still Jensen/PARK for backward compat
+    v_jensen = wake_deficit(0.5, 3.0, 0.0)
+    @test v_jensen ≈ sqrt(0.5)
 end

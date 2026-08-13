@@ -132,8 +132,8 @@ function bem_induction(rotor::AutogyroRotor, rho, v_wind, omega, n_stations=20; 
             # Local angle of attack (blade pitch + possibly twist, 0 for now)
             alpha_deg = rad2deg(phi) - rotor.blade_pitch_deg
 
-            cl = naca0012_cl(alpha_deg, Re_local)
-            cd = naca0012_cd(alpha_deg, Re_local)
+            cl = naca0012_cl_slat(alpha_deg, Re_local, rotor.slat_deployed)
+            cd = naca0012_cd_slat(alpha_deg, Re_local, rotor.slat_deployed)
 
             # 3-D stall-delay correction (Snel) if enabled — computed for
             # force integration only (2-D CL drives induction iteration).
