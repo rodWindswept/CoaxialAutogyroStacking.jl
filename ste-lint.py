@@ -1,3 +1,10 @@
+# ste-lint.py — ASD-STE100 linter with habit-hook fix-guidance.
+# Version: 0.2.0 | Date: 2026-08-20 | Author: Windswept & Interesting
+#
+# Fuses the cue (violation) with the routine (fix-guidance): each violation
+# prints a [HOOK:ste] line telling the agent HOW to fix it, not just that it
+# failed. --fail-above N exits 1 when any file breaches N violations/100w, so
+# a pre-commit hook can block on it.
 import re, sys, json, glob, os
 
 MARKETING = ["seamless","seamlessly","robust","powerful","cutting-edge","effortless","effortlessly",
@@ -16,6 +23,21 @@ MODAL_HEDGE = ["it is important to note","it should be noted","it is worth notin
     "as mentioned","as noted above"]
 BE = r"(?:am|is|are|was|were|be|been|being)"
 PP_IRREG = r"(?:done|made|sent|read|built|kept|held|set|put|run|written|shown|given|taken|found|got|gotten|seen|known|thrown|drawn)"
+
+GUIDANCE = {
+    "long_sentence(>20w)": "split — max 20 words (instruction) / 25 (descriptive). Two short sentences beat one long. (ste-writing)",
+    "semicolon": "replace ';' with a period — write two sentences. (ste-writing)",
+    "contraction": "expand — \"don't\" -> \"do not\". (ste-writing)",
+    "passive_voice": "active voice — \"<actor> <verb> <object>\", not \"<object> is <verb>ed\". (ste-writing)",
+    "ing_main_verb": "use a simple tense, not \"be + -ing\" as the main verb. (ste-writing)",
+    "nominalization": "use the verb — \"analyze\", not \"perform an analysis\". (ste-writing)",
+    "phrasal_verb": "one plain verb — \"start\", not \"spin up\"; \"examine\", not \"dive into\". (ste-writing)",
+    "banned_word": "short common word — start/use/help/make sure/show. (ste-writing)",
+    "marketing_adjective": "drop it — \"works\", not \"seamless\"; \"fast\", not \"blazing\". (ste-writing)",
+    "modal_hedge": "state the finding directly — cut \"it is important to note\". (ste-writing)",
+    "long_paragraph(>6s)": "one topic per paragraph, max six sentences — split it. (ste-writing)",
+}
+EM_DASH_GUIDANCE = "no em dash — use a period or comma. (ste-writing)"
 
 def strip_code(t):
     t = re.sub(r"```.*?```", " ", t, flags=re.S)
@@ -79,12 +101,30 @@ def lint(text):
         "sample_banned": list(dict.fromkeys(bh))[:6],
     }
 
+def emit_guidance(base, r):
+    for k, n in r["violations"].items():
+        if n > 0:
+            print(f"[HOOK:ste] {base}: {k} x{n} -> {GUIDANCE.get(k, 'see ste-writing')}")
+    if r["em_dash(slop-marker)"] > 0:
+        print(f"[HOOK:ste] {base}: em_dash x{r['em_dash(slop-marker)']} -> {EM_DASH_GUIDANCE}")
+
 if __name__ == "__main__":
-    files = sys.argv[1:] or []
+    fail_above = None
+    argv = list(sys.argv[1:])
+    if "--fail-above" in argv:
+        i = argv.index("--fail-above")
+        fail_above = float(argv[i+1]); del argv[i:i+2]
+    files = argv or []
     if not files:
         print(json.dumps(lint(sys.stdin.read()), indent=2)); sys.exit(0)
     exp = []
     for f in files: exp += sorted(glob.glob(f)) if any(c in f for c in "*?[") else [f]
+    breach = False
     for f in exp:
         with open(f) as fh: r = lint(fh.read())
-        print(f"{os.path.basename(f):32} words={r['words']:4d} total={r['total']:3d} per100w={r['total_per100w']:6.2f} em_dash={r['em_dash(slop-marker)']:2d}")
+        base = os.path.basename(f)
+        print(f"{base:32} words={r['words']:4d} total={r['total']:3d} per100w={r['total_per100w']:6.2f} em_dash={r['em_dash(slop-marker)']:2d}")
+        emit_guidance(base, r)
+        if fail_above is not None and r["total_per100w"] >= fail_above:
+            breach = True
+    sys.exit(1 if breach else 0)
