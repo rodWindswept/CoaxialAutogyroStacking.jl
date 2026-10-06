@@ -14,4 +14,5 @@ using CoaxialAutogyroStacking
     include("test_viability.jl")
     include("test_stall_delay.jl")
     include("test_wake.jl")
+    include("test_sky_anchor.jl")
 end

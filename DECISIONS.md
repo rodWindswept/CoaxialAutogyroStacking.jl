@@ -121,3 +121,41 @@ frames (D1, (C)).
 **Action:** HANDOVER.md and README.md must stop citing the BEM→PCA-2 gap as
 justification for wake modelling. v3 scope should be motivated by
 rotor-to-rotor interaction fidelity, not gap-closing.
+
+---
+
+## D6: Sky anchor boundary node — v1 pinned (2026-10-06)
+
+**Decision:** The stack top gains a sky anchor boundary. R1 terminates the
+line. The anchor adds a new segment above R1, and `profile[1]` generalises
+to the anchor-segment tension. The rigid default keeps it exactly zero,
+bit-for-bit.
+
+**Node model:** Point mass `m_eff = m_a + m_b/3`, one tension-only backline
+to a fixed point. The backline direction rebuilds from the instantaneous
+geometry every step. A frozen direction gives no geometric spring and the
+anchor rings indefinitely (KTD `handover-2026-05-28-pitch-depower.md`
+section 2). A smooth hinge makes `max(0, ·)` integration-friendly. The hinge
+potential is the exact integral of the hinge force, so the smoothing cannot
+pump energy at slack crossings.
+
+**Gates:** `f_p` reports only. It passes trivially. The hard gates are the
+whirl root vs BPF and the axial root at the soft EA (constructional stretch,
+0.25 times elastic). For a 2-blade rotor the perpendicular axis theorem pins
+`I_s/I_t = 2`, so the whirl separation is bought with `k_mom`. The 0.3 rule
+needs `k_mom >= 1.56 I_t omega^2` (0.44 kN·m/rad at 45 rpm, 3.16 kN·m/rad
+at 121 rpm for `I_t = 12.6`). The BEM band top is the binding case.
+
+**Slack and energy:** Brief unloading is expected. Sustained slack
+(dwell >= 0.8 s, the KTD wobble gate) is the defect. `slack_events` reports
+dwell times. `energy_ledger` checks the pointwise no-pump condition. The
+tension clamp trims the damper on release, and the accounting books the trim
+exactly.
+
+**Rejected:** A damping fallback branch for a failed gate. No v1 element
+touches disk tilt, so the branch has no actuator. Flap aero is the physical
+whirl damper and it is v2. Also rejected: freezing the backline direction,
+and clamping the backline force without accounting for the trimmed damper.
+
+**Prior art:** KTD `docs/plans/2026-05-12-sky-anchor-node.md` (the three-way
+knot) and `handovers/handover-2026-05-28-pitch-depower.md` section 2.

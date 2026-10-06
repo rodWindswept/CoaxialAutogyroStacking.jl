@@ -189,7 +189,9 @@ lift_force_steady(stack::AutogyroStack, rho, v_wind) -> (F_hub, T_anchor, elevat
 
 - Wind field / turbulence model → consume from KTD.jl
 - Catenary / line shape ODE → consume from KTD.jl or Tveide model
-- Moving anchor dynamics → KTD.jl simulation framework
+- Full moving-anchor dynamics → KTD.jl simulation framework. This package
+  owns the v1 sky anchor boundary node: backline, mode gates, slack and
+  energy accounting.
 - Structural FEA (tube buckling, bearing loads) → separate tool
 - Control system logic (when to throttle, launch/land sequences) → separate
   controller

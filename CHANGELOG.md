@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `SkyAnchorBoundary` sky anchor node for the stack top — a new line segment
+  above rotor 1. `RigidSkyAnchor` keeps the tension profiles bit-for-bit
+  identical. `SingleBacklineSkyAnchor` adds a tension-only backline (point
+  mass, axial and lateral damping, `k_mom` rocking stiffness).
+  `TriangulatedDualBacklineSkyAnchor` adds lateral stiffness. Mode gates:
+  `f_p` report only, whirl vs BPF and axial at the soft EA hard. RK4
+  `simulate_anchor` rebuilds the backline direction every step. `slack_events`
+  reports dwell times and flags sustained slack. `energy_ledger` checks the
+  pointwise no-pump rule across slack crossings. `stack_tension_profile` and
+  `stack_tension_profile_polygon` take `boundary` and `anchor_segment`
+  keywords. 79 new tests, suite at 502.
 - `rotor_solidity(rotor)` — solidity σ = n_blades × chord / (π × R), with PCA-2
   comparison (σ_PCA2 ≈ 0.098 vs ours ≈ 0.032 — 3× difference documented).
 - `estimated_autorotation_rpm(rotor, v_wind, α_eff; λ=2.5)` — first-order RPM
