@@ -20,10 +20,9 @@ rho = 1.225
 line_dia = 0.004
 rotor_mass = 5.0
 hub_radius = 0.05
-n_blades = 2
+n_blades = 3
 blade_chord = 0.15
 
-# --- Solver iteration data ---
 iters_rows = []
 for R in radii, N in n_vals, prof in profiles_list, elev in elevations, v in winds
     rotors = AutogyroRotor[]
@@ -50,7 +49,6 @@ df_iters = DataFrame(iters_rows)
 CSV.write("bem_solver_iters.tsv", df_iters; delim='\t')
 println("Solver iterations: $(nrow(df_iters)) rows")
 
-# --- Snel on/off comparison ---
 snel_rows = []
 for R in radii, N in n_vals, prof in profiles_list, elev in elevations, v in winds
     rotors = AutogyroRotor[]

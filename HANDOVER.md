@@ -2,7 +2,7 @@
 
 Target audience: Cameron and Cameron's AI agent.
 Repository: `CoaxialAutogyroStacking.jl`.
-Status: All 348 tests green (`julia --project=. test/runtests.jl`).
+Status: All 504 tests green (`julia --project=. test/runtests.jl`).
 
 ## 1. Post-Pull Checklist
 
@@ -12,7 +12,7 @@ After pulling `master`, do these three steps:
    ```
    julia --project=. test/runtests.jl
    ```
-   All 348 tests must pass.
+   All 504 tests must pass.
 
 2. Run the doc staleness sweep:
    - Check that new `src/` modules appear in `AGENTS.md` and `PLAN.md`.
@@ -61,12 +61,14 @@ src/
   pca2_data.jl                 PCA-2 empirical data
   polygon_line.jl              polygon chain solver
   rotor.jl                     AutogyroRotor and forces
+  sky_anchor.jl                sky anchor boundary node (backline, gates)
   stack.jl                     AutogyroStack and tension profile
   stall_delay.jl               Snel 3-D stall delay
   sweep.jl                     parameter sweep (PCA-2 and BEM)
   viability.jl                 viability checks
+  wake.jl                      wake models (Jensen/PARK, Bastankhah 2026)
 
-test/                          11 test files (348 tests)
+test/                          13 test files (504 tests)
 notebooks/                     dashboard.jl, sweep_plots.jl
 schematics/                    OpenSCAD models and renders
 scripts/                       bem_full_sweep.jl, dashboard.jl, gen_pca2_sweep.jl, gen_comparison_sweep.jl

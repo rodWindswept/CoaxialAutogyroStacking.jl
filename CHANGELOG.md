@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `SkyAnchorBoundary` sky anchor node for the stack top — a new line segment
+  above rotor 1. `RigidSkyAnchor` keeps the tension profiles bit-for-bit
+  identical. `SingleBacklineSkyAnchor` adds a tension-only backline (point
+  mass, axial and lateral damping, `k_mom` rocking stiffness).
+  `TriangulatedDualBacklineSkyAnchor` adds lateral stiffness. Mode gates:
+  `f_p` report only, whirl vs BPF and axial at the soft EA hard. RK4
+  `simulate_anchor` rebuilds the backline direction every step. `slack_events`
+  reports dwell times and flags sustained slack. `energy_ledger` checks the
+  pointwise no-pump rule across slack crossings. `stack_tension_profile` and
+  `stack_tension_profile_polygon` take `boundary` and `anchor_segment`
+  keywords. 79 new tests, suite at 502.
 - `rotor_solidity(rotor)` — solidity σ = n_blades × chord / (π × R), with PCA-2
   comparison (σ_PCA2 ≈ 0.098 vs ours ≈ 0.032 — 3× difference documented).
 - `estimated_autorotation_rpm(rotor, v_wind, α_eff; λ=2.5)` — first-order RPM
@@ -39,6 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `schematics/renders/` — isometric, front, side, and stack overview PNGs.
 
 ### Changed
+- **Sky-anchor gates re-based to the n_b = 3 machine** — whirl pins 2,073.3
+  N·m/rad at 45 rpm and 14,990.5 at 121 rpm, free-pivot separation 1/3, fail
+  band (58.8, 2,073.3) at 45 rpm. The `n_blades = 2` machine default becomes
+  `n_b = 3` across the sweeps, the comparison script, the BEM charts, the
+  `rotor.jl` docstring and `DIMENSIONS.md`. Suite at 504. See DECISIONS D7.
 - **`bare_line_drag` now uses crossflow velocity** — added `line_angle_deg`
   parameter; drag scales with `(v × cos φ)²` instead of `v²`. At 50° elevation
   this reduces line drag by ~59% (was ~2.4× overestimate). All callers updated.

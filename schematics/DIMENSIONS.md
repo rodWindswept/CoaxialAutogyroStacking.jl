@@ -2,7 +2,7 @@
 
 > Generated from live Julia model 2026-07-03.
 > All forces from `CoaxialAutogyroStacking.jl` at best sweep config:
-> R=3.0m, σ=0.0318, tilt=10°, elev=55°, v=8 m/s.
+> R=3.0m, σ=0.0477, tilt=10°, elev=55°, v=8 m/s.
 
 ## Operating Point
 
@@ -16,7 +16,7 @@
 | Gyro moment | 10.6 N·m | I·Ω·ω_prec (ω_prec=0.1 rad/s) |
 | Centrifugal force/blade | 70 N | m_blade·Ω²·R_cg |
 | Anchor tension (4-stack) | 5,065 N | `stack_tension_profile()` |
-| Disk solidity | 0.0318 | σ = n_blades×chord/(π×R) |
+| Disk solidity | 0.0477 | σ = n_blades×chord/(π×R) |
 
 ## Tube — Tension Tie-Rod
 

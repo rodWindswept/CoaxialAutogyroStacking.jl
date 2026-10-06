@@ -7,7 +7,7 @@ Multiple autogyro rotors stacked coaxially on a single kite line, each with
 independent pitch. Immutable.
 
 The topmost rotor (index 1) is a lifting autogyro kite. It **terminates**
-the line. There is no section above it; `section_lengths` has exactly
+the line. There is no section above it. `section_lengths` has exactly
 `length(rotors)` entries for the sections between rotors and below the
 bottom rotor to the anchor.
 
@@ -17,7 +17,7 @@ The constructor asserts `length(section_lengths) == length(rotors)`.
 - `rotors::Vector{AutogyroRotor}`: rotors ordered **top → bottom** (index 1 is
   the topmost, which terminates the line).
 - `section_lengths::Vector{Float64}`: line segment lengths (m), `n_rotors`
-  entries. `section_lengths[1]` is between rotor 1 and rotor 2;
+  entries. `section_lengths[1]` is between rotor 1 and rotor 2.
   `section_lengths[end]` is below the bottom rotor down to the anchor.
 - `line_diameter::Float64`: line diameter (m).
 - `line_density::Float64`: line material density (kg/m³). Defaults to 970
@@ -58,16 +58,18 @@ terminates the line) downward to the anchor.
 - `stack::AutogyroStack`: the rotor stack.
 - `rho`: air density (kg/m³).
 - `v_wind`: freestream wind speed (m/s).
+- `boundary`: sky anchor boundary, default `RigidSkyAnchor` (no change).
+- `anchor_segment`: anchor-segment tension override (N), default `nothing`.
 
 # Returns
 - `Vector{Float64}` with `n_rotors + 1` entries (N). `profile[1]` is at the
-  topmost rotor (approximately zero, nothing pulls from above). `profile[end]`
-  is the anchor tension (maximum). Monotonically non-decreasing downward when
-  each rotor's net force is positive.
+  topmost rotor.  With a sky anchor it carries the anchor-segment tension.
+  `profile[end]` is the anchor tension (maximum). Monotonically non-decreasing
+  downward when the net force on each rotor is positive.
 
 # Physics
 At each rotor the net along-line force is `F_line − W·cosθ` (positive means the
-rotor pulls the line taut, adding tension below it); bare-line section drag and
+rotor pulls the line taut, adding tension below it). Bare-line section drag and
 line self-weight add further tension.
 
 # Examples
@@ -84,14 +86,20 @@ julia> round.(stack_tension_profile(stack, 1.225, 8.0), digits=1)
  889.5
 ```
 """
-function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
+function stack_tension_profile(stack::AutogyroStack, rho, v_wind;
+                               boundary::SkyAnchorBoundary = RigidSkyAnchor(),
+                               anchor_segment = nothing)
     profile = zeros(Float64, length(stack.rotors) + 1)
-    # profile[1] = at topmost rotor = 0 (nothing pulls from above)
+    # profile[1] is at the topmost rotor.  The sky anchor adds a segment
+    # above rotor 1, so profile[1] becomes the anchor-segment tension.
+    # The rigid default keeps it exactly zero.
+    profile[1] = anchor_segment === nothing ?
+                 anchor_segment_tension(boundary) : anchor_segment
 
     for k in 2:length(profile)
-        # Section drag: the section between rotor k-2 and rotor k-1
-        # (for k=2 this is the section below the top rotor, toward rotor 2;
-        #  for k=end this is the section below the bottom rotor, to the anchor)
+        # Section drag: the section between rotor k-2 and rotor k-1.
+        # k=2 is the section below the top rotor, toward rotor 2.
+        # k=end is the section below the bottom rotor, down to the anchor.
         section_len = stack.section_lengths[k-1]
         F_drag_section = bare_line_drag(rho, v_wind, stack.line_diameter, section_len, stack.line_angle_deg)
 
@@ -100,10 +108,10 @@ function stack_tension_profile(stack::AutogyroStack, rho, v_wind)
         F_line, _, _, _, _ = rotor_force_along_line(rotor, rho, v_wind, stack.line_angle_deg)
         W_cos = rotor.mass * 9.81 * cosd(stack.line_angle_deg)
 
-        # Rope cannot push. Tension cannot go negative. When a rotor's net
-        # along-line force points downward (F_line < W_cos), the section
-        # above it goes slack. Tension at this position is zero. The rotor
-        # hangs (or sits on the ground). It does not add to the tension below.
+        # Rope cannot push. Tension cannot go negative. When the net
+        # along-line force on a rotor points downward (F_line < W_cos), the
+        # section above it goes slack. Tension at this position is zero.
+        # The rotor hangs (or sits on the ground). It does not add to the tension below.
         #
         # Line self-weight (from line_mass_per_m plus line_weight_along_line)
         # always adds to tension when the section is taut. The stack must
@@ -135,21 +143,25 @@ bare-line drag and line self-weight along each segment.
 # Returns
 - `Vector{Float64}` with `n_rotors + 1` entries (N).
 """
-function stack_tension_profile_polygon(stack::AutogyroStack, rho, v_wind)
+function stack_tension_profile_polygon(stack::AutogyroStack, rho, v_wind;
+        boundary::SkyAnchorBoundary = RigidSkyAnchor(), anchor_segment = nothing)
     # Solve segment angles from force equilibrium
     θ, _, _ = solve_polygon_angles(
         stack.rotors, stack.section_lengths, stack.line_angle_deg, rho, v_wind)
 
     n = length(stack.rotors)
     profile = zeros(Float64, n + 1)
-    # profile[1] = 0 (above top rotor)
+    # profile[1] is above the top rotor.  The sky anchor generalises it to
+    # the anchor-segment tension.  The rigid default keeps it exactly zero.
+    profile[1] = anchor_segment === nothing ?
+                 anchor_segment_tension(boundary) : anchor_segment
 
     for i in 1:n
         rotor = stack.rotors[i]
         seg_angle = θ[i]
         seg_len = stack.section_lengths[i]
 
-        # BEM force at this segment's angle
+        # BEM force at the angle of this segment
         F_line, _, _ = rotor_force_bem(rotor, rho, v_wind, seg_angle)
         W_cos = rotor.mass * 9.81 * cosd(seg_angle)
 

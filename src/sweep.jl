@@ -85,7 +85,7 @@ Run a full parameter sweep over stacked autogyro configurations.
 | `line_dia` | `0.004` | Dyneema diameter (m) |
 | `rotor_mass` | `5.0` | Mass per rotor (kg) |
 | `hub_radius` | `0.05` | Hub inner radius (m) |
-| `n_blades` | `2` | Number of blades |
+| `n_blades` | `3` | Number of blades |
 | `blade_chord` | `0.15` | Mean blade chord (m) |
 
 # Returns
@@ -121,7 +121,7 @@ function parameter_sweep(;
     line_dia       = 0.004,
     rotor_mass     = 5.0,
     hub_radius     = 0.05,
-    n_blades       = 2,
+    n_blades       = 3,
     blade_chord    = 0.15,
 )
 
@@ -338,7 +338,7 @@ function parameter_sweep_bem(;
     line_dia       = 0.004,
     rotor_mass     = 5.0,
     hub_radius     = 0.05,
-    n_blades       = 2,
+    n_blades       = 3,
     blade_chord    = 0.15,
 )
     total_combos = length(radii) * length(stack_counts) * length(spacings) *

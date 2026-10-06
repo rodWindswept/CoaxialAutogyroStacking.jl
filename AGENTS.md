@@ -48,13 +48,14 @@ src/
   pca2_data.jl                 PCA-2 table + pca2_interp
   polygon_line.jl              polygon chain line geometry solver
   rotor.jl                     AutogyroRotor + single-rotor forces
+  sky_anchor.jl                sky anchor boundary node (backline, gates)
   stack.jl                     AutogyroStack + stack_tension_profile
   stall_delay.jl               Snel 3-D stall delay correction
   sweep.jl                     parameter_sweep (PCA-2 and BEM)
   viability.jl                 rotor_tip_speed, rotor_reynolds_number, viability_report
   wake.jl                      Jensen/PARK wake deficit + stack effective wind
 
-test/                          12 test_<module>.jl files (one per tested src/ module)
+test/                          13 test_<module>.jl files (one per tested src/ module)
 notebooks/                     Pluto notebooks (dashboard.jl, sweep_plots.jl, bem_charts.jl, bem_charts_v2.jl)
 schematics/                    OpenSCAD 3D models and SVG/PDF cross-sections
 scripts/                       runnable entrypoints (bem_full_sweep.jl, dashboard.jl, gen_pca2_sweep.jl, gen_comparison_sweep.jl)

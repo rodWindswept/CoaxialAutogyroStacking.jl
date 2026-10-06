@@ -10,7 +10,7 @@ const MU = 1.81e-5
 
 # Best config from sweep
 r_best = 3.0
-n_blades = 2
+n_blades = 3
 chord = 0.15
 tilt_deg = 5.0  # top rotor tilt
 elev_deg = 45.0

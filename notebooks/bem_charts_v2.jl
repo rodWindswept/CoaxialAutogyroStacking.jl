@@ -519,7 +519,7 @@ for (i, sr) in enumerate(stations)
     r_local = sr * r_best
     chord_local = CHORD
     a_result = try
-        bem_induction(r_local, chord_local, r_best, omega, 8.0, α_eff, RHO, MU; n_blades = 2)
+        bem_induction(r_local, chord_local, r_best, omega, 8.0, α_eff, RHO, MU; n_blades = 3)
     catch
         0.0
     end
