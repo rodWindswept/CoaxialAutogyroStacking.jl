@@ -79,19 +79,22 @@ end
     end
 
     @testset "whirl gate — pinned thresholds" begin
-        @test whirl_stiffness_required(12.6, 45.0) ≈ 436.49 rtol=1e-3
-        @test whirl_stiffness_required(12.6, 121.0) ≈ 3155.9 rtol=1e-3
+        @test whirl_stiffness_required(12.6, 45.0; n_blades=3) ≈ 2073.3 rtol=1e-3
+        @test whirl_stiffness_required(12.6, 121.0; n_blades=3) ≈ 14990.5 rtol=1e-3
 
-        # Zero k_mom puts the free-pivot whirl exactly on BPF = 2/rev.
-        @test whirl_frequency(0.0, 12.6, 45.0) ≈ blade_passing_frequency(45.0) rtol=1e-9
+        # The free pivot puts the fast whirl root at 2/rev.  At n_b = 3 the
+        # 3/rev BPF gives sep = 1/3.  That clears the 0.300 rule by one
+        # point.  At n_b = 2 the root sat on the 2/rev BPF and failed.
+        bpf3 = blade_passing_frequency(45.0; n_blades=3)
+        @test abs(whirl_frequency(0.0, 12.6, 45.0) - bpf3) / bpf3 ≈ 1 / 3 rtol=1e-9
 
-        k_req = whirl_stiffness_required(12.6, 45.0)
-        @test whirl_frequency(k_req, 12.6, 45.0) ≈ 1.3 * blade_passing_frequency(45.0) rtol=1e-9
+        k_req = whirl_stiffness_required(12.6, 45.0; n_blades=3)
+        @test whirl_frequency(k_req, 12.6, 45.0) ≈ 1.3 * bpf3 rtol=1e-9
 
-        # Slow root sits at 0.6 omega at the threshold.  It reaches 1P at
+        # Slow root sits at 1.9 omega at the threshold.  It reaches 1P at
         # k_mom = 3 I_t omega^2.
         omega = 2pi * 45.0 / 60.0
-        @test whirl_precession_frequency(k_req, 12.6, 45.0) ≈ 0.6 * omega / (2pi) rtol=1e-9
+        @test whirl_precession_frequency(k_req, 12.6, 45.0) ≈ 1.9 * omega / (2pi) rtol=1e-9
         @test whirl_precession_frequency(3.0 * 12.6 * omega^2, 12.6, 45.0) ≈ 45.0 / 60.0 rtol=1e-9
 
         # BPF and 1P of the machine.
@@ -112,16 +115,16 @@ end
             20.0;
             EA_b=1.0e6,
             I_t=12.6,
-            k_mom=600.0,
+            k_mom=3000.0,
             pretension=mb3 * 9.81,
         )
-        rep = anchor_mode_report(b; rpm=45.0)
+        rep = anchor_mode_report(b; rpm=45.0, n_blades=3)
 
-        @test rep.bpf == 1.5
+        @test rep.bpf == 2.25
         @test rep.f_1p == 0.75
         @test rep.f_p ≈ 0.11147 atol=1e-4
-        @test rep.k_mom_required ≈ 436.49 rtol=1e-3
-        @test rep.sep_whirl_bpf ≥ 0.3     # k_mom = 600 clears the whirl gate
+        @test rep.k_mom_required ≈ 2073.3 rtol=1e-3
+        @test rep.sep_whirl_bpf ≥ 0.3     # k_mom = 3,000 clears the whirl gate
         @test rep.sep_p_bpf > 0.9         # pendulum is far from BPF, report only
     end
 
@@ -137,25 +140,34 @@ end
                 pretension=mb3 * 9.81,
             )
 
-        # 45 rpm: whirl passes with k_mom = 600, axial clears with stiff rope.
-        g1 = anchor_gate(make_b(k_mom=600.0); rpm=45.0)
+        # 45 rpm: the stiff side clears with k_mom = 3,000, axial clears with
+        # the stiff rope.
+        g1 = anchor_gate(make_b(k_mom=3000.0); rpm=45.0, n_blades=3)
         @test g1.ok
         @test g1.whirl_pass && g1.axial_pass
 
-        # Free pivot fails the whirl gate.
-        g2 = anchor_gate(make_b(k_mom=0.0); rpm=45.0)
-        @test !g2.ok
-        @test !g2.whirl_pass
+        # The free pivot clears the 0.300 rule at n_b = 3 (sep = 1/3).  At
+        # n_b = 2 it sat on the 2/rev BPF and failed.
+        g2 = anchor_gate(make_b(k_mom=0.0); rpm=45.0, n_blades=3)
+        @test g2.ok
+        @test g2.whirl_pass
 
-        # 121 rpm: whirl passes with 3,500 N.m/rad.  Stiff rope fails axial.
-        # The soft EA (250 kN) sits on BPF = 4.03 Hz there.
-        g3 = anchor_gate(make_b(k_mom=3500.0, EA_b=1.0e6); rpm=121.0)
+        # The old 600 pin sits inside the fail band (58.8 to 2,073.3).
+        g3 = anchor_gate(make_b(k_mom=600.0); rpm=45.0, n_blades=3)
         @test !g3.ok
-        @test g3.whirl_pass && !g3.axial_pass
+        @test !g3.whirl_pass
 
-        # 400 kN elastic rope clears both gates at 121 rpm.
-        g4 = anchor_gate(make_b(k_mom=3500.0, EA_b=4.0e5); rpm=121.0)
-        @test g4.ok
+        # 121 rpm: 3,500 sits inside the fail band (424.8 to 14,990.5).  The
+        # 1 MN rope clears axial now that the 3/rev BPF (6.05 Hz) is off the
+        # 3.98 Hz soft-EA mode.
+        g4 = anchor_gate(make_b(k_mom=3500.0, EA_b=1.0e6); rpm=121.0, n_blades=3)
+        @test !g4.ok
+        @test !g4.whirl_pass && g4.axial_pass
+
+        # 121 rpm: the stiff rail (k_mom ≥ 14,990) clears with the 400 kN
+        # rope.
+        g5 = anchor_gate(make_b(k_mom=20000.0, EA_b=4.0e5); rpm=121.0, n_blades=3)
+        @test g5.ok
     end
 
     @testset "RigidSkyAnchor — bit-for-bit passthrough" begin

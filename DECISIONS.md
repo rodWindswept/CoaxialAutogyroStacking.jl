@@ -159,3 +159,45 @@ and clamping the backline force without accounting for the trimmed damper.
 
 **Prior art:** KTD `docs/plans/2026-05-12-sky-anchor-node.md` (the three-way
 knot) and `handovers/handover-2026-05-28-pitch-depower.md` section 2.
+
+---
+
+## D7: n_b = 3 re-base of the sky-anchor gates (2026-10-06)
+
+**Decision:** The sky-anchor whirl gates re-base from the leaked 2-blade
+budget to the flown 3-on-6 hex machine, `n_b = 3`. This supersedes the gate
+budget numbers in D6. See also KTD `DECISIONS.md` (2026-10-06).
+
+**Why:** The 2-blade machine was never a proposed topology. The
+perpendicular-axis theorem (`I_s = I_x + I_y`) needs equal azimuthal spacing,
+so `I_s/I_t = 2` is exact at `n_b = 3`, not at `n_b = 2`. The required
+rocking stiffness, `k_mom = [(1 + 0.3) n_b - 1]^2 I_t omega^2 - I_t omega^2`,
+carries `n_blades`: the factor is 1.56 at `n_b = 2` but 7.41 at `n_b = 3`.
+
+**Re-based numbers (`I_t = 12.6`):**
+- Required `k_mom`: 2,073.3 N·m/rad at 45 rpm and 14,990.5 N·m/rad at
+  121 rpm.
+- Fail band: (58.8, 2,073.3) at 45 rpm, scaled by `Omega^2` to
+  (424.8, 14,990.5) at 121 rpm. The gate is non-monotone. The free side
+  passes up to `c = 0.21`, where `c = k_mom / (I_t Omega^2)`. The stiff side
+  passes from `c = 7.41`.
+- The free-pivot root at 2/rev faces the 3/rev BPF, so sep = 1/3. That
+  clears the 0.300 rule by one point. At `n_b = 2` it failed.
+- The axial flip: the 121 rpm BPF moves 4.03 Hz -> 6.05 Hz, off the
+  3.98 Hz soft-EA mode. The axial separation at 1 MN becomes 0.342 and
+  passes (0.013 before). The 400 kN rope clears at 0.584.
+- The old test pins fail: 600 N·m/rad at 45 rpm and 3,500 N·m/rad at
+  121 rpm both sit inside the fail band.
+
+**Scope catch:** The `n_blades = 2` machine default becomes `n_b = 3` in
+`sweep.jl` (both sweeps and the options table), `gen_comparison_sweep.jl`,
+`bem_charts_v2.jl`, `compute_radial_loading.jl`, the `rotor.jl` docstring
+and `DIMENSIONS.md` (solidity 0.0318 -> 0.0477).
+
+**Open:** The `I_t` re-derive for the 3-blade BOM. It moves every `k_mom`
+pin again. The `sky_anchor.jl` function defaults stay at `n_blades = 2`,
+and the machine-level call sites pass 3.
+
+**Rejected:** A re-pin in place at 121 rpm. The old 3,500 pin sits
+mid-band, so the pass cases rebuild onto the free rail (`k <= 425`) or the
+stiff rail (`k >= 14,990`).

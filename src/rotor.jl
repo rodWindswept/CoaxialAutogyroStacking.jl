@@ -69,7 +69,7 @@ Rotor solidity: ratio of total blade planform area to swept disk area.
 Solidity controls the blade loading distribution. It determines the fraction
 of the disk that is "solid" vs. open. The PCA-2 (σ ≈ 0.098, 3 blades,
 R=6.86 m, c=0.56 m) is a high-solidity rotor. Our typical lifting-autogyro
-rotors have lower solidity (σ ≈ 0.03–0.05 for 2 blades at R=2–3 m with
+rotors have lower solidity (σ ≈ 0.05–0.07 for 3 blades at R=2–3 m with
 0.15 m chord).
 
 **Important:** The PCA-2 CL/CD data in `pca2_interp` is valid for σ ≈ 0.098.

@@ -2,7 +2,7 @@
 
 Target audience: Cameron and Cameron's AI agent.
 Repository: `CoaxialAutogyroStacking.jl`.
-Status: All 502 tests green (`julia --project=. test/runtests.jl`).
+Status: All 504 tests green (`julia --project=. test/runtests.jl`).
 
 ## 1. Post-Pull Checklist
 
@@ -12,7 +12,7 @@ After pulling `master`, do these three steps:
    ```
    julia --project=. test/runtests.jl
    ```
-   All 502 tests must pass.
+   All 504 tests must pass.
 
 2. Run the doc staleness sweep:
    - Check that new `src/` modules appear in `AGENTS.md` and `PLAN.md`.
@@ -68,7 +68,7 @@ src/
   viability.jl                 viability checks
   wake.jl                      wake models (Jensen/PARK, Bastankhah 2026)
 
-test/                          13 test files (502 tests)
+test/                          13 test files (504 tests)
 notebooks/                     dashboard.jl, sweep_plots.jl
 schematics/                    OpenSCAD models and renders
 scripts/                       bem_full_sweep.jl, dashboard.jl, gen_pca2_sweep.jl, gen_comparison_sweep.jl
