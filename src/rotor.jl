@@ -37,7 +37,12 @@ struct AutogyroRotor
     tilt_deg        :: Float64
     blade_pitch_deg :: Float64
     mass            :: Float64
+    slat_deployed   :: Bool
 end
+
+# Outer constructor: slat_deployed defaults to false for backward compat
+AutogyroRotor(radius, hub_radius, n_blades, blade_chord, tilt_deg, blade_pitch_deg, mass) =
+    AutogyroRotor(radius, hub_radius, n_blades, blade_chord, tilt_deg, blade_pitch_deg, mass, false)
 
 """
     rotor_disk_area(rotor::AutogyroRotor) -> Float64

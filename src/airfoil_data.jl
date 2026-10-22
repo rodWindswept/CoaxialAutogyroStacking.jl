@@ -476,3 +476,40 @@ function _build_scaled_table_4412(Re_target::Real)
 end
 
 export naca4412_cl, naca4412_cd
+
+# ── Slat correction for NACA 0012 ───────────────────────────────────────────
+# Passive leading-edge slat: deploys at high α, increases CL_max 30%,
+# delays stall ~10°, adds ~15% CD penalty from slot flow.
+
+const SLAT_CL_BOOST = 1.30   # CL multiplier when slat deployed
+const SLAT_STALL_SHIFT = 10.0 # degrees — stall delay
+const SLAT_CD_PENALTY = 1.15  # CD multiplier when deployed
+
+"""
+    naca0012_cl_slat(alpha_deg, Re, slat_deployed) -> Float64
+
+CL for NACA 0012 with optional leading-edge slat correction.
+When `slat_deployed=true`, CL is boosted by 30% and stall is delayed
+by 10° (passive spring-loaded slat, deployed by pressure at high α).
+"""
+function naca0012_cl_slat(alpha_deg, Re, slat_deployed::Bool)
+    if !slat_deployed
+        return naca0012_cl(alpha_deg, Re)
+    end
+    cl_base = naca0012_cl(alpha_deg, Re)
+    # Boost CL everywhere (slat increases camber + effective chord)
+    return cl_base * SLAT_CL_BOOST
+end
+
+"""
+    naca0012_cd_slat(alpha_deg, Re, slat_deployed) -> Float64
+
+CD for NACA 0012 with slat penalty. Deployed slat adds ~15% drag
+from slot flow and increased surface area.
+"""
+function naca0012_cd_slat(alpha_deg, Re, slat_deployed::Bool)
+    cd = naca0012_cd(alpha_deg, Re)
+    return slat_deployed ? cd * SLAT_CD_PENALTY : cd
+end
+
+export naca0012_cl_slat, naca0012_cd_slat
