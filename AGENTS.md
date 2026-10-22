@@ -138,6 +138,22 @@ Source:  <data file>
 One commit per task/phase, message prefixed with the phase: e.g.
 `Phase 4 Tasks 8-9: AutogyroStack + stack_tension_profile`. Keep `master` green.
 
+## Agent skills
+
+Read by `to-tickets`, `triage`, `to-spec`, `wayfinder`, and `qa`.
+
+### Issue tracker
+
+GitHub Issues on `rodWindswept/CoaxialAutogyroStacking.jl`, driven by the `gh` CLI. Covers issue create/read/list/label/close, the PRs-as-triage-surface flag (currently off), and the `wayfinder` map-and-child-ticket operations used by [`docs/agents/wayfinder-ste-sweep-map.md`](docs/agents/wayfinder-ste-sweep-map.md) and [`docs/agents/wayfinder-tickets/`](docs/agents/wayfinder-tickets). See [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+The five canonical roles, each label string equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See [`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single-context. `CONTEXT.md` at the repo root holds domain vocabulary and architecture; there is no `docs/adr/` yet — `/domain-modeling` creates ADRs lazily when decisions actually get resolved. Agent onboarding — repo map, physics summary, quick start — is in [`docs/agents/domain.md`](docs/agents/domain.md).
+
 ## References
 
 - PCA-2 CL/CD data: NASA TM 20080022367.

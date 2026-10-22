@@ -198,7 +198,7 @@ polygon line geometry and 3-D stall-delay correction.
 - [x] Snel 3-D stall-delay correction
 - [x] BEM-aware parameter sweep and tilt optimisation
 - [x] SPEC.md §6.6 populated with BEM sweep findings
-- [x] All 348 tests green
+- [x] All 407 tests green
 
 ---
 
@@ -223,7 +223,8 @@ CoaxialAutogyroStacking.jl/
 │   ├── optimisation.jl              ← optimal_rotor_tilt / optimal_rotor_tilts / lift_force_steady
 │   ├── sweep.jl                     ← parameter_sweep + Pareto-front (v1 PCA-2)
 │   ├── viability.jl                 ← physical viability checks (Phase 8.5)
-│   └── stall_delay.jl               ← Snel 3-D rotational correction (v2.1)
+│   ├── stall_delay.jl               ← Snel 3-D rotational correction (v2.1)
+│   └── wake.jl                       ← Jensen/PARK wake deficit + stack wind
 ├── test/
 │   ├── runtests.jl
 │   ├── test_pca2_data.jl
@@ -236,7 +237,8 @@ CoaxialAutogyroStacking.jl/
 │   ├── test_optimisation.jl
 │   ├── test_sweep.jl
 │   ├── test_viability.jl
-│   └── test_stall_delay.jl
+│   ├── test_stall_delay.jl
+│   └── test_wake.jl
 ├── notebooks/
 │   ├── dashboard.jl                 ← GLMakie interactive dashboard
 │   └── sweep_plots.jl               ← Pluto Pareto-front notebook (Phase 8)

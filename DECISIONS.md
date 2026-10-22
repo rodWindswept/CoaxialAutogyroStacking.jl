@@ -121,3 +121,72 @@ frames (D1, (C)).
 **Action:** HANDOVER.md and README.md must stop citing the BEM→PCA-2 gap as
 justification for wake modelling. v3 scope should be motivated by
 rotor-to-rotor interaction fidelity, not gap-closing.
+
+---
+
+## D6: Q4 — Wake deficit keeps the freestream thrust coefficient (2026-09-29)
+
+**Decision:** `stack_effective_wind` normalises CT with the freestream:
+`CT = T / (0.5·rho·v²·A)`. This is correct. Do not divide by
+`sin²(alpha_eff)`.
+
+**Why:** `solve_polygon_angles` generates the thrust from the through-disk
+component, `v_n = v·sin(alpha_eff)`. That fact alone does not make the
+freestream CT wrong, because `sin(alpha_eff)` appears twice and cancels:
+
+- Streamwise force on the disk: `F_x = T·sin(alpha_eff)`.
+- Mass flow through the disk: `mdot = rho·A·v·sin(alpha_eff)`.
+- Momentum deficit: `dv = F_x / mdot = T / (rho·A·v)`.
+
+The last ratio is independent of disk inclination, and it equals
+`CT/2` with the freestream CT. So the freestream CT is the one consistent
+with the model's own streamwise momentum accounting.
+
+Measured on master, R = 3 m, v = 8 m/s, elev 55°, alpha_eff = 45°:
+T = 140.1 N, A = 28.27 m², v_n = 5.66 m/s, CT_freestream = 0.1264,
+CT_through-disk = 0.2528 (ratio 2.000).
+`F_x/mdot = 0.0632 v`. `CT_freestream/2 = 0.0632`. `CT_through-disk/2 = 0.1264`.
+The Jensen near-wake deficit `1 − sqrt(1 − CT_freestream) = 0.0653` agrees
+with the momentum value to 3%.
+
+**Rejected:** Normalising CT with the through-disk velocity. That treats the
+1/sin²(alpha_eff) factor as a lost correction. It is not lost. It cancels
+against the force projection. Applying it would double the deficit and
+double the reported power shed (14.7% → 28.8% at 5 m spacing).
+
+**Consequences:**
+- The 14.7% power shed at 5 m spacing, k = 0.075, R = 3 m stands. The 10.1%
+  force and tension shed (v²) alongside it also stands.
+- Two model errors remain, and they act in opposite directions. The mass flow
+  ignores the rotor's own induced flow, which would shrink the deficit. `F_x`
+  ignores the in-plane rotor force, which would grow it. Neither is ticketable
+  before the spacing and k axes are settled.
+- The larger lever is not the CT convention. It is the wake decay constant k.
+  At 5 m spacing: shed 14.7% (k = 0.075), 13.7% (k = 0.10), 12.0% (k = 0.15).
+
+---
+
+## D7: Q4 follow-up — PCA-2 solidity gate is 0.098, not 0.078 (2026-09-29)
+
+**Decision:** The PCA-2 solidity yardstick is σ ≈ 0.098. The PCA-2 has
+**4 blades**, not 3. NASA TM 20080022367 tables 45 ft diameter, 22 in chord,
+4 blades, blade area 155 ft² against disc area 1,590 ft². That gives
+σ = 0.0976.
+
+**Why:** `rotor.jl:65` and `test_rotor.jl:38` state "3 blades". With 3 blades
+the repo formula returns 0.0778. `test_rotor.jl:41` asserts 0.0778 against a
+comment that claims 0.0976, so the test cannot fail on the value it claims to
+check. The 4-blade count gives 0.104. The residual against 0.0976 is taper and
+root cutout.
+
+**Rejected:** Moving the yardstick to 0.078 to match the docstring. The
+docstring blade count is the defect.
+
+**Consequences:**
+- D1 decomposes the ~8× BEM→PCA-2 gap as ~2.4× solidity and ~3.2× CL and 3-D
+  effects. With σ = 0.0976 the solidity factor is 0.0976/0.032 = 3.05×. The
+  residual becomes 8/3.05 = 2.6×. The gap still decomposes. The split moves.
+- Any sweep that varies rotor radius at a fixed chord leaves the PCA-2
+  calibration range. σ = 0.098 at 2 blades needs chord = 0.154·R. The repo
+  default chord 0.15 m gives σ = 0.0955 at R = 1.0 m and σ = 0.0318 at
+  R = 3.0 m. A size sweep at fixed chord is a solidity sweep.
