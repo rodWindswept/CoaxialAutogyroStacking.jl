@@ -1,0 +1,6 @@
+# Amend-only ledger documents, exempt from the STE pre-commit gate.
+# New entries in an exempt file must still be written STE-clean.
+DECISIONS.md
+CHANGELOG.md
+STANDARDS-2026-08-20.md
+handovers/
