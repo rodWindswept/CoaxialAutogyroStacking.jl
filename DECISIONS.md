@@ -190,3 +190,79 @@ docstring blade count is the defect.
   calibration range. σ = 0.098 at 2 blades needs chord = 0.154·R. The repo
   default chord 0.15 m gives σ = 0.0955 at R = 1.0 m and σ = 0.0318 at
   R = 3.0 m. A size sweep at fixed chord is a solidity sweep.
+
+## D8: Wake interaction — Jensen/PARK, then Bastankhah 2026 (2026-09)
+
+**Decision:** The stack wake model moved in two steps. Phase 11
+(`8be8585`) adopted the Jensen/PARK deficit: `wake_deficit(CT, R, x)`
+and `stack_effective_wind` apply a cumulative upstream deficit to each
+downstream rotor. Phase 12 (`34104ae`) replaced it with the Bastankhah
+2026 generalised actuator disk model, run RK4 upstream, downstream and
+CT-a, validated against the AtWIND-lab companion code.
+
+**Why:** A stacked rotor flies in the wake of every rotor above it. A
+momentum-only stack over-predicts the low rotors. The engineering
+Jensen/PARK form gave the first order; the Bastankhah 2026 form keeps
+the actuator-disk physics the later authority sweeps depend on. The
+companion-code check is the calibration anchor.
+
+**Consequence:** Wake interaction is the model's newest physics. The
+v1 scope guard ("no wake coupling before v2") is superseded. Sweeps
+that pre-date Phase 11 do not carry wake effects, and comparisons
+across that line must name it.
+
+## D9: Prandtl tip-loss enters the BEM (2026-09)
+
+**Decision:** `prandtl_tip_loss_factor(r, R, B, phi)` scales the
+induction: `a = 1/(1 + 4F·sin²φ/(σ'·cn))`, with F in (0,1]. Landed in
+`354997d`, suite 378/378.
+
+**Why:** Pressure bleed around the blade tip shrinks the effective disk
+area. Without F the BEM under-predicts induction near the tip.
+
+**Consequence:** Tip station loads read lower, and the tip-speed
+viability gate reads a truer load. Any pre-`354997d` sweep lacks the
+correction.
+
+## D10: Øye dynamic inflow, ready for the time domain (2026-09)
+
+**Decision:** `dynamic_inflow_filter` models wake inertia as a
+first-order lag on the induction factor, with the Øye time constant
+`τ = 1.1·R/((1−1.3·a)·v_wind)` clamped to 0.01 to 10.0 s. Landed in
+`57b7e1b`, suite 407/407.
+
+**Why:** The induced velocity field does not respond instantly to a
+load change. Quasi-static sweeps hide that; a gust or a pitch step does
+not. The filter is built now so the time-domain integration can call it
+unchanged.
+
+**Consequence:** No current sweep exercises the filter. It ships with
+unit tests only until a dynamics campaign calls it.
+
+## D11: NACA 4412 joins NACA 0012 (2026-09)
+
+**Decision:** The airfoil tables now carry both the NACA 0012 and the
+cambered NACA 4412 (4 per cent camber at 40 per cent chord). Landed in
+`9cc8ce9`.
+
+**Why:** A cambered section lifts at zero incidence and stalls
+differently. The stack's bottom rotors fly at higher incidence, where
+camber matters.
+
+**Consequence:** Every sweep must state its airfoil. The reference
+design stays NACA 0012 until a sweep justifies the switch.
+
+## D12: Snel stall-delay correction (2026-08)
+
+**Decision:** `snel_cl_3d` applies the Snel/Himmelskamp rotational
+augmentation from QBlade:
+`CL_3D = CL_2D + (3.1·λ²/(1+λ²))·g(α)·(c/r)²·(CL_pot − CL_2D)`.
+The correction clamps to non-negative and vanishes above 60 degrees
+angle of attack. Landed in `8dc2fd4` (Phase 10f).
+
+**Why:** Rotation delays separation at the root, where solidity is
+highest and the 2-D polar under-predicts thrust.
+
+**Consequence:** Root stations carry higher CL than the table alone
+would give. The correction is strongest near the hub and negligible at
+the tip.
